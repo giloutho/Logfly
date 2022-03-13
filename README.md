@@ -1,2 +1,2 @@
 # Logfly
-Sixth version of the Logfly a log book which stores paragliding flights
+The sixth version of Logfly will be entirely rewritten in javascript powered by the Electron framework.
