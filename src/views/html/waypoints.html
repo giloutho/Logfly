@@ -1,0 +1,51 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+      <button type="button" id="sidebarCollapse" class="btn btn-info" onclick ="{ $('#sidebar').toggleClass('active'); }">
+          <i class="fas fa-align-left"></i>
+          <span>Menu</span>
+      </button>
+      <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+      <span class="navbar-text mx-3" id="db-state"></span>
+      <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
+            pour comprendre les possibilités immenses de cette navbar 
+      -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="nav navbar-nav ml-auto">
+              <li class="nav-item">
+                <a class="nav-link" id="bigmap" href="#">Grande carte</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="flyxc" href="#">FlyXC</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="score" href="#">Score</a>
+              </li>              
+              <li class="nav-item">
+                <a class="nav-link" id="actions" href="#">Actions</a>
+              </li>                  
+          </ul>
+      </div>
+  </div>
+</nav>
+<div class="d-md-flex h-md-100 align-items-center">
+
+  <!-- First Half -->
+  
+  <div class="col-md-6 p-0 h-md-100">
+ <p>First half content</p>
+  </div>
+  
+  <!-- Second Half -->
+  
+  <div class="col-md-6 p-0 bg-white h-md-100">
+      <div class="d-md-flex align-items-center h-md-100 p-5">
+          Second half content here
+      </div>
+  </div>
+      
+  </div>
+
+  <style>
+
+
+  </style>

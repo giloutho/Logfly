@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
+<link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css" />
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+      <button type="button" id="sidebarCollapse" class="btn btn-info" onclick ="{ $('#sidebar').toggleClass('active'); }">
+          <i class="fas fa-align-left"></i>
+          <span>Menu</span>
+      </button>
+      <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+      <span class="navbar-text mx-3" id="db-state"></span>
+      <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
+            pour comprendre les possibilités immenses de cette navbar 
+      -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="nav navbar-nav ml-auto">
+              <li class="nav-item">
+                <a class="nav-link" id="bigmap" href="#">Grande carte</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="flyxc" href="#">FlyXC</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="score" href="#">Score</a>
+              </li>              
+              <li class="nav-item">
+                <a class="nav-link" id="actions" href="#">Actions</a>
+              </li>                  
+          </ul>
+      </div>
+  </div>
+</nav>
+<!---- from https://www.wowthemes.net/bootstrap-4-split-screen-layout/
+       more simple : https://www.w3schools.com/howto/howto_css_split_screen.asp
+       but not really responsive      -->
+<div class="d-md-flex h-md-100 align-items-center">
+  <div class="col-md-7 p-0 h-md-100">
+      <table id="table_id" class="table table-striped table-bordered d-none" style="width:100%;">
+        <tbody>
+        </tbody>
+      </table>
+  </div>
+  <div class="col-md-5 p-0 h-md-100">
+    <!--- Second half content here --->
+    <div id="mapid" class="map"></div>
+  </div>  
+</div>
+
+
+<img src="./assets/img/loaded.gif" alt="" onload="$.getScript('./views/js/logbook.js');this.parentNode.removeChild(this);" />

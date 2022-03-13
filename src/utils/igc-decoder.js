@@ -1,0 +1,253 @@
+const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-parser
+const smooth = require('array-smooth')
+const trigo = require('./geo/trigo.js')
+const offset = require('./geo/offset-utc.js')
+
+class IGCDecoder {
+
+  constructor (igcString) {
+		this.info = {				
+      'date' : '',
+			'isodate' : '',
+			'offsetUTC' : '',
+      'numFlight' : '',
+      'pilot' : '',
+      'gliderType' : '',
+      'registration' : '',
+      'callsign' : '',
+      'competitionClass' : '',
+      'loggerId' : '',
+      'loggerManufacturer' : '',
+      'loggerType' : '',
+      'security' : '',  
+      'parsingError' : '',
+			'interval' : 0  
+		}
+    this.fixes = []; 			// all gps fixes
+		this.vz = [];
+		this.speed = [];
+    this.stat = {				 //  track statistics
+			'distance' : 0,
+			'maxalt' : {
+				'gps' : -100000,
+				'gpsindex' : 0,
+				'baro' : -100000,
+				'baroindex' : 0,		
+			},
+			'minialt' : {
+				'gps' : 100000,
+				'gpsindex' : 0,
+				'baro' : 100000,
+				'baroindex' : 0
+			},
+			'latMini' : 90,
+			'latMaxi' : -90,
+			'longMini' : 180,
+			'longMaxi' : -180,					
+			'maxaltitudegain' : 0,
+			'maxclimb' : 0,
+			'maxsink' : 0,
+			'maxspeed' : 0,
+			'duration' : 0,
+			'gliding-duration' : 0,
+			'thermaling-duration' : 0,
+			'left-thermaling-duration' : 0,
+			'right-thermaling-duration' : 0,
+			'thermals' : [],
+			'upwinds' : [],
+			'sinks' : [],
+			'windspeeds' : [],
+			'bases' : [],
+			'general' : []
+		};    
+		this.GeoJSON =  {
+			'name': '',
+			'type': 'FeatureCollection',
+			'features': [{
+				'type': 'Feature',
+				'properties' : {
+					'name':'',
+					'time':'',
+					'_gpxType':'trk',
+					'coordTimes': []
+				},
+				'geometry': {
+					'type': 'LineString',
+					'coordinates': []
+				},
+			}]
+		}
+		this.params = []; 			// all points with complete data : spedd, vario etc...
+    this.igcData = igcString
+  }
+
+  // pour l'instant extracalculations et filter ne sont pas utilisés
+	parse(extracalculations = false, filter = false){
+		// https://github.com/Turbo87/igc-parser/pull/20    Implement `lenient` parsing modet
+    let result = IGCParser.parse(this.igcData, { lenient: true });
+    try {
+      this.info.date = result.date
+      this.info.numFlight = result.numFlight
+      this.info.pilot = result.pilot
+      this.info.gliderType = result.gliderType
+      this.info.registration = result.registration
+      this.info.callsign = result.callsign
+      this.info.competitionClass = result.competitionClass
+      this.info.loggerId = result.loggerId
+      this.info.loggerManufacturer = result.loggerManufacturer
+      this.info.loggerType = result.loggerType
+      this.info.security = result.security   
+      this.fixes = result.fixes  
+			if (this.fixes.length > 2) {
+				offset.computeOffsetUTC(this.fixes[0].latitude, this.fixes[0].longitude, this.fixes[1].timestamp)
+			//	this.computeOffsetUTC()    
+      	this.analyzeFixes()
+			} else {
+				this.info.parsingError = 'No points after decoding'
+			}
+    } catch (error) {
+      this.info.parsingError = error
+    }
+  }
+
+  analyzeFixes() {
+    let nbanalyzed = 0
+    let flTime = 0;
+    let flDistance = 0
+		let BadAlti = 9000
+		const rawspeed = []
+		const rawvario = []
+		// Cf https://stackoverflow.com/questions/33708680/leaflet-add-features-to-a-json-object-and-put-the-result-on-the-map
+		this.GeoJSON["name"] = this.info.pilot
+		this.GeoJSON.features[0]["properties"]["name"] = this.info.pilot
+		var datePoint = new Date(this.fixes[1].timestamp)
+		datePoint.setSeconds(datePoint.getSeconds() + (this.info.offsetUTC * 60));
+		// To simplify, the local date was initiated as a UTC date.
+		this.info.isodate = datePoint.toISOString().split('.')[0]+'Z'
+		this.GeoJSON.features[0]["properties"]["time"] = this.info.isodate
+    for (let i=1; i<this.fixes.length; i++){
+			const geopoint = []
+			geopoint.push(this.fixes[i].longitude)
+			geopoint.push(this.fixes[i].latitude) 
+			geopoint.push(this.fixes[i].gpsAltitude)		
+			this.GeoJSON.features[0].geometry.coordinates.push(geopoint);
+			var dtPoint = new Date(this.fixes[i].timestamp)
+			dtPoint.setSeconds(dtPoint.getSeconds() + (this.info.offsetUTC * 60));
+			var isoDate = dtPoint.toISOString().split('.')[0]+'Z'
+			this.GeoJSON.features[0]['properties']['coordTimes'].push(isoDate)
+			var pointData = {}; 
+      let duration =  this.fixes[i].timestamp - this.fixes[i-1].timestamp  
+			// arrêté au calcul de prevdelay qu'est ce qu'on fait si c'est inf à un
+      // Reversale GPS can record several points at the same second
+      if (duration > 999) {      // duration is in milliseconds
+				let t = (this.fixes[i].timestamp - this.fixes[i-1].timestamp) / 1000
+				pointData['prevtime'] = t
+        flTime += t				
+        let d = trigo.distance(this.fixes[i].latitude, this.fixes[i].longitude, this.fixes[i-1].latitude, this.fixes[i-1].longitude, "K") * 1000;        
+				if (isNaN(d)) d = 0
+				pointData['prevdistance'] = d
+				flDistance += d	
+				let speed = 0		
+				let vario = 0
+				if (t > 0) {
+					speed = (d / t * 3.6)
+					if (this.fixes[i].pressureAltitude > 0) {
+						vario = (this.fixes[i].pressureAltitude - this.fixes[i-1].pressureAltitude)/t
+						if (vario > 20 || vario < -55) {
+							// bad Vz , we take GPS altitude
+							vario = (this.fixes[i].gpsAltitude - this.fixes[i-1].gpsAltitude)/t
+						}                                  
+					} else {
+						vario = (this.fixes[i].gpsAltitude - this.fixes[i-1].gpsAltitude)/t
+					}
+					if (vario > 20 || vario < -55) {
+						if (i > 1) {
+							vario = rawvario[i-1]
+						} else {
+							vario = 0
+						}
+					}
+				}
+				rawspeed.push(speed)
+				rawvario.push(vario)
+      }
+			if (this.fixes[i].gpsAltitude > this.stat.maxalt.gps && this.fixes[i].gpsAltitude < BadAlti) {
+				this.stat.maxalt.gps = this.fixes[i].gpsAltitude
+			}
+			if (this.fixes[i].gpsAltitude < this.stat.minialt.gps && this.fixes[i].gpsAltitude > 0) {
+				this.stat.minialt.gps = this.fixes[i].gpsAltitude
+			}			
+			if (this.fixes[i].pressureAltitude > this.stat.maxalt.baro && this.fixes[i].pressureAltitude < BadAlti) {
+				this.stat.maxalt.baro = this.fixes[i].pressureAltitude
+			}
+			if (this.fixes[i].pressureAltitude < this.stat.minialt.gps && this.fixes[i].pressureAltitude > 0) {
+				this.stat.minialt.baro = this.fixes[i].pressureAltitude
+			}	
+			if (this.fixes[i].latitude > this.stat.latMaxi) this.stat.latMaxi = this.fixes[i].latitude;
+			if (this.fixes[i].longitude > this.stat.longMaxi) this.stat.longMaxi = this.fixes[i].longitude;
+			if (this.fixes[i].latitude < this.stat.latMini) this.stat.latMini = this.fixes[i].latitude;
+			if (this.fixes[i].longitude < this.stat.longMini) this.stat.longMini = this.fixes[i].longitude;   		
+			this.params.push(pointData)			
+    }
+	
+    this.stat.duration = flTime // Flight time computed in seconds 
+		this.stat.interval = Math.round(this.stat.duration/this.fixes.length)
+		console.log('flTime : '+flTime+' Calcul intervalle : '+this.stat.duration+' / '+this.fixes.length+'  interval : '+this.stat.interval)
+		console.log('Time 2 : '+this.GeoJSON.features[0]['properties']['coordTimes'][2]);
+		// const arrayHour = this.GeoJSON.features[0]['properties']['coordTimes'].map(hour => hour);
+		// console.log(arrayHour)
+
+    this.stat.distance = flDistance / 1000    // convert to km
+		try {
+					// ponderation
+			const smoothOffset = 10
+			const smoothed = smooth(rawspeed, smoothOffset)			
+			const varioSmoothOffset = 10
+			const varioSmoothed = smooth(rawvario, varioSmoothOffset)	
+			let maxRawSpeed = 0
+			let maxSmoothed = 0
+			let maxRawVario = 0
+			let maxVarioSmoothed = 0
+			// Il y a plusieurs méthodes pour extraire le minimum et le maximum
+			// mais selon plusieurs articles comme par exemple :
+			// https://medium.com/coding-at-dawn/the-fastest-way-to-find-minimum-and-maximum-values-in-an-array-in-javascript-2511115f8621
+			// la boucle reste la plus rapide quand il y a un grand nombre d'éléments à examiner
+			for (let i=1; i<this.params.length; i++){
+				if (rawspeed[i] > maxRawSpeed) maxRawSpeed = rawspeed[i]
+				if (smoothed[i] > maxSmoothed) maxSmoothed = smoothed[i]
+				if (rawvario[i] > maxRawVario) maxRawVario = rawvario[i]
+				if (varioSmoothed[i] > maxVarioSmoothed) maxVarioSmoothed = varioSmoothed[i]		
+			}		
+			this.speed = smoothed
+			this.vz = varioSmoothed
+			this.stat.maxclimb = maxVarioSmoothed.toFixed(2)
+
+		} catch (error) {
+			console.log(error)
+		}
+
+  }
+
+	// déportée dans offset-utc.js
+
+	// computeOffsetUTC() {
+	// 	// Faut il vraiment travailler avec le  premier point (bad fix ?)
+	// 	const geoTz = require('geo-tz')
+	// 	const ZonedDateTime = require('zoned-date-time');
+	// 	const zoneData = require('iana-tz-data').zoneData;
+		
+	// 	const coordBegin = geoTz(this.fixes[0].latitude, this.fixes[0].longitude)
+	// 	const arrZone = coordBegin.toString().split('/');
+	// 	console.log('Time zone : '+arrZone[0]+' - '+arrZone[1])
+	// 	let dateFirstPoint = new Date(this.fixes[1].timestamp)
+	// 	let zdt = new ZonedDateTime(dateFirstPoint, zoneData[arrZone[0]][arrZone[1]])
+	// 	let rawOffset = zdt.getTimezoneOffset()
+	// 	// The direction is reversed. getTimezoneOffset gives us the operation to be carried out to obtain the UTC time.
+	// 	// For France getTimezoneOffset result is -120mn.
+	// 	this.info.offsetUTC = -1 * rawOffset		
+	// 	console.log('Offset trace : '+zdt.getTimezoneOffset()+' info : '+this.info.offsetUTC)
+	// }
+
+}
+
+module.exports = IGCDecoder

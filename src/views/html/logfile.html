@@ -1,0 +1,45 @@
+<link rel="stylesheet" href="../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+<!-- Arrow has a bad location in dropdown links, we remove it-->
+    
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+      <!-- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+      <span class="navbar-text mx-3" id="db-state"></span>
+      <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
+            pour comprendre les possibilités immenses de cette navbar 
+      -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="nav navbar-nav ml-auto">         
+              <!-- Dropdown -->
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarrend" data-toggle="dropdown">Renderer Log</a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" id="render-display" href="#">Display</a>
+                  <a class="dropdown-item" id="render-clear" href="#">Clear</a>
+                </div>
+              </li>               
+              <!-- Dropdown -->
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarmain" data-toggle="dropdown">Main Log</a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" id="main-display" href="#">Display</a>
+                  <a class="dropdown-item" id="main-clear" href="#">Clear</a>
+                </div>
+              </li>                                          
+          </ul>
+      </div>
+  </div>
+</nav>
+<div>
+  <div class="alert alert-info collapse" role="alert" id="status"></div>   
+  <!-- La div "wholetable" a été ajoutée car si on veut cahcer la table 
+       avec un d-none après un affichage multi page
+       les icônes de pagonations restent affichées   -->
+  <div id="wholetable">
+    <table id="tablelog" class="table table-striped table-bordered" style="width:100%;">
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</div>
+<img src="./assets/img/loaded.gif" alt="" onload="$.getScript('./views/js/logfile.js');this.parentNode.removeChild(this);" />
