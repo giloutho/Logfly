@@ -1,0 +1,204 @@
+/*
+    DEMO STYLE
+*/
+
+html {
+    /* from https://bootstrapcreative.com/bootstrap-text-sizes/
+       default font-size is 16px - this is set in the default browser stylesheet 
+    */ 
+    font-size: 12px; 
+    font-weight: 400; 
+    line-height: 1; 
+  } 
+
+body {
+    font-family: Verdana, Helvetica, sans-serif;
+    background: #fafafa;
+}
+
+p {
+    font-family: Verdana, Helvetica, sans-serif;
+   /* font-size: 1em;
+    font-weight: 300;
+    line-height: 1.3em;
+    */
+    color: #999;
+}
+
+a,
+a:hover,
+a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.navbar {
+    padding: 10px 10px;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 0!important;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-btn {
+    box-shadow: none;
+    outline: none !important;
+    border: none;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed #ddd;
+    margin: 40px 0;
+}
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+    186FCE replace 7386D5 
+    0B67D0 replace 6D7FCC
+----------------------------------------------------- */
+
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 150px;
+    max-width: 150px;    
+    background: #186FCE;    
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar.active {
+    margin-left: -150px;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #0B67D0;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li a {
+    padding: 10px;
+    font-size: 1.3em;
+    display: block;
+}
+
+#sidebar ul li a:hover {
+    color: #186FCE;
+    background: #fff;
+}
+
+#sidebar ul li.active>a,
+a[aria-expanded="true"] {
+    color: #fff;
+    background: #0B67D0;
+}
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+ul ul a {
+    font-size: 0.9em !important;
+    padding-left: 30px !important;
+    background: #0B67D0;
+}
+
+ul.CTAs {
+    padding: 20px;
+}
+
+ul.CTAs a {
+    text-align: center;
+    font-size: 0.9em !important;
+    display: block;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+a.download {
+    background: #fff;
+    color: #186FCE;
+}
+
+a.article,
+a.article:hover {
+    background: #0B67D0 !important;
+    color: #fff !important;
+}
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+
+#content {
+    width: 100%;
+    padding: 20px;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+/* ---------------------------------------------------
+    MEDIAQUERIES
+----------------------------------------------------- */
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -150px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+    #sidebarCollapse span {
+        display: none;
+    }
+}
+
+.map {
+    position: relative;
+    /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
+       https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
+    */
+    height: 70vh;  
+    padding-left: 10px;
+    border: 1px solid black;
+    border-radius: 8px;  
+}
+
+.importred {
+    background-color: lightsalmon !important;
+}
+.importgreen {
+    background-color: cadetblue !important;
+}
+.logerror {
+    background-color: orangered !important;
+}
+.even-larger-badge {
+    font-size: 1.2em;
+}
