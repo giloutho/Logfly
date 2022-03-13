@@ -1,6 +1,8 @@
 // https://github.com/tbrams/OpenAirJS/blob/master/app.js
 // https://github.com/maxogden/simplify-geojson
+// on avait
 const geometry = require('spherical-geometry-js');
+
 const simplify = require('simplify-geojson')
 
 // Global variables

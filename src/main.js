@@ -15,7 +15,8 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 const createWindow = () => {
   loadSettings()
 
-  //loadMainProcesses() 
+  loadMainProcesses() 
+  
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1280,
@@ -55,9 +56,15 @@ app.on('activate', () => {
   }
 });
 
+// Require each JS file in the main-process dir
+function loadMainProcesses () {
+  const files = glob.sync(path.join(__dirname, 'process-main/**/*.js'))
+  files.forEach((file) => { require(file) })
+}
+
 function loadSettings () {
   const store = new Store();
-  store.set('fullPathDb','./logflytest.db')
+  store.set('fullPathDb','./test6.db')
   const process = require('process');
   let currOS
   // OS 

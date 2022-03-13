@@ -65,7 +65,7 @@
     "reverse-line-reader": "^0.2.6",
     "serialport": "^10.4.0",
     "simplify-geojson": "^1.0.4",
-    "spherical-geometry-js": "^3.0.0",
+    "spherical-geometry-js": "2.0.0",
     "zoned-date-time": "^1.1.0"
   },
   "devDependencies": {
@@ -74,6 +74,7 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.63",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
-    "electron": "17.1.2"
+    "electron": "17.1.2",
+    "electron-rebuild": "^3.2.7"
   }
 }
