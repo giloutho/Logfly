@@ -16,6 +16,7 @@ const createWindow = () => {
   loadSettings()
 
   loadMainProcesses() 
+ // loadMainOneByOne()
   
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -31,7 +32,8 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+ // mainWindow.webContents.openDevTools();
+
 };
 
 // This method will be called when Electron has finished
@@ -56,6 +58,21 @@ app.on('activate', () => {
   }
 });
 
+function loadMainOneByOne () {
+  const filesutils = glob.sync(path.join(__dirname, 'process-main/files-utils/*.js'))
+  filesutils.forEach((file) => { require(file) })
+
+  const gpstracks = glob.sync(path.join(__dirname, 'process-main/gps-tracks/*.js'))
+  gpstracks.forEach((file) => { require(file) })
+
+  const igcmain = glob.sync(path.join(__dirname, 'process-main/igc/*.js'))
+  igcmain.forEach((file) => { require(file) })
+  const oamain = glob.sync(path.join(__dirname, 'process-main/igc/*.js'))
+  oamain.forEach((file) => { require(file) })
+  const sysmain = glob.sync(path.join(__dirname, 'process-main/igc/*.js'))
+  sysmain.forEach((file) => { require(file) })
+}
+
 // Require each JS file in the main-process dir
 function loadMainProcesses () {
   const files = glob.sync(path.join(__dirname, 'process-main/**/*.js'))
@@ -64,7 +81,7 @@ function loadMainProcesses () {
 
 function loadSettings () {
   const store = new Store();
-  store.set('fullPathDb','./test6.db')
+  store.set('fullPathDb','./db/test6.db')
   const process = require('process');
   let currOS
   // OS 

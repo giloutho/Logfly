@@ -1,5 +1,7 @@
+// Pose problème fait disparaitre le panneau devTools
+
 const {ipcMain} = require('electron')
-const serialPort = require('serialport');
+const { SerialPort } = require('serialport')
 
 async function listPorts() {
   const ports = await serialPort.list()
