@@ -98,13 +98,16 @@ class IGCDecoder {
       this.info.loggerType = result.loggerType
       this.info.security = result.security   
       this.fixes = result.fixes  
-			if (this.fixes.length > 2) {
-				offset.computeOffsetUTC(this.fixes[0].latitude, this.fixes[0].longitude, this.fixes[1].timestamp)
-			//	this.computeOffsetUTC()    
+	  if (this.fixes.length > 2) {
+		// original code commented
+		// offset.computeOffsetUTC(this.fixes[0].latitude, this.fixes[0].longitude, this.fixes[1].timestamp)
+		//	this.computeOffsetUTC()    
+		// to temporarily solve the problem, we give a null default value to offsetUTC
+		this.info.offsetUTC = 0
       	this.analyzeFixes()
-			} else {
-				this.info.parsingError = 'No points after decoding'
-			}
+	  } else {
+		this.info.parsingError = 'No points after decoding'
+	  }
     } catch (error) {
       this.info.parsingError = error
     }

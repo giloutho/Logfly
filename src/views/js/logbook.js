@@ -95,7 +95,7 @@ function readIgc(igcID) {
       if (selIgc.V_IGC === undefined)    
         msg = 'Record not found'
       else {
-        msg = 'Trace récupérée'
+        msg = 'Trace récupérée dans la db'
         console.log(msg)
         igcDisplay(selIgc.V_IGC)
       }
@@ -109,8 +109,10 @@ function readIgc(igcID) {
 function igcDisplay(stringIgc) {
   try {
     var track = ipcRenderer.sendSync('read-igc', stringIgc)
-    console.log(track.GeoJSON)
+    console.log(JSON.stringify(track.GeoJSON))
     if (track.fixes.length> 0) {
+      console.log('Track points : '+track.fixes.length)
+      console.log('Pilote : '+track.info.pilot)
       buildMap(track)  
     } else {
       console.log('Track decoding error'+' : '+track.info.parsingError)
