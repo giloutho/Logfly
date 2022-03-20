@@ -1,4 +1,5 @@
-const geoTz = require('geo-tz')
+// braces requested
+const { find } = require('geo-tz')
 const ZonedDateTime = require('zoned-date-time');
 const zoneData = require('iana-tz-data').zoneData;
 
@@ -8,7 +9,7 @@ const zoneData = require('iana-tz-data').zoneData;
  */
 function computeOffsetUTC(lat, lng, timest) {
   // https://github.com/evansiroky/node-geo-tz
-  const coordBegin = geoTz(lat, lng, timest)
+  const coordBegin = find(lat, lng)
   // returns something like // ['America/Los_Angeles'] or['Asia/Shanghai', 'Asia/Urumqi']
   const arrZone = coordBegin.toString().split('/');
   let dateFirstPoint = new Date(timest)
@@ -18,6 +19,8 @@ function computeOffsetUTC(lat, lng, timest) {
   // The direction is reversed. getTimezoneOffset gives us the operation to be carried out to obtain the UTC time.
   // For France getTimezoneOffset result is -120mn.
   let offsetUTC = -1 * rawOffset		
+
+  console.log('computeOffsetUTC returns : '+offsetUTC)
 
   return offsetUTC
 }

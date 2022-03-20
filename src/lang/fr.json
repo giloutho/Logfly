@@ -1,1 +1,14 @@
-{"Logbook":"Carnet","Overview":"Synthèse","Import":"Import","External":"Externe","Statistics":"Statistiques","Full screen map":"Grande carto","Scoring":"Score","Actions":"Actions","Yes":"Oui","No":"Non","Please confirm":"Veuillez confirmer","Are you sure you want to continue":"Vous êtes sûr de vouloir continuer"}
+{
+    "Logbook": "Carnet",
+    "Overview": "Synthèse",
+    "Import": "Import",
+    "External": "Externe",
+    "Statistics": "Statistiques",
+    "Full screen map": "Grande carto",
+    "Scoring": "Score",
+    "Actions": "Actions",
+    "Yes": "Oui",
+    "No": "Non",
+    "Please confirm": "Veuillez confirmer",
+    "Are you sure you want to continue": "Vous êtes sûr de vouloir continuer"
+}

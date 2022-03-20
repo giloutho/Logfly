@@ -109,10 +109,10 @@ function readIgc(igcID) {
 function igcDisplay(stringIgc) {
   try {
     var track = ipcRenderer.sendSync('read-igc', stringIgc)
-    console.log(JSON.stringify(track.GeoJSON))
+    // console.log(JSON.stringify(track.GeoJSON))
     if (track.fixes.length> 0) {
       console.log('Track points : '+track.fixes.length)
-      console.log('Pilote : '+track.info.pilot)
+      console.log('Offset UTC : '+track.info.offsetUTC)
       buildMap(track)  
     } else {
       console.log('Track decoding error'+' : '+track.info.parsingError)
