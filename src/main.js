@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const glob = require('glob')
-const Store = require('electron-store')
+const settings = require(path.join(__dirname, 'utils/settings-manager.js'))
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -13,10 +13,10 @@ if (require('electron-squirrel-startup')) {
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 const createWindow = () => {
-  loadSettings()
 
+  // app.isPackaged returns true if the app is packaged, used to distinguish development and production environments
+  settings.checkSettings(app.isPackaged, app.getVersion())
   loadMainProcesses() 
- // loadMainOneByOne()
   
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -24,10 +24,12 @@ const createWindow = () => {
     height: 768,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+   //   preload: path.join(__dirname, 'preload.js')      
     }      
   });
 
+  mainWindow.removeMenu()
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
@@ -79,28 +81,3 @@ function loadMainProcesses () {
   files.forEach((file) => { require(file) })
 }
 
-function loadSettings () {
-  const store = new Store();
-  store.set('fullPathDb','./db/test6.db')
-  const process = require('process');
-  let currOS
-  // OS 
-  var platform = process.platform;
-  switch(platform) {
-      case 'darwin': 
-          currOS = 'mac'
-          break;
-      case 'linux': 
-          currOs = 'linux'
-          break;
-      case 'win32':
-          currOS = 'win'
-          break;    
-      default: 
-          currOS = 'ns'  // non supported
-  }
-  store.set('currOS',currOS)
-  store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
-  store.set('appVersion','LogflyJS '+app.getVersion())
-  store.set('pathSyride','/Users/gil/syride')  
-}

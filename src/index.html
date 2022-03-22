@@ -18,6 +18,7 @@
       const Store = require('electron-store');
       const store = new Store();
       const db = require('better-sqlite3')(store.get('fullPathDb'))
+      console.log('connection sur '+store.get('fullPathDb'))
   
     </script>
     <script>require('popper.js');</script>

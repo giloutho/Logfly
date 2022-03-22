@@ -29,9 +29,17 @@
         },
         {
           "name": "@electron-forge/maker-zip",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-dmg",
           "platforms": [
             "darwin"
-          ]
+          ],
+          "config": {
+            "background": "src/assets/img/dmg-background.png",
+            "format": "ULFO"
+          }
         },
         {
           "name": "@electron-forge/maker-deb",
@@ -63,6 +71,7 @@
     "jquery": "^3.6.0",
     "leaflet": "^1.7.1",
     "popper.js": "^1.16.1",
+    "properties-reader": "^2.2.0",
     "reverse-line-reader": "^0.2.6",
     "serialport": "^10.4.0",
     "simplify-geojson": "^1.0.4",
@@ -72,6 +81,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.63",
     "@electron-forge/maker-deb": "^6.0.0-beta.63",
+    "@electron-forge/maker-dmg": "^6.0.0-beta.63",
     "@electron-forge/maker-rpm": "^6.0.0-beta.63",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
