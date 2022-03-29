@@ -11,6 +11,24 @@ function checkSettings (electronPack, progVersion) {
     } else {
         devSettings()
     }
+    testDb()
+}
+
+function testDb() {
+    const store = new Store(); 
+    let dbFullPath = (store.get('fullPathDb'))
+    if (fs.existsSync(dbFullPath)) {
+        const db = require('better-sqlite3')(dbFullPath)
+        // how many tables in database
+        const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
+        let countTables = stmt.get()
+        // countTables is an object, the value is recovered with a notation between brackets 
+        countTables['COUNT(*)'] >= 2 ? store.set('checkDb',true) : store.set('checkDb',false)     
+    } else {
+        store.set('checkDb',false)
+        console.log('db checked file not exist '+store.get('checkDb'))  
+    }
+    console.log(store.get('checkDb'))
 }
 
 function prodSettings(progVersion) {

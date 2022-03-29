@@ -4,6 +4,8 @@ const Routes = require("./routes.js")
 const fs = require('fs')
 const path = require('path')
 const log = require('electron-log')
+const Store = require('electron-store')
+const store = new Store();
 
 const routeConfig = [
   new Routes({
@@ -55,7 +57,7 @@ const routeConfig = [
 const myRouter = new Router(routeConfig,'app');
 
 //  TO DO
-// log.info('Start of '+store.get('appVersion'))
+// log.info('Start of Chrome : '+store.get('chromeVersion'))
 
 try {
   let content = fs.readFileSync(path.join(__dirname, 'lang/fr.json'));
@@ -80,6 +82,10 @@ document.getElementById('overview').innerHTML = i18n.gettext('Overview')
 document.getElementById('import').innerHTML = i18n.gettext('Import')
 document.getElementById('external').innerHTML = i18n.gettext('External')  
 document.getElementById('stat').innerHTML = i18n.gettext('Statistics')  
-// Display home
-myRouter.navigate('import')
+// Home page choice
+if (store.get('checkDb')) {
+  myRouter.navigate('logbook')
+} else {
+  myRouter.navigate('import')
+}
 

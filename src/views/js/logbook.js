@@ -5,6 +5,7 @@ var table
 
 var lnkActions = document.getElementById('actions')
 
+
 lnkActions.addEventListener('click', (event) => {
   var selData = table.rows( { selected: true } ).data();
   alert(selData.length);
@@ -17,6 +18,7 @@ lnkActions.addEventListener('click', (event) => {
     sites += table.rows( { selected: true } ).data()[i].V_Site
   }
   console.log(sites)
+
 })
 
 tableStandard()
