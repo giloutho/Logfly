@@ -5,6 +5,11 @@ var table
 
 var lnkActions = document.getElementById('actions')
 
+const Store = require('electron-store');
+const store = new Store();
+const db = require('better-sqlite3')(store.get('fullPathDb'))
+
+
 
 lnkActions.addEventListener('click', (event) => {
   var selData = table.rows( { selected: true } ).data();
