@@ -1,24 +1,139 @@
-<h1>Settings</h1>
-<p>The small element is used to create a lighter, secondary text in any heading:</p>       
-<h1>h1 heading <small>secondary text</small></h1>
-<h2>h2 heading <small>secondary text</small></h2>
-<h3>h3 heading <small>secondary text</small></h3>
-<h4>h4 heading <small>secondary text</small></h4>
-<h5>h5 heading <small>secondary text</small></h5>
-<h6>h6 heading <small>secondary text</small></h6>
-<h1>Highlight Text</h1>    
-<p>Use the mark element to <mark>highlight</mark> text.</p>
-<h1>Description Lists</h1>    
-<p>The dl element indicates a description list:</p>
-<dl>
-  <dt>Coffee</dt>
-  <dd>- black hot drink</dd>
-  <dt>Milk</dt>
-  <dd>- white cold drink</dd>
-</dl>  
-<h1>Code Snippets</h1>
-<p>Inline snippets of code should be embedded in the code element:</p>
-<p>The following HTML elements: <code>span</code>, <code>section</code>, and <code>div</code> defines a section in a document.</p>
-<h1>Code Snippets</h1>
-<p>Inline snippets of code should be embedded in the code element:</p>
-<p>The following HTML elements: <code>span</code>, <code>section</code>, and <code>div</code> defines a section in a document.</p>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+      <button type="button" id="sidebarCollapse" class="btn btn-info" onclick ="{ $('#sidebar').toggleClass('active'); }">
+          <i class="fas fa-align-left"></i>
+          <span>Menu</span>
+      </button>
+      <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+      <span class="navbar-text mx-3" id="db-state"></span>
+      <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
+            pour comprendre les possibilités immenses de cette navbar 
+      -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="nav navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" id="lnk_logbook" href="#">Logbook</a>
+          </li>     
+          <li class="nav-item">
+            <a class="nav-link" id="lnk_pilot" href="#pilot">Pilot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="lnk_map" href="#">Map</a>
+          </li>              
+          <li class="nav-item">
+            <a class="nav-link" id="lnk_misc" href="#"" >Miscellaneous</a>
+          </li>                  
+      </ul>
+      </div>
+  </div>
+</nav>
+<div>
+  <div class="container-fluid">
+    <div id="accordionDiv">
+
+        <div id="div_logbook">
+            <div class="row">
+                <div class="col-md-8">
+                  <div class="card top-buffer">
+                    <div class="card-header">
+                        <h4 class="card-title">Logbook</h4>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row">
+                              <div class="col-md-8 pr-1">
+                                <label id="lb-folder-path">Working folder path</label>
+                              </div>
+                            </div>
+                            <div class="row">
+                                  <div class="col-sm-8 my-1">                                    
+                                      <input type="text" class="form-control" id="tx-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                                  </div>
+                                  <div class="col-auto my-1 align-self-center">
+                                      <button type="button" class="btn btn-outline-info" id="bt-work-path">Modify</button>
+                                  </div>
+                            </div>
+                            <div class="row top-buffer">
+                              <div class="col-md-8 pr-1">
+                                <label id="lb-folder-path">Current logbook folder</label>
+                              </div>
+                            </div>         
+                            <div class="row">
+                              <div class="col-sm-8 my-1">                                    
+                                  <input type="text" class="form-control" id="in-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                              </div>
+                            </div>       
+                            <div class="row top-buffer">
+                              <div class="col-md-8 pr-1">
+                                <label id="lb-folder-path">Current logbook</label>
+                              </div>
+                            </div>         
+                            <div class="row">
+                              <div class="col-sm-8 my-1">                                    
+                                  <input type="text" class="form-control" id="in-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                              </div>
+                              <div class="col-auto my-6 ">
+                                <select class="custom-select mr-sm-4" id="sel-logbook">
+                                </select>
+                              </div>
+                            </div>                                   
+                            <div class="row top-buffer">
+                              <div class="col-sm-8 my-1">                                    
+                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Choose a new logbook folder">
+                              </div>
+                              <div class="col-auto my-1 align-self-center">
+                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                              </div>
+                            </div>                                                                             
+                            <div class="row top-buffer">
+                              <div class="col-sm-8 my-1">                                    
+                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Move logbook(s) to a different folder">
+                              </div>
+                              <div class="col-auto my-1 align-self-center">
+                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                              </div>
+                            </div>         
+                            <div class="row top-buffer">
+                              <div class="col-sm-8 my-1">                                    
+                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Create a new logbook">
+                              </div>
+                              <div class="col-auto my-1 align-self-center">
+                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                              </div>
+                            </div>      
+                            <div class="row top-buffer">
+                              <div class="col-sm-8 my-1">                                    
+                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Repatriate a copy">
+                              </div>
+                              <div class="col-auto my-1 align-self-center">
+                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                              </div>
+                            </div>                                                                           
+                            <button class="btn btn-outline-danger top-buffer">Close</button>
+                            <div class="clearfix"></div>
+                        </form>
+                    </div>
+                </div>
+                </div>
+            </div>
+          </div>  
+
+        <div id="div_pilot" style="display:none">
+          <h1>Pilote</h1>    
+          <p>paramètres concernant le pilote</p>
+        </div>
+
+        <div id="div_map" style="display:none">
+          <h1>Carte</h1>    
+          <p>paramètres concernant la cartographie</p>      
+        </div>
+
+        <div id="div_misc" style="display:none">
+          <h1>Miscellaneous</h1>    
+          <p>paramètres divers</p>
+        </div>
+
+      </div>
+  </div>
+</div>
+<img src="./assets/img/loaded.gif" alt="" onload="$.getScript('./views/js/settings.js');this.parentNode.removeChild(this);" />

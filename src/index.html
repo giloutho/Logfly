@@ -14,12 +14,10 @@
       // jQuery datatables script
       const dtbs = require('datatables.net-bs4')()   
       const dtselect = require( 'datatables.net-select-bs4' )() 
-      // settings
-      const Store = require('electron-store');
-      const store = new Store();
-        const db = require('better-sqlite3')(store.get('fullPathDb'))
-        console.log('connection sur '+store.get('fullPathDb'))      
-  
+      // Initially, the db connection was here
+      // const Store = require('electron-store');
+      // const store = new Store();
+      //   const db = require('better-sqlite3')(store.get('fullPathDb'))  
     </script>
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>    
@@ -57,7 +55,10 @@
                 </li>    
                 <li>
                   <a href="#photos" id="photos">Photos</a>
-                </li>          
+                </li>        
+                <li>
+                  <a href="#settings" id="settings">Settings</a>
+                </li>                       
                 <li>
                   <a href="#logfile" id="logfile">Journal</a>
                 </li>                                                                                          

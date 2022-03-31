@@ -179,6 +179,35 @@ a.article:hover {
     }
 }
 
+/* ---------------------------------------------------
+    Forms
+----------------------------------------------------- */
+.card {
+    border-radius: 4px;
+    background-color: #FFFFFF;
+    margin-bottom: 30px;
+}
+
+.card .card-body {
+    padding: 15px 15px 10px 15px;
+}
+
+.card .card-header {
+    padding: 15px 15px 0;
+    background-color: #FFFFFF;
+    border-bottom: none !important;
+}
+
+.card .card-title {
+    margin: 0;
+    color: #333333;
+    font-weight: 300;
+}
+
+/* add margin top to class="row"*/
+.top-buffer { margin-top:15px; }
+
+
 .map {
     position: relative;
     /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable

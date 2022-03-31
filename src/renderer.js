@@ -45,6 +45,10 @@ const routeConfig = [
     url: './views/html/photos.html'
   },true), 
   new Routes({
+    path:'settings',
+    url: './views/html/settings.html'
+  },true),   
+  new Routes({
     path:'logfile',
     url: './views/html/logfile.html'
   },true),   
@@ -82,10 +86,15 @@ document.getElementById('overview').innerHTML = i18n.gettext('Overview')
 document.getElementById('import').innerHTML = i18n.gettext('Import')
 document.getElementById('external').innerHTML = i18n.gettext('External')  
 document.getElementById('stat').innerHTML = i18n.gettext('Statistics')  
-// Home page choice
-if (store.get('checkDb')) {
-  myRouter.navigate('logbook')
-} else {
-  myRouter.navigate('import')
-}
+/**
+ * Home page choice in production will be
+ * if (store.get('checkDb')) {
+ *  myRouter.navigate('logbook')
+ * } else {
+ *   myRouter.navigate('import')
+ * }
+ */
+// for debugging settings
+myRouter.navigate('settings')
+
 

@@ -52,6 +52,7 @@ function devSettings() {
     store.set('fullPathDb','./db/test6.db')
     store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
     store.set('pathSyride','/Users/gil/syride')  
+    store.set('pathWork','/Users/gil/Documents/Logfly')
     console.log('mode developpement sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion'))
 }
 
