@@ -84,7 +84,7 @@ try {
 document.getElementById('logbook').innerHTML = i18n.gettext('Logbook')
 document.getElementById('overview').innerHTML = i18n.gettext('Overview')
 document.getElementById('import').innerHTML = i18n.gettext('Import')
-document.getElementById('external').innerHTML = i18n.gettext('External')  
+document.getElementById('external').innerHTML = i18n.gettext('External track')  
 document.getElementById('stat').innerHTML = i18n.gettext('Statistics')  
 /**
  * Home page choice in production will be
