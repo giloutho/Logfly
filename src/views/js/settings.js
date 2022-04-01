@@ -1,9 +1,10 @@
 var {ipcRenderer} = require('electron')
 var fs = require('fs')
 var path = require('path');
-var log = require('electron-log');
-var Store = require('electron-store');
-var store = new Store();
+var log = require('electron-log')
+var Store = require('electron-store')
+var store = new Store()
+var dbList = null
 
 
 var btnLogbook = document.getElementById('lnk_logbook')
@@ -14,8 +15,16 @@ var btnWeb = document.getElementById('lnk_web')
 var btnWorkPath = document.getElementById('bt-work-path')
 
 
-translation()
+iniForm()
 fillSelect()
+
+$('#sel-logbook').on('change', function() {
+    if (dbList.length > 0) {
+        store.set('dbFullPath',path.join(store.get('pathdb'),dbList[this.value]))
+        alert(store.get('dbFullPath'));
+        store.set('dbName',dbList[this.value])
+    }
+  });
 
 btnLogbook.addEventListener('click',(event) => {
     console.log('clic logbook')
@@ -23,6 +32,7 @@ btnLogbook.addEventListener('click',(event) => {
     $('#div_pilot').hide()
     $('#div_map').hide()   
     $('#div_misc').hide()
+    $('#div_web').hide()
 })
 
 btnPilot.addEventListener('click',(event) => {
@@ -31,6 +41,15 @@ btnPilot.addEventListener('click',(event) => {
     $('#div_pilot').show()
     $('#div_map').hide()   
     $('#div_misc').hide()
+    $('#div_web').hide()
+})
+
+btnMap.addEventListener('click',(event) => {
+    $('#div_logbook').hide()
+    $('#div_pilot').hide()
+    $('#div_map').show()   
+    $('#div_misc').hide()
+    $('#div_web').hide()
 })
 
 btnMisc.addEventListener('click',(event) => {
@@ -39,6 +58,15 @@ btnMisc.addEventListener('click',(event) => {
     $('#div_pilot').hide()
     $('#div_map').hide()   
     $('#div_misc').show()
+    $('#div_web').hide()
+})
+
+btnWeb.addEventListener('click',(event) => {
+    $('#div_logbook').hide()
+    $('#div_pilot').hide()
+    $('#div_map').hide()   
+    $('#div_misc').hide()
+    $('#div_web').show()
 })
 
 btnWorkPath.addEventListener('click', (event) => {
@@ -49,20 +77,43 @@ btnWorkPath.addEventListener('click', (event) => {
     }
   })
 
-function translation() {
+function iniForm() {
     document.getElementById('lnk_logbook').innerHTML = i18n.gettext('Logbook')
-    document.getElementById('lb-folder-path').innerHTML = i18n.gettext('Working folder path')
+    document.getElementById('lnk_pilot').innerHTML = i18n.gettext('Pilot')
+    document.getElementById('lnk_map').innerHTML = i18n.gettext('Map')
+    document.getElementById('lnk_misc').innerHTML = i18n.gettext('Miscellaneous')
+    document.getElementById('lnk_web').innerHTML = i18n.gettext('Web')
+    document.getElementById('lg_logbook').innerHTML = i18n.gettext('Logbook')
+    document.getElementById('lg-working-path').innerHTML = i18n.gettext('Working folder path')   
+    $('#tx-work-path').val(store.get('pathWork'))
+    document.getElementById('bt-work-path').innerHTML = i18n.gettext('Modify')
+    document.getElementById('lg-folder-path').innerHTML = i18n.gettext('Current logbook folder')
+    $('#tx-log-path').val(store.get('pathdb'))
+    document.getElementById('lg-curr-logbook').innerHTML = i18n.gettext('Current logbook')
+    $('#lg-log-folder').val(i18n.gettext('Choose a new logbook folder'))
+    document.getElementById('bt-choose-folder').innerHTML = i18n.gettext('Choose')
+    $('#lg-move-logbook').val(i18n.gettext('Move logbook(s) to a different folder'))
+    document.getElementById('bt-move-folder').innerHTML = i18n.gettext('Move')
+    $('#lg-new-logbook').val(i18n.gettext('Create a new logbook'))
+    document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
+    $('#lg-repatriate').val(i18n.gettext('Recover a copy'))
+    document.getElementById('bt-repatriate').innerHTML = i18n.gettext('Recover')
+    document.getElementById('bt-close').innerHTML = i18n.gettext('Close')
 }
 
 function fillSelect() {
-    var options = [];
-    var src = [
-    { id : 1, txt : "test long 1" },
-    { id : 2, txt : "test large 2" },
-    { id : 3, txt : "test grand 3" }
-    ];
-    for (var idx in src) {
-        $("#sel-logbook").append('<option value=' + src[idx].id + '>' + src[idx].txt + '</option>');
-        console.log(src[idx].id+' '+src[idx].txt)
-    }    
+
+    const dirpath = store.get('pathdb')
+    
+    fs.readdir(dirpath, function(err, files) {
+        const dbFiles = files.filter(el => path.extname(el) === '.db')
+        for(var i= 0; i < dbFiles.length; i++)
+        {
+            if (dbFiles[i] === store.get('dbName'))
+                $("#sel-logbook").append('<option value=' + i + ' selected >' + dbFiles[i] + '</option>')
+            else
+                $("#sel-logbook").append('<option value=' + i + '>' + dbFiles[i] + '</option>')
+        }
+        dbList = dbFiles
+    })
 }

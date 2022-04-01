@@ -16,7 +16,7 @@ function checkSettings (electronPack, progVersion) {
 
 function testDb() {
     const store = new Store(); 
-    let dbFullPath = (store.get('fullPathDb'))
+    let dbFullPath = (store.get('dbFullPath'))
     if (fs.existsSync(dbFullPath)) {
         const db = require('better-sqlite3')(dbFullPath)
         // how many tables in database
@@ -49,7 +49,9 @@ function prodSettings(progVersion) {
 function devSettings() {
     const store = new Store(); 
     getEnv()
-    store.set('fullPathDb','./db/test6.db')
+    store.set('dbFullPath','./db/test6.db')
+    store.set('dbName','test6.db')
+    store.set('pathdb','./db')
     store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
     store.set('pathSyride','/Users/gil/syride')  
     store.set('pathWork','/Users/gil/Documents/Logfly')
@@ -107,7 +109,7 @@ function getEnv() {
             store.set('urllogfly',properties.get('urllogfly'))
             store.set('pathw',properties.get('pathw'))
             store.set('urlicones',properties.get('urlicones'))
-            store.set('fullPathDb',properties.get('fullpathdb'))
+            store.set('fullPathDb',properties.get('dbFullPath'))
             store.set('pathimport',properties.get('pathimport'))
         } else {
             // Logfly5 settings not found, default values will be defined

@@ -22,7 +22,10 @@
           </li>              
           <li class="nav-item">
             <a class="nav-link" id="lnk_misc" href="#"" >Miscellaneous</a>
-          </li>                  
+          </li>      
+          <li class="nav-item">
+            <a class="nav-link" id="lnk_web" href="#"" >Web</a>
+          </li>                        
       </ul>
       </div>
   </div>
@@ -36,13 +39,13 @@
                 <div class="col-md-8">
                   <div class="card top-buffer">
                     <div class="card-header">
-                        <h4 class="card-title">Logbook</h4>
+                        <h4 class="card-title" id="lg_logbook" >Logbook</h4>
                     </div>
                     <div class="card-body">
                         <form>
                             <div class="row">
                               <div class="col-md-8 pr-1">
-                                <label id="lb-folder-path">Working folder path</label>
+                                <label id="lg-working-path">Working folder path</label>
                               </div>
                             </div>
                             <div class="row">
@@ -55,61 +58,58 @@
                             </div>
                             <div class="row top-buffer">
                               <div class="col-md-8 pr-1">
-                                <label id="lb-folder-path">Current logbook folder</label>
+                                <label id="lg-folder-path">Current logbook folder</label>
                               </div>
                             </div>         
                             <div class="row">
                               <div class="col-sm-8 my-1">                                    
-                                  <input type="text" class="form-control" id="in-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                                  <input type="text" class="form-control" id="tx-log-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
                               </div>
                             </div>       
                             <div class="row top-buffer">
                               <div class="col-md-8 pr-1">
-                                <label id="lb-folder-path">Current logbook</label>
+                                <label id="lg-curr-logbook">Current logbook</label>
                               </div>
                             </div>         
                             <div class="row">
-                              <div class="col-sm-8 my-1">                                    
-                                  <input type="text" class="form-control" id="in-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
-                              </div>
-                              <div class="col-auto my-6 ">
-                                <select class="custom-select mr-sm-4" id="sel-logbook">
-                                </select>
+                              <div class="col-sm-4 my-1">     
+                                  <select class="custom-select mr-sm-4" id="sel-logbook">
+                                  </select>                                 
                               </div>
                             </div>                                   
                             <div class="row top-buffer">
                               <div class="col-sm-8 my-1">                                    
-                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Choose a new logbook folder">
+                                <input type="text" class="form-control" id="lg-log-folder" disabled="" value="Choose a new logbook folder">
                               </div>
                               <div class="col-auto my-1 align-self-center">
-                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                                  <button type="button" class="btn btn-outline-info" id="bt-choose-folder">Choose</button>
                               </div>
                             </div>                                                                             
                             <div class="row top-buffer">
                               <div class="col-sm-8 my-1">                                    
-                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Move logbook(s) to a different folder">
+                                <input type="text" class="form-control" id="lg-move-logbook" disabled="" value="Move logbook(s) to a different folder">
                               </div>
                               <div class="col-auto my-1 align-self-center">
-                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                                  <button type="button" class="btn btn-outline-info" id="bt-move-folder">Move</button>
                               </div>
                             </div>         
                             <div class="row top-buffer">
                               <div class="col-sm-8 my-1">                                    
-                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Create a new logbook">
+                                <input type="text" class="form-control" id="lg-new-logbook" disabled="" value="Create a new logbook">
                               </div>
                               <div class="col-auto my-1 align-self-center">
-                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                                  <button type="button" class="btn btn-outline-info" id="bt-new-logbook">Create</button>
                               </div>
                             </div>      
                             <div class="row top-buffer">
                               <div class="col-sm-8 my-1">                                    
-                                <input type="text" class="form-control" id="in-work-path" disabled="" value="Repatriate a copy">
+                                <input type="text" class="form-control" id="lg-repatriate" disabled="" value="Recover a copy">
                               </div>
                               <div class="col-auto my-1 align-self-center">
-                                  <button type="button" class="btn btn-outline-info" id="bt-mod-work-path">Perform</button>
+                                  <button type="button" class="btn btn-outline-info" id="bt-repatriate">Recover</button>
                               </div>
                             </div>                                                                           
-                            <button class="btn btn-outline-danger top-buffer">Close</button>
+
                             <div class="clearfix"></div>
                         </form>
                     </div>
@@ -133,6 +133,12 @@
           <p>paramètres divers</p>
         </div>
 
+        <div id="div_web" style="display:none">
+          <h1>Internet</h1>    
+          <p>paramètres des url internet</p>
+        </div>
+
+        <button class="btn btn-outline-danger top-buffer" id="bt-close">Close</button>
       </div>
   </div>
 </div>
