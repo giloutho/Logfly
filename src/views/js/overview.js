@@ -1,4 +1,4 @@
-//const db = require('better-sqlite3')(store.get('fullPathDb'))
+//const db = require('better-sqlite3')(store.get('dbFullPath'))
 
 tableWithScroll()
 

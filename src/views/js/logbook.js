@@ -7,7 +7,7 @@ var lnkActions = document.getElementById('actions')
 
 var Store = require('electron-store');
 var store = new Store();
-var db = require('better-sqlite3')(store.get('fullPathDb'))
+var db = require('better-sqlite3')(store.get('dbFullPath'))
 
 
 
