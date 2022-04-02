@@ -95,6 +95,6 @@ document.getElementById('stat').innerHTML = i18n.gettext('Statistics')
  * }
  */
 // for debugging settings
-myRouter.navigate('settings')
+myRouter.navigate('logbook')
 
 
