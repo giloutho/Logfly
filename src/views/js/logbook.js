@@ -7,22 +7,30 @@ var lnkActions = document.getElementById('actions')
 
 var Store = require('electron-store');
 var store = new Store();
-var db = require('better-sqlite3')(store.get('dbFullPath'))
+let db = require('better-sqlite3')(store.get('dbFullPath'))
+let currIdFlight
 
 
 
 lnkActions.addEventListener('click', (event) => {
-  var selData = table.rows( { selected: true } ).data();
-  alert(selData.length);
-  console.log(table.rows( { selected: true } ).data()[1].V_Site)
+  // var selData = table.rows( { selected: true } ).data();
+  // alert('coucou ID '+currIdFlight);
+  // console.log(JSON.stringify(selData))
   // from https://datatables.net/forums/discussion/33997/how-do-i-fetch-data-for-column-cells-of-selected-rows
   // with a link to https://datatables.net/extensions/select/integration
   // l'explication finale est dans le deuxième exemple de https://datatables.net/reference/api/rows().data()
-  let sites = ''
-  for (var i = 0; i < selData.length; i++) {
-    sites += table.rows( { selected: true } ).data()[i].V_Site
-  }
-  console.log(sites)
+  // let sites = ''
+  // for (var i = 0; i < selData.length; i++) {
+  //   sites += table.rows( { selected: true } ).data()[i].V_Site
+  // }
+  // console.log(sites)
+
+//  const modalPath = path.join('file://', __dirname, '../../sections/windows/modal.html')
+  let win = new BrowserWindow({ width: 400, height: 320 })
+
+  win.on('close', () => { win = null })
+//  win.loadURL(modalPath)
+  win.show()  
 
 })
 
@@ -42,20 +50,22 @@ function tableStandard() {
     const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin FROM Vol ORDER BY V_Date DESC').all()    
     var dataTableOption = {
       data: flstmt, 
+      autoWidth : false,
       columns: [
         { title : 'Id', data: 'V_ID' },
-        { title : 'Date', data: 'Day' },
-        { title : 'Time', data: 'Hour' },
+        { title : i18n.gettext('Date'), data: 'Day' },
+        { title : i18n.gettext('Time'), data: 'Hour' },
         { title : 'Duration', data: 'V_sDuree' },
         { title : 'Site', data: 'V_Site' },
-        { title : 'Glider', data: 'V_Engin' }        
+        { title : i18n.gettext('Glider'), data: 'V_Engin' }        
       ],      
       columnDefs : [
-        {
-            "targets": [ 0 ],           // On cache la première colonne, celle de l'ID
-            "visible": false,
-            "searchable": false
-        },
+        { "targets": 0, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
+        { "width": "13%", "targets": 1 },
+        { "width": "7%", "targets": 2 },
+        { "width": "10%", "targets": 3 },
+        { "width": "30%", className: "text-nowrap", "targets": 4 },
+        { "width": "30%", "targets": 5 },
       ],      
       bInfo : false,          // hide "Showing 1 to ...  row selected"
       lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -78,9 +88,8 @@ function tableStandard() {
         if ( type === 'row' ) {
           //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
           // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
-            let igcID = dt.row({selected: true}).data().V_ID
-            console.log(igcID) 
-            readIgc(igcID)
+          currIdFlight = dt.row({selected: true}).data().V_ID
+            readIgc(currIdFlight)
         }
     } );
     table.row(':eq(0)').select();    // Sélectionne la première lmigne
