@@ -231,3 +231,12 @@ a.article:hover {
 .even-larger-badge {
     font-size: 1.2em;
 }
+
+table{
+    margin: 0 auto;
+    width: 100%;
+    clear: both;
+    border-collapse: collapse;
+    table-layout: fixed;  /* ***********add this */
+   /* word-wrap:normal;  ***********and this */
+}
