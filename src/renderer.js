@@ -64,18 +64,12 @@ const myRouter = new Router(routeConfig,'app');
 // log.info('Start of Chrome : '+store.get('chromeVersion'))
 
 try {
-  let content = fs.readFileSync(path.join(__dirname, 'lang/fr.json'));
+  let currLang = store.get('lang')
+  let currLangFile = currLang+'.json'
+  let content = fs.readFileSync(path.join(__dirname, 'lang/',currLangFile));
   let langjson = JSON.parse(content);
-  i18n.setMessages('messages', 'fr', langjson)
-  i18n.setLocale('fr');
-
-  // let content = fs.readFileSync(path.join(__dirname, 'lang/de.json'));
-  // let langjson = JSON.parse(content);
-  // i18n.setMessages('messages', 'de', langjson)
-  // console.log('avant : '+i18n.getLocale())
-  // i18n.setLocale('de');
-  // console.log('après : '+i18n.getLocale())  
-
+  i18n.setMessages('messages', currLang, langjson)
+  i18n.setLocale(currLang);
 } catch (error) {
   console.log('renderer : '+error)
 }
@@ -96,5 +90,9 @@ document.getElementById('stat').innerHTML = i18n.gettext('Statistics')
  */
 // for debugging settings
 myRouter.navigate('logbook')
+
+function rendererCoucou() {
+   alert('coucou Renderer ')
+}
 
 
