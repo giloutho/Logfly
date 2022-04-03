@@ -1,4 +1,4 @@
-const {ipcMain, dialog} = require('electron')
+const {BrowserWindow, ipcMain, dialog} = require('electron')
 const log = require('electron-log');
 
 
@@ -25,4 +25,8 @@ ipcMain.on('open-confirmation-dialog', (event, arg) => {
             log.error('[open-confirmation-dialog] '+err)
             event.sender.send('confirmation-dialog', false)
         });
+})
+
+ipcMain.on('error-dialog', (event, arg) => {  
+  dialog.showErrorBox(arg[0], arg[1])  
 })

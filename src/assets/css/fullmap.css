@@ -1,0 +1,85 @@
+body {
+    padding: 4rem 1rem;
+  }
+  
+  
+  .map {
+    position: relative;
+    /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
+       https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
+    */
+    height: 60vh;  
+    border: 1px solid black;
+    border-radius: 8px;  
+  }
+  
+  .elevation {
+    position: relative;
+    /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
+       https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
+    */
+    height: 20vh;  
+    border: 1px solid black;
+  }
+  
+  .info {
+    padding: 6px 8px;
+    font: 10px/12px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+  }   
+  
+  .info h6 {
+      margin: 0 0 5px;
+      color: #777;
+  }      
+  
+  /*
+     Cette partie concerne le module measure.js
+  */
+  
+  .leaflet-control-measure {
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 21px;
+      }
+  
+  .leaflet-bar-part-top-and-bottom {
+      -webkit-border-radius: 4px 4px 4px 4px;
+              border-radius: 4px 4px 4px 4px;
+      border-bottom: none;
+      }
+  
+  .leaflet-touch .leaflet-bar-part-top-and-bottom {
+      -webkit-border-radius: 7px 7px 7px 7px;
+              border-radius: 7px 7px 7px 7px;
+      border-bottom: none;
+      }
+  
+  .leaflet-control-measure-on .leaflet-control-measure {
+      box-shadow: 0 0 8px rgba(10,10,10,1.0);
+      }
+  
+  .leaflet-measure-tooltip {
+      font: 9px/1.25 "Helvetica Neue", Arial, Helvetica, sans-serif;
+      background-color: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 5px #BBB;
+      margin: 0;
+      padding: 2px;
+      width: auto !important;
+      height: auto !important;
+      white-space: nowrap;
+      }
+  
+  .leaflet-measure-tooltip-total {
+      font-weight: bold;
+      }
+  
+  .leaflet-measure-tooltip-difference {
+      color: #777;
+      }
+  /*
+     Fin de la css concernant le module measure.js
+  */

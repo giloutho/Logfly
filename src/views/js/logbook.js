@@ -7,31 +7,21 @@ var lnkActions = document.getElementById('actions')
 
 var Store = require('electron-store');
 var store = new Store();
-let db = require('better-sqlite3')(store.get('dbFullPath'))
-let currIdFlight
+var db = require('better-sqlite3')(store.get('dbFullPath'))
+var currIdFlight
+var track
 
 
 
 lnkActions.addEventListener('click', (event) => {
-  // var selData = table.rows( { selected: true } ).data();
-  // alert('coucou ID '+currIdFlight);
-  // console.log(JSON.stringify(selData))
-  // from https://datatables.net/forums/discussion/33997/how-do-i-fetch-data-for-column-cells-of-selected-rows
-  // with a link to https://datatables.net/extensions/select/integration
-  // l'explication finale est dans le deuxième exemple de https://datatables.net/reference/api/rows().data()
-  // let sites = ''
-  // for (var i = 0; i < selData.length; i++) {
-  //   sites += table.rows( { selected: true } ).data()[i].V_Site
-  // }
-  // console.log(sites)
-
-//  const modalPath = path.join('file://', __dirname, '../../sections/windows/modal.html')
-  let win = new BrowserWindow({ width: 400, height: 320 })
-
-  win.on('close', () => { win = null })
-//  win.loadURL(modalPath)
-  win.show()  
-
+  if (track.fixes.length> 0) {    
+    let disp_map = ipcRenderer.send('display-map', track)
+  } else {
+    log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
+    let err_title = i18n.gettext("Program error")
+    let err_content = i18n.gettext("Decoding problem in track file")
+    ipcRenderer.send('error-dialog',[err_title, err_content])
+  }      
 })
 
 tableStandard()
@@ -124,7 +114,7 @@ function readIgc(igcID) {
 
 function igcDisplay(stringIgc) {
   try {
-    var track = ipcRenderer.sendSync('read-igc', stringIgc)
+    track = ipcRenderer.sendSync('read-igc', stringIgc)
     // console.log(JSON.stringify(track.GeoJSON))
     if (track.fixes.length> 0) {
       console.log('Track points : '+track.fixes.length)
