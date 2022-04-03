@@ -11,7 +11,6 @@ var useGoogle = require('../../leaflet/google-leaflet.js')
 var layerTree = require('leaflet.control.layers.tree')
 
 iniForm()
-//initmapBasic(47.294,4.926,13)
 
 var btnClose = document.getElementById('bt-close')
 
@@ -34,7 +33,8 @@ function buildMap(track) {
   // la conversion en date est nécessaire pour que Highcharts.dateFormat fonctionne sur l'axe des x
   var arrayHour = track.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour));
 
-  map = L.map('mapid').setView([0, 0], 5);
+  map = L.map('carte').setView([0, 0], 5);
+
 
   var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
   var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
@@ -104,7 +104,7 @@ function buildMap(track) {
   var chart = new Highcharts.Chart({
     chart: {      
     type: 'line',
-    renderTo: 'graphid'
+    renderTo: 'graphe'
     },
     title: {
         text: ''
@@ -203,15 +203,4 @@ function iniForm() {
   }
   document.getElementById('bt-close').innerHTML = i18n.gettext('Close')
  
-}
-
-function initmapBasic(viewlat,viewlon,viewzoom) {
-  var L = require('leaflet');
-  mapBasic = L.map('mapid').setView([viewlat,viewlon], viewzoom);
-
-  const tile_layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          });
-  tile_layer.addTo(mapBasic); 
-  tile_layer.on("load",function() { console.log("Basique -> all visible tiles have been loaded") });
 }

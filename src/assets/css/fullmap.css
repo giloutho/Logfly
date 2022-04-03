@@ -1,85 +1,171 @@
-body {
-    padding: 4rem 1rem;
+/**
+ from https://groups.google.com/g/leaflet-js/c/b9hLU8h5MBY?pli=1 contrib Bryan McBride
+*/
+html {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
   }
-  
-  
-  .map {
-    position: relative;
-    /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
-       https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
-    */
-    height: 60vh;  
-    border: 1px solid black;
-    border-radius: 8px;  
+  body {
+    height: 100%;
+    width: 100%;
+    padding-top: 0px;
+    padding-bottom: 50px;
   }
-  
-  .elevation {
-    position: relative;
-    /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
-       https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
-    */
-    height: 20vh;  
-    border: 1px solid black;
+  #carte {
+    height: 75%;
+    width: 100%;
   }
-  
-  .info {
+  #graphe {
+    height: 25%;
+    width: 100%;
+  }
+.leaflet-google-layer{
+    z-index: 0 !important;
+}
+.leaflet-map-pane{
+    z-index: 100;
+}
+table{
+    border:1px solid black;
+    border-collapse: collapse;
+}
+th, td{
+    border:1px solid black;
+    padding: 2px;
+    font-weight: bolder;
+}
+tr:nth-child(even) {background: #CCC}
+tr:nth-child(odd) {background: #FFF}
+td:nth-child(2) { text-align: right; } 
+caption { 
+    font-weight: bold;
+    font-size: 1.4em;
+}
+.awesome-marker i {
+    font-size: 20px;
+    margin-top: 8px;
+}
+
+/* Script from https://code.tutsplus.com/fr/tutorials/making-a-sliding-side-navigation-menu-for-responsive-designs--cms-28400 */
+/* The side navigation menu */
+.sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
+    top: 0;
+    left: 0;
+    background-color: #FFFFFF; /* Black*/
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+/* The navigation menu links  Transition*/
+.sidenav a.rouge {
+    padding: 8px 8px 8px 16px;
+    text-decoration: none;
+    font-size: 12px;
+    color: #ff8c00;
+    display: block;
+    transition: 0.3s
+}
+
+/* The navigation menu links Glides*/
+.sidenav a.bleu  {
+    padding: 8px 8px 8px 16px;
+    text-decoration: none;
+    font-size: 12px;
+    color: #848484;
+    display: block;
+    transition: 0.3s
+}        
+
+/* The navigation menu links black */
+.sidenav a.black  {
+        padding: 8px 8px 8px 16px;
+        text-decoration: none;
+        font-size: 12px;
+        color: #000000;
+        display: block;
+        transition: 0.3s
+}  
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover {
+    color: #000000;
+    background:#fbce52;
+}
+
+.sidenav a:focus {
+    background:#fbce52; 
+}
+
+/* Position and style the close button (top right corner) */
+.sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 22px;
+    color: #000000;
+    margin-left: 50px;
+}
+.legend {
     padding: 6px 8px;
-    font: 10px/12px Arial, Helvetica, sans-serif;
+    font: 12px/14px Arial, Helvetica, sans-serif;
     background: white;
     background: rgba(255,255,255,0.8);
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
-  }   
-  
-  .info h6 {
-      margin: 0 0 5px;
-      color: #777;
-  }      
-  
-  /*
-     Cette partie concerne le module measure.js
-  */
-  
-  .leaflet-control-measure {
-      font-size: 16px;
-      font-weight: bold;
-      line-height: 21px;
-      }
-  
-  .leaflet-bar-part-top-and-bottom {
-      -webkit-border-radius: 4px 4px 4px 4px;
-              border-radius: 4px 4px 4px 4px;
-      border-bottom: none;
-      }
-  
-  .leaflet-touch .leaflet-bar-part-top-and-bottom {
-      -webkit-border-radius: 7px 7px 7px 7px;
-              border-radius: 7px 7px 7px 7px;
-      border-bottom: none;
-      }
-  
-  .leaflet-control-measure-on .leaflet-control-measure {
-      box-shadow: 0 0 8px rgba(10,10,10,1.0);
-      }
-  
-  .leaflet-measure-tooltip {
-      font: 9px/1.25 "Helvetica Neue", Arial, Helvetica, sans-serif;
-      background-color: rgba(255, 255, 255, 0.7);
-      box-shadow: 0 0 5px #BBB;
-      margin: 0;
-      padding: 2px;
-      width: auto !important;
-      height: auto !important;
-      white-space: nowrap;
-      }
-  
-  .leaflet-measure-tooltip-total {
-      font-weight: bold;
-      }
-  
-  .leaflet-measure-tooltip-difference {
-      color: #777;
-      }
-  /*
-     Fin de la css concernant le module measure.js
-  */
+}
+ul#tabnav {
+    font: normal 14px arial, sans, sans-serif;
+    -list-style-type: none;
+    border-bottom: 1px solid gray;
+    margin: 0;
+    padding-left:0;
+    padding-right:0;
+    padding-bottom: 26px;
+}
+
+ul#tabnav li {
+    display: inline;
+    float: left;
+    height: 24px;
+    min-width:30px;
+    text-align:center;
+    padding:0;
+    margin: 1px 0px 0px 0px;
+    border: 1px solid gray;
+}
+
+ul#tabnav li.active {
+    border-bottom: 1px solid #fff;
+    background-color: #fff;
+}
+
+ul#tabnav li.active a {
+    color: #000;
+    font-weight:bold;
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+#tabnav a {
+    float: left;
+    color: #666;
+    text-decoration: none;
+    padding: 4px;
+    text-align:center;
+    background-color:#eee;
+    min-width:30px;
+    border-bottom: 1px solid gray;
+}
+
+#tabnav a:hover {
+    color: #000;
+    font-weight:bold;
+    background-color: #fff;
+}        
