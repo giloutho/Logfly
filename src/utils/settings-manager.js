@@ -55,6 +55,7 @@ function devSettings() {
     store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
     store.set('pathSyride','/Users/gil/syride')  
     store.set('pathWork','/Users/gil/Documents/Logfly')
+    store.set('lang','fr')
     console.log('mode developpement sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion'))
 }
 
@@ -111,6 +112,7 @@ function getEnv() {
             store.set('urlicones',properties.get('urlicones'))
             store.set('fullPathDb',properties.get('dbFullPath'))
             store.set('pathimport',properties.get('pathimport'))
+            // une boucle à effectuer pour récupérer la langue
         } else {
             // Logfly5 settings not found, default values will be defined
 
