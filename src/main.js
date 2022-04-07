@@ -1,7 +1,12 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const Store = require('electron-store')
 const glob = require('glob')
-const settings = require(path.join(__dirname, 'utils/settings-manager.js'))
+const settings = require(path.join(__dirname, './process-main/settings-manager.js'))
+
+let mainWindow = null;
+let langjson;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -13,30 +18,25 @@ if (require('electron-squirrel-startup')) {
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 const createWindow = () => {
-
-  // app.isPackaged returns true if the app is packaged, used to distinguish development and production environments
-  settings.checkSettings(app.isPackaged, app.getVersion())
   loadMainProcesses() 
-  
+
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1280,
     height: 768,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-   //   preload: path.join(__dirname, 'preload.js')      
     }      
   });
 
-  mainWindow.removeMenu()
-  // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  loadLanguage()
+  openWindow('logbook')
+ //mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
 
   // Open the DevTools.
  // mainWindow.webContents.openDevTools();
-
-};
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -60,19 +60,42 @@ app.on('activate', () => {
   }
 });
 
-function loadMainOneByOne () {
-  const filesutils = glob.sync(path.join(__dirname, 'process-main/files-utils/*.js'))
-  filesutils.forEach((file) => { require(file) })
+function loadLanguage() {
+  // load language
+  try {
+    settings.checkSettings(false, '6.0.0')
+    const store = new Store(); 
+    let currLang = store.get('lang')
+    let currLangFile = currLang+'.json'
+    let content = fs.readFileSync(path.join(__dirname, './lang/',currLangFile));
+    langjson = JSON.parse(content);
+  } catch (error) {
+      console.log('Error on loadLanguage : '+error)
+  } 
+}
 
-  const gpstracks = glob.sync(path.join(__dirname, 'process-main/gps-tracks/*.js'))
-  gpstracks.forEach((file) => { require(file) })
+ipcMain.on("changeWindow", function(event, arg) {
+    openWindow(arg)
+});
 
-  const igcmain = glob.sync(path.join(__dirname, 'process-main/igc/*.js'))
-  igcmain.forEach((file) => { require(file) })
-  const oamain = glob.sync(path.join(__dirname, 'process-main/igc/*.js'))
-  oamain.forEach((file) => { require(file) })
-  const sysmain = glob.sync(path.join(__dirname, 'process-main/igc/*.js'))
-  sysmain.forEach((file) => { require(file) })
+function openWindow(pageName) {
+  switch (pageName) {
+    case "logbook":
+        mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
+        break;
+    case "import":
+      mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
+      break;        
+    case "sites":
+        mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
+        break;
+    case "settings":
+        mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
+        break;        
+  } 
+  mainWindow.webContents.on('did-finish-load', function() { 
+    mainWindow.send('translation', langjson )  
+  });
 }
 
 // Require each JS file in the main-process dir
@@ -80,4 +103,3 @@ function loadMainProcesses () {
   const files = glob.sync(path.join(__dirname, 'process-main/**/*.js'))
   files.forEach((file) => { require(file) })
 }
-

@@ -1,4 +1,5 @@
 var {ipcRenderer} = require('electron')
+var i18n = require('../../lang/gettext.js')()
 var glob = require("glob");
 var { event } = require('jquery');
 var fs = require('fs')
@@ -7,6 +8,26 @@ var log = require('electron-log');
 
 // table must be global
 var table
+
+$(document).ready(function () {
+  $('#sidebarCollapse').on('click', function () {
+      console.log('clic sidebar')
+      $('#sidebar').toggleClass('active');
+  });    
+});
+
+ipcRenderer.on('translation', (event, langJson) => {
+  let currLang = store.get('lang')
+  i18n.setMessages('messages', currLang, langJson)
+  i18n.setLocale(currLang);
+  iniForm()
+  fillSelect()
+})
+
+function callPage(pageName) {
+  console.log('clic page')
+  ipcRenderer.send("changeWindow", pageName);    // main.js
+}
 
 // buttons definition
 var btnDisk = document.getElementById('imp-disk')

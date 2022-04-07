@@ -1,4 +1,5 @@
 var {ipcRenderer} = require('electron')
+var i18n = require('../../lang/gettext.js')()
 var fs = require('fs')
 var path = require('path');
 var log = require('electron-log')
@@ -14,9 +15,26 @@ var btnMisc = document.getElementById('lnk_misc')
 var btnWeb = document.getElementById('lnk_web')
 var btnWorkPath = document.getElementById('bt-work-path')
 
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function () {
+        console.log('clic sidebar')
+        $('#sidebar').toggleClass('active');
+    });    
+});
 
-iniForm()
-fillSelect()
+ipcRenderer.on('translation', (event, langJson) => {
+    let currLang = store.get('lang')
+    i18n.setMessages('messages', currLang, langJson)
+    i18n.setLocale(currLang);
+    iniForm()
+    fillSelect()
+  })
+
+function callPage(pageName) {
+    console.log('clic page')
+    ipcRenderer.send("changeWindow", pageName);    // main.js
+}
+
 
 $('#sel-logbook').on('change', function() {
     if (dbList.length > 0) {
@@ -98,13 +116,12 @@ function iniForm() {
     document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
     $('#lg-repatriate').val(i18n.gettext('Recover a copy'))
     document.getElementById('bt-repatriate').innerHTML = i18n.gettext('Recover')
-    document.getElementById('bt-close').innerHTML = i18n.gettext('Close')
 }
 
 function fillSelect() {
 
     const dirpath = store.get('pathdb')
-    
+    console.log(dirpath)
     fs.readdir(dirpath, function(err, files) {
         const dbFiles = files.filter(el => path.extname(el) === '.db')
         for(var i= 0; i < dbFiles.length; i++)
