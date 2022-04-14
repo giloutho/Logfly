@@ -5,7 +5,13 @@ const process = require('process')
 const propertiesReader = require('properties-reader')
 
 
-function checkSettings (electronPack, progVersion) {       
+function checkSettings (electronPack, progVersion) {      
+    // pour debugging
+    var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
+    if (propertiesPath != null) 
+    {
+        console.log(path.resolve(propertiesPath, "logfly.properties")); 
+    } 
     if (electronPack) { 
         prodSettings(progVersion)
     } else {
@@ -111,7 +117,7 @@ function getEnv() {
             store.set('urllogfly',properties.get('urllogfly'))
             store.set('pathw',properties.get('pathw'))
             store.set('urlicones',properties.get('urlicones'))
-            store.set('fullPathDb',properties.get('dbFullPath'))
+            store.set('dbFullPath',properties.get('fullpathdb'))
             store.set('pathimport',properties.get('pathimport'))
             // une boucle à effectuer pour récupérer la langue
         } else {
