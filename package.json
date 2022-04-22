@@ -71,6 +71,7 @@
     "jquery": "^3.6.0",
     "leaflet": "^1.7.1",
     "leaflet.control.layers.tree": "^1.1.0",
+    "mustache": "^4.2.0",
     "popper.js": "^1.16.1",
     "properties-reader": "^2.2.0",
     "reverse-line-reader": "^0.2.6",
