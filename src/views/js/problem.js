@@ -4,32 +4,34 @@ var fs = require('fs')
 var path = require('path');
 var log = require('electron-log')
 var Store = require('electron-store')
-var Mustache = require('mustache')
 var store = new Store()
 var dbList = null
 
 
-var btnLogbook = document.getElementById('lnk_logbook')
-var btnPilot = document.getElementById('lnk_pilot')
-var btnMap = document.getElementById('lnk_map')
-var btnMisc = document.getElementById('lnk_misc')
-var btnWeb = document.getElementById('lnk_web')
-var btnWorkPath = document.getElementById('bt-work-path')
+// var btnLogbook = document.getElementById('lnk_logbook')
+// var btnPilot = document.getElementById('lnk_pilot')
+// var btnMap = document.getElementById('lnk_map')
+// var btnMisc = document.getElementById('lnk_misc')
+// var btnWeb = document.getElementById('lnk_web')
+// var btnWorkPath = document.getElementById('bt-work-path')
 
 $(document).ready(function () {
     $('#sidebarCollapse').on('click', function () {
         console.log('clic sidebar')
         $('#sidebar').toggleClass('active');
     });    
+    document.getElementById('v-os').innerHTML = store.get('currOS')
+    document.getElementById('v-electron').innerHTML = store.get('electronVersion')
+    document.getElementById('tx-log-path').value = store.get('dbFullPath')
 });
 
-ipcRenderer.on('translation', (event, langJson) => {
-    let currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, langJson)
-    i18n.setLocale(currLang);
-    iniForm()
-    fillSelect()
-  })
+// ipcRenderer.on('translation', (event, langJson) => {
+//     let currLang = store.get('lang')
+//     i18n.setMessages('messages', currLang, langJson)
+//     i18n.setLocale(currLang);
+//     iniForm()
+//     fillSelect()
+//   })
 
 function callPage(pageName) {
     console.log('clic page')
@@ -45,75 +47,18 @@ $('#sel-logbook').on('change', function() {
     }
   });
 
-btnLogbook.addEventListener('click',(event) => {
-    console.log('clic logbook')
-    $('#div_logbook').show()
-    $('#div_pilot').hide()
-    $('#div_map').hide()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-})
 
-btnPilot.addEventListener('click',(event) => {
-    console.log('clic pilot')
-    $('#div_logbook').hide()
-    $('#div_pilot').show()
-    $('#div_map').hide()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-})
 
-btnMap.addEventListener('click',(event) => {
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_map').show()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-})
-
-btnMisc.addEventListener('click',(event) => {
-    console.log('clic Misc')
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_map').hide()   
-    $('#div_misc').show()
-    $('#div_web').hide()
-})
-
-btnWeb.addEventListener('click',(event) => {
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_map').hide()   
-    $('#div_misc').hide()
-    $('#div_web').show()
-})
-
-btnWorkPath.addEventListener('click', (event) => {
-    const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathWork'))
-    if (selectedPath != null) {
-      log.info('[Work path] for '+selectedPath)
-      document.getElementById('tx-work-path').value = selectedPath
-    }
-  })
+// btnWorkPath.addEventListener('click', (event) => {
+//     const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathWork'))
+//     if (selectedPath != null) {
+//       log.info('[Work path] for '+selectedPath)
+//       document.getElementById('tx-work-path').value = selectedPath
+//     }
+//   })
 
 function iniForm() {
-    const menuOptions = {
-        logbook : i18n.gettext('Logbook'),
-        overview : i18n.gettext('Overview'),
-        import : i18n.gettext('Import'),
-        external : i18n.gettext('External track'),
-        stat : i18n.gettext('Statistics'),
-        sites : i18n.gettext('Sites'),
-        wayp : i18n.gettext('Waypoints'),
-        airspaces : i18n.gettext('Airspaces'),
-        photos : i18n.gettext('Photos'),
-        settings : i18n.gettext('Settings'),
-        support : i18n.gettext('Support'),
-        about : i18n.gettext('About'),
-    };    
-    var rendered = Mustache.render($('#temp-menu').html(), menuOptions)
-    document.getElementById('target-menu').innerHTML = rendered;
-    document.getElementById('lnk_logbook').innerHTML = i18n.gettext('Logbook')
+/*     document.getElementById('lnk_logbook').innerHTML = i18n.gettext('Logbook')
     document.getElementById('lnk_pilot').innerHTML = i18n.gettext('Pilot')
     document.getElementById('lnk_map').innerHTML = i18n.gettext('Map')
     document.getElementById('lnk_misc').innerHTML = i18n.gettext('Miscellaneous')
@@ -132,7 +77,7 @@ function iniForm() {
     $('#lg-new-logbook').val(i18n.gettext('Create a new logbook'))
     document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
     $('#lg-repatriate').val(i18n.gettext('Recover a copy'))
-    document.getElementById('bt-repatriate').innerHTML = i18n.gettext('Recover')
+    document.getElementById('bt-repatriate').innerHTML = i18n.gettext('Recover') */
 }
 
 function fillSelect() {

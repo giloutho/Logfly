@@ -19,6 +19,7 @@ function openWindow(event,track) {
             contextIsolation: false, 
         }              
     })
+    win.maximize()
     win.webContents.openDevTools();
     win.on('close', () => { win = null })
     win.loadURL(mapHtmlPath)

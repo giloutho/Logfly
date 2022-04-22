@@ -1,5 +1,6 @@
 var {ipcRenderer} = require('electron')
 var L = require('leaflet');
+var Mustache = require('mustache')
 var i18n = require('../../lang/gettext.js')()
 
 const path = require('path');
@@ -27,7 +28,22 @@ ipcRenderer.on('translation', (event, langJson) => {
     let currLang = store.get('lang')
     i18n.setMessages('messages', currLang, langJson)
     i18n.setLocale(currLang);
-    document.getElementById('logbook').innerHTML = i18n.gettext('Logbook')  
+    const menuOptions = {
+      logbook : i18n.gettext('Logbook'),
+      overview : i18n.gettext('Overview'),
+      import : i18n.gettext('Import'),
+      external : i18n.gettext('External track'),
+      stat : i18n.gettext('Statistics'),
+      sites : i18n.gettext('Sites'),
+      wayp : i18n.gettext('Waypoints'),
+      airspaces : i18n.gettext('Airspaces'),
+      photos : i18n.gettext('Photos'),
+      settings : i18n.gettext('Settings'),
+      tools : i18n.gettext('Tools'),     // Original display - Logbook copy - Csv Import - Csv Export - Backup/Restore - Translation
+      support : i18n.gettext('Support'),    // Send an email - Log file - System Report - Send logbook - miniTeamViewer ?
+    };    
+    var rendered = Mustache.render($('#temp-menu').html(), menuOptions)
+    document.getElementById('target-menu').innerHTML = rendered;
   })
 
 function callPage(pageName) {
@@ -147,7 +163,8 @@ function readIgc(igcID) {
   function igcDisplay(stringIgc) {
     try {
       track = ipcRenderer.sendSync('read-igc', stringIgc)  // process-main/igc/igc-read.js.js
-      // console.log(JSON.stringify(track.GeoJSON))
+      console.log('JSON.stringify(track.GeoJSON)')
+      console.log(JSON.stringify(track.stat.thermals))
       if (track.fixes.length> 0) {
         console.log('Track points : '+track.fixes.length)
         console.log('Offset UTC : '+track.info.offsetUTC)
@@ -210,7 +227,7 @@ function readIgc(igcID) {
     var info = L.control({position: 'bottomright'});
   
     info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this._div = L.DomUtil.create('div', 'map-info'); // create a div with a class "map-info"
         this.update();
         return this._div;
     };

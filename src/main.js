@@ -31,7 +31,7 @@ const createWindow = () => {
   });
 
   loadLanguage()
-  openWindow('logbook')
+//  openWindow('logbook')
  //mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
 
   // Open the DevTools.
@@ -63,14 +63,25 @@ app.on('activate', () => {
 function loadLanguage() {
   // load language
   try {
-    settings.checkSettings(false, '6.0.0')
+    settings.checkSettings(app.isPackaged, '6.0.0')
     const store = new Store(); 
     let currLang = store.get('lang')
     let currLangFile = currLang+'.json'
-    let content = fs.readFileSync(path.join(__dirname, './lang/',currLangFile));
-    langjson = JSON.parse(content);
+    let langPath = path.join(__dirname, './lang/',currLangFile)
+    if (fs.existsSync(langPath)) {
+      let content = fs.readFileSync(path.join(__dirname, './lang/',currLangFile));
+      langjson = JSON.parse(content);
+    } else {
+      // flag for bad language download
+    }
+    if (store.get('checkDb')) {
+      openWindow('logbook')
+    } else {
+      openWindow('problem')
+    }
+    
   } catch (error) {
-      console.log('Error on loadLanguage : '+error)
+      console.log('Error  : '+error)
   } 
 }
 
@@ -89,6 +100,9 @@ function openWindow(pageName) {
     case "sites":
         mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
         break;
+    case "problem":
+          mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
+          break;        
     case "settings":
         mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
         break;        

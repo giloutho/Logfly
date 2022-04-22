@@ -4,6 +4,10 @@ const path = require('path')
 const log = require('electron-log')
 const Store = require('electron-store')
 const store = new Store();
+
+const IGCAnalyzer = require('../../utils/igc-analyzer.js')
+const anaTrack = new IGCAnalyzer()
+
 var L = require('leaflet');
 var Highcharts = require('highcharts');
 var myMeasure = require('../../leaflet/measure.js')
@@ -21,6 +25,13 @@ btnClose.addEventListener('click',(event) => {
 ipcRenderer.on('geojson-for-map', (event, track) => {
   console.log('Track points : '+track.fixes.length)
   console.log('Offset UTC : '+track.info.offsetUTC)
+
+  anaTrack.compute(track.fixes) 
+  console.log('thermals.length : '+anaTrack.thermals.length)
+  let percThermals = Number(+anaTrack.percThermals).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
+  let percGlides = Number(+anaTrack.percGlides).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
+  let percDives = Number(+anaTrack.percDives).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
+  console.log('% thermal : '+percThermals+'  % glides : '+percGlides+'  % dives : '+percDives)
   buildMap(track)
 })
 

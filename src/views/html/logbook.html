@@ -28,46 +28,49 @@
             <div class="sidebar-header" id="dismiss">
                 <h4><img src="../../assets/img/Logo_JS_36_Blc.png" class="d-inline-block align-bottom" alt="">&nbsp;&nbsp;Logfly</h4>
             </div>
-            <ul class="list-unstyled components">
-              <li>
-                <a href="#logbook" id="logbook">Logbook</a>
-              </li>    
-              <li>
-                <a href="#overview" id="overview">Overview</a>
-              </li>    
-              <li>
-                <a href="#import" onclick="callPage('import')"">Import</a>
-              </li>             
-              <li>
-                <a href="#external" id="external">External</a>
-              </li>    
-              <li>
-                <a href="#stat" id="stat">Statistics</a>
-              </li>    
-              <li>
-                <a href="#sites" onclick="callPage('sites')">Sites</a>
-              </li>        
-              <li>
-                <a href="#waypoints" id="waypoints">Waypoints</a>
-              </li>    
-              <li>
-                <a href="#airspaces" id="airspaces">Espaces aériens</a>
-              </li>    
-              <li>
-                <a href="#photos" id="photos">Photos</a>
-              </li>        
-              <li>
-                <a href="#settings" onclick="callPage('settings')">Settings</a>
-              </li>                       
-              <li>
-                <a href="#logfile" id="logfile">Journal</a>
-              </li>                                                                                          
-            </ul>   
-            <ul class="list-unstyled CTAs">
+            <div id="target-menu">Loading...</div>
+            <script id="temp-menu" type="x-tmpl-mustache">
+              <ul class="list-unstyled components">
                 <li>
-                    <a href="#about" class="download">About</a>
-                </li>
-            </ul>
+                  <a href="#logbook">{{logbook}}</a>
+                </li>    
+                <li>
+                  <a href="#overview" id="overview">{{overview}}</a>
+                </li>    
+                <li>
+                  <a href="#import" id="import">{{import}}</a>
+                </li>             
+                <li>
+                  <a href="#external" id="external">{{external}}</a>
+                </li>    
+                <li>
+                  <a href="#stat" id="stat">{{stat}}</a>
+                </li>    
+                <li>
+                  <a href="#sites" onclick="callPage('sites')">{{sites}}</a>
+                </li>        
+                <li>
+                  <a href="#waypoints" id="waypoints">{{wayp}}</a>
+                </li>    
+                <li>
+                  <a href="#airspaces" id="airspaces">{{airspaces}}</a>
+                </li>    
+                <li>
+                  <a href="#photos" id="photos">{{photos}}</a>
+                </li>        
+                <li>
+                  <a href="#settings" onclick="callPage('settings')">{{settings}}</a>
+                </li>                       
+                <li>
+                  <a href="#logfile" id="logfile">{{tools}}</a>
+                </li>                                                                                          
+              </ul>   
+              <ul class="list-unstyled CTAs">
+                  <li>
+                      <a href="#about" class="download">{{support}}</a>
+                  </li>
+              </ul>
+            </script>
         </nav>
       <!-- Page Content  -->     
       <div id="content">

@@ -5,28 +5,28 @@ const offset = require('./geo/offset-utc.js')
 
 class IGCDecoder {
 
-  constructor (igcString) {
+	constructor (igcString) {
 		this.info = {				
-      'date' : '',
+      		'date' : '',
 			'isodate' : '',
 			'offsetUTC' : '',
-      'numFlight' : '',
-      'pilot' : '',
-      'gliderType' : '',
-      'registration' : '',
-      'callsign' : '',
-      'competitionClass' : '',
-      'loggerId' : '',
-      'loggerManufacturer' : '',
-      'loggerType' : '',
-      'security' : '',  
-      'parsingError' : '',
+			'numFlight' : '',
+			'pilot' : '',
+			'gliderType' : '',
+			'registration' : '',
+			'callsign' : '',
+			'competitionClass' : '',
+			'loggerId' : '',
+			'loggerManufacturer' : '',
+			'loggerType' : '',
+			'security' : '',  
+			'parsingError' : '',
 			'interval' : 0  
 		}
-    this.fixes = []; 			// all gps fixes
+    	this.fixes = []; 			// all gps fixes
 		this.vz = [];
 		this.speed = [];
-    this.stat = {				 //  track statistics
+    	this.stat = {				 //  track statistics
 			'distance' : 0,
 			'maxalt' : {
 				'gps' : -100000,
@@ -49,16 +49,8 @@ class IGCDecoder {
 			'maxsink' : 0,
 			'maxspeed' : 0,
 			'duration' : 0,
-			'gliding-duration' : 0,
-			'thermaling-duration' : 0,
-			'left-thermaling-duration' : 0,
-			'right-thermaling-duration' : 0,
-			'thermals' : [],
-			'upwinds' : [],
-			'sinks' : [],
-			'windspeeds' : [],
-			'bases' : [],
-			'general' : []
+			'left-thermaling-duration' : 0,   // inutilisé
+			'right-thermaling-duration' : 0,   // inutilisé
 		};    
 		this.GeoJSON =  {
 			'name': '',
@@ -78,10 +70,11 @@ class IGCDecoder {
 			}]
 		}
 		this.params = []; 			// all points with complete data : spedd, vario etc...
-    this.igcData = igcString
-  }
+    	this.igcData = igcString
+  	}
 
-  // pour l'instant extracalculations et filter ne sont pas utilisés
+  // pour l'instant extracalculations et filter ne sont pas utilisés A VIRER et ménage c'est qd on songeait à fusionner avec igc-anayzer
+  // il y a des champs à enlever aussi que l'on remet dans IGCAnalyzer.
 	parse(extracalculations = false, filter = false){
 		// https://github.com/Turbo87/igc-parser/pull/20    Implement `lenient` parsing modet
     let result = IGCParser.parse(this.igcData, { lenient: true });
@@ -202,7 +195,7 @@ class IGCDecoder {
 
     this.stat.distance = flDistance / 1000    // convert to km
 		try {
-					// ponderation
+			// ponderation
 			const smoothOffset = 10
 			const smoothed = smooth(rawspeed, smoothOffset)			
 			const varioSmoothOffset = 10
@@ -224,32 +217,13 @@ class IGCDecoder {
 			this.speed = smoothed
 			this.vz = varioSmoothed
 			this.stat.maxclimb = maxVarioSmoothed.toFixed(2)
+			this.stat.maxspeed = maxSmoothed.toFixed(2)   // à vérifier
 
 		} catch (error) {
 			console.log(error)
 		}
 
   }
-
-	// déportée dans offset-utc.js
-
-	// computeOffsetUTC() {
-	// 	// Faut il vraiment travailler avec le  premier point (bad fix ?)
-	// 	const geoTz = require('geo-tz')
-	// 	const ZonedDateTime = require('zoned-date-time');
-	// 	const zoneData = require('iana-tz-data').zoneData;
-		
-	// 	const coordBegin = geoTz(this.fixes[0].latitude, this.fixes[0].longitude)
-	// 	const arrZone = coordBegin.toString().split('/');
-	// 	console.log('Time zone : '+arrZone[0]+' - '+arrZone[1])
-	// 	let dateFirstPoint = new Date(this.fixes[1].timestamp)
-	// 	let zdt = new ZonedDateTime(dateFirstPoint, zoneData[arrZone[0]][arrZone[1]])
-	// 	let rawOffset = zdt.getTimezoneOffset()
-	// 	// The direction is reversed. getTimezoneOffset gives us the operation to be carried out to obtain the UTC time.
-	// 	// For France getTimezoneOffset result is -120mn.
-	// 	this.info.offsetUTC = -1 * rawOffset		
-	// 	console.log('Offset trace : '+zdt.getTimezoneOffset()+' info : '+this.info.offsetUTC)
-	// }
 
 }
 
