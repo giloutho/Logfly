@@ -27,7 +27,6 @@ ipcRenderer.on('geojson-for-map', (event, track) => {
   console.log('Offset UTC : '+track.info.offsetUTC)
 
   anaTrack.compute(track.fixes) 
-  console.log('thermals.length : '+anaTrack.thermals.length)
   let percThermals = Number(+anaTrack.percThermals).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
   let percGlides = Number(+anaTrack.percGlides).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
   let percDives = Number(+anaTrack.percDives).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
@@ -54,20 +53,35 @@ function buildMap(track) {
   });
   var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
   var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
-
+  var outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
   var googleLayer = new L.Google('TERRAIN');
   var googleSat = new L.Google('SATELLITE');
 
- // OpenTopoMap.addTo(map);
+  OpenTopoMap.addTo(map);
 
   var baseMaps = {
-      "OSM": osmlayer,
       "OpenTopo" : OpenTopoMap,
+      "OSM": osmlayer,
       "MTK" : mtklayer,
       "4UMaps" : fouryoulayer,
+      "Outdoor" : outdoorlayer,
       "Google Terrain" : googleLayer,
       "Google Sat" : googleSat
   };
+
+  var openaip_cached_basemap = new L.TileLayer("http://{s}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{y}.png", {
+    maxZoom: 14,
+    minZoom: 4,
+    tms: true,
+    detectRetina: true,
+    subdomains: '12',
+    format: 'image/png',
+    transparent: true
+  });
+
 
   var mousemarker = null;
 
@@ -75,18 +89,40 @@ function buildMap(track) {
 
   locMeasure.addTo(map);
 
-  osmlayer.addTo(map)
-
-  L.control.layers(baseMaps).addTo(map);
-
   var trackOptions = {
     color: 'red',
     weight: 2,
     opacity: 0.85
   };
+
+  var thermOptions = {
+    color: 'yellow',
+    weight: 6,
+    opacity: 0.50
+  };
   map.removeLayer(L.geoJson);
-  var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(map)
-  map.fitBounds(geojsonLayer.getBounds());
+ //   original
+ // var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(map)
+ // modifié
+  var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions })
+  var geoThermals =  L.geoJson(anaTrack.geoThermals,{ style: thermOptions, onEachFeature: createPopThermal})
+// code proviuent d'une mine de snippet Leaflet https://gist.github.com/geog4046instructor
+  var tracksGroup = new L.LayerGroup();
+  tracksGroup.addTo(map);
+  tracksGroup.addLayer(geojsonLayer);
+
+  var thermalGroup = new L.LayerGroup();
+ // thermalGroup.addTo(map);
+  thermalGroup.addLayer(geoThermals);
+
+  var Affichage = {
+    "Airspaces" : openaip_cached_basemap,  
+    "Track" : tracksGroup,
+    "Thermals": thermalGroup,
+   // "Transitions": GLmarkers,
+  };
+
+  L.control.layers(baseMaps,Affichage).addTo(map);
   
   var StartIcon = new L.Icon({
     iconUrl: '../../leaflet/images/windsock22.png',
@@ -199,6 +235,33 @@ function buildMap(track) {
       data: arrayAlti
     }]
 });
+// est ce nécessaire  ? a voir sur un ordi moins rapide
+// j'imagine que je l'avais placé pour attendre la création de la carte
+  //setTimeout(function(){ map.fitBounds(geojsonLayer.getBounds()); }, 1000);
+  // on supprime pour l'instant, on y va sans timeout
+  map.fitBounds(geojsonLayer.getBounds());
+}
+
+function createPopThermal(feature, layer) {
+  htmlTable = '<table><caption>'+feature.properties.alt_gain+'m - '+feature.properties.avg_climb+'m/s</caption>';                
+  htmlTable +='<tr><td>'+i18n.gettext('Altitude gain')+'</td><td>'+feature.properties.alt_gain+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Average climb')+'</td><td>'+feature.properties.avg_climb+'m/s</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Maximum climb')+'</td><td>'+feature.properties.max_climb+'m/s</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Peak climb')+'</td><td>'+feature.properties.peak_climb+'m/s</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Efficiency')+'</td><td>'+feature.properties.efficiency+'%</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Start altitude')+'</td><td>'+feature.properties.start_alt+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Finish altitude')+'</td><td>'+feature.properties.finish_alt+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Start time')+'</td><td>'+feature.properties.start_time+'</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Finish time')+'</td><td>'+feature.properties.finish_time+'</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Duration')+'</td><td>'+feature.properties.duration+'</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude gain')+'</td><td>'+feature.properties.acc_gain+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude loss')+'</td><td>'+feature.properties.acc_loss+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Drift')+'</td><td>'+feature.properties.drift+'</td></tr>';
+  htmlTable += '</table>';
+ // htmlTable = '<table><caption>1028m - 1,3 m/s</caption><tr><td>Altitude gain</td><td>1028m</td></tr><tr><td>Average climb</td><td>1,3m/s</td></tr><tr><td>Maximum climb</td><td>2,7m/s</td></tr><tr><td>Peak climb</td><td>5,0m/s</td></tr><tr><td>Efficiency</td><td>50%</td></tr><tr><td>Start altitude</td><td>1845m</td></tr><tr><td>Finish altitude</td><td>2873m</td></tr><tr><td>Start time</td><td>13:00:17</td></tr><tr><td>Finish time</td><td>13:13:04</td></tr><tr><td>Duration</td><td>12mn47s</td></tr><tr><td>Accumulated altitude gain</td><td>1081m</td></tr><tr><td>Accumulated altitude loss</td><td>-53m</td></tr><tr><td>Drift</td><td>7,5km/h SW</td></tr></table>';
+  layer.bindPopup(htmlTable);
+  //layer.bindPopup('<h1>'+feature.properties.alt_gain+'</h1><p>name: '+feature.properties.avg_climb+'</p>');
+  
 }
 
 function iniForm() {
