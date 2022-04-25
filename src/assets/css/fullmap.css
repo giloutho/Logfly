@@ -41,7 +41,10 @@ td:nth-child(2) { text-align: right; }
 caption { 
     font-weight: bold;
     font-size: 1.4em;
+    caption-side: top;
+    text-align: center;
 }
+
 .awesome-marker i {
     font-size: 20px;
     margin-top: 8px;
