@@ -16,6 +16,8 @@
         this.dives = [];
         this.glides = [];
         this.course = [];
+        this.geoThermals = {};
+        this.geoGlides = {};
         this.maxaltitudegain = 0;   
         this.bestGain = 0;
         this.bestGainEnd;
@@ -56,6 +58,9 @@
         let finalDives = [];
         let finalGlides = [];
         let progList = [];
+        let geoTh = {};
+        geoTh['type'] = 'FeatureCollection';
+        geoTh['features'] = [];        
  
         for (let f of fixes) {
             t.push(f.timestamp/1000)
@@ -334,7 +339,8 @@
         this.thermals = [...finalThermals];
         this.dives = [...finalDives];
         this.glides = [...finalGlides];
-        this.course = [...progList]
+        this.course = [...progList];
+        this.geoThermals = geoTh;
         this.bestGain = _bestGain;
         this.bestGainEnd = _bestGainEnd;  
         this.avgThermalClimb = _avgThermalClimb;
@@ -501,6 +507,8 @@
                 let elapsedSeconds = (finalThermals[i].finish_time - fixes[0].timestamp)/1000;                   
                 // from https://stackoverflow.com/questions/6312993/javascript-seconds-to-time-string-with-format-hhmmss
                 let elapsedFormatted = new Date(elapsedSeconds* 1000).toUTCString().match(/(\d\d:\d\d)/)[0];
+                let durationFormatted = new Date(finalThermals[i].duration* 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
+                let driftFormatted = Math.round(finalThermals[i].average_speed*10)/10+'km/h '+finalThermals[i].drift_direction;
                 // coordinates lat-long formating
                 let segCoords = (Math.round(fixes[finalThermals[i].idxStart].latitude * 100000) / 100000).toFixed(5)+',';
                 segCoords += (Math.round(fixes[finalThermals[i].idxStart].longitude * 100000) / 100000).toFixed(5)+',';
@@ -512,6 +520,48 @@
                 totAvgThermalClimb += finalThermals[i].climbAverage;
                 totAvgThermalEffi += finalThermals[i].efficiency;
                 totThermals += (finalThermals[i].finish_time - finalThermals[i].start_time)/1000; 
+                // geojson generation
+                let featurePoint = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [(Math.round(fixes[finalThermals[i].idxEnd].longitude * 100000) / 100000), (Math.round(fixes[finalThermals[i].idxEnd].latitude * 100000) / 100000)]
+                    },
+                    "properties": {
+                        "alt_gain": finalThermals[i].deltaAlt,
+                        "avg_climb": Math.round(finalThermals[i].climbAverage*10)/10,
+                        "max_climb" : Math.round(finalThermals[i].climbMax*10)/10,
+                        "peak_climb" : Math.round(finalThermals[i].climbPeakMax*10)/10,
+                        "efficiency" : Math.round(finalThermals[i].efficiency),
+                        "start_alt" : finalThermals[i].start_altitude,
+                        "finish_alt" : finalThermals[i].finish_altitude,
+                        "start_time" : hStart,
+                        "finish_time" : hEnd,
+                        "duration" : durationFormatted,
+                        "acc_gain" : finalThermals[i].accumulated_altitude_gain,
+                        "acc_loss" : finalThermals[i].accumulated_altitude_loss,
+                        "drift" : driftFormatted
+                    }
+                }
+                geoTh['features'].push(featurePoint);
+                let linecoord = [];
+                for (let j = finalThermals[i].idxStart; j < finalThermals[i].idxEnd+1; j++) {
+                    let lonlat = [];
+                    lonlat.push((Math.round(fixes[j].longitude * 100000) / 100000));
+                    lonlat.push((Math.round(fixes[j].latitude * 100000) / 100000));
+                    linecoord.push(lonlat);
+                } 
+                let featureLine = {
+                    "type": "Feature",
+                    "properties": {
+                        "id": "thermal "+i,
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": linecoord
+                    }
+                }
+                geoTh['features'].push(featureLine);                
             }
             if (nbThermals > 0) {
                 _avgThermalClimb = totAvgThermalClimb/nbThermals;
