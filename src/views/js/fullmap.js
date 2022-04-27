@@ -321,6 +321,11 @@ function iniForm() {
 function thermalIcon (feature, latlng) {
   // si on le désire on peut récuperer une properties pour customiser l'icône genre plus gros thermique ou plus grosse transition
   //console.log('feature.properties.avg_climb = '+feature.properties.avg_climb)
-  let myIcon = L.AwesomeMarkers.icon({icon: 'fa-cloud-upload', markerColor: 'blue', prefix: 'fa', iconColor: 'white'}) 
+  let myIcon;
+  if (feature.properties.best_thermal) {
+    myIcon = L.AwesomeMarkers.icon({icon: 'fa-thumbs-up', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'})
+  } else {
+    myIcon = L.AwesomeMarkers.icon({icon: 'fa-cloud-upload', markerColor: 'blue', prefix: 'fa', iconColor: 'white'}) 
+  }
   return L.marker(latlng, { icon: myIcon })
 }

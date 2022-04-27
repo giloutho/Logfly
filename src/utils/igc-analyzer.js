@@ -515,7 +515,9 @@
                 // total calculations
                 totAvgThermalClimb += finalThermals[i].climbAverage;
                 totAvgThermalEffi += finalThermals[i].efficiency;
-                totThermals += (finalThermals[i].finish_time - finalThermals[i].start_time)/1000; 
+                totThermals += (finalThermals[i].finish_time - finalThermals[i].start_time)/1000;   
+                let bestTh = false;              
+                if (finalThermals[i].deltaAlt == _bestGain) bestTh = true;
                 // geojson generation
                 let featurePoint = {
                     "type": "Feature",
@@ -536,7 +538,8 @@
                         "duration" : durationFormatted,
                         "acc_gain" : finalThermals[i].accumulated_altitude_gain,
                         "acc_loss" : finalThermals[i].accumulated_altitude_loss,
-                        "drift" : driftFormatted
+                        "drift" : driftFormatted,
+                        "best_thermal" : bestTh
                     }
                 }
                 geoTh['features'].push(featurePoint);
@@ -638,7 +641,6 @@
                 totSpeed += finalGlides[i].average_speed;
                 totGlides += (finalGlides[i].finish_time - finalGlides[i].start_time)/1000; 
             }    
-            console.log(JSON.stringify(geoGlides));      
             if (nbGlides > 0)
                 _avgTransSpeed = totSpeed/nbGlides;
             else
