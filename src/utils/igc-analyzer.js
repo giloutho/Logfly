@@ -60,7 +60,10 @@
         let progList = [];
         let geoTh = {};
         geoTh['type'] = 'FeatureCollection';
-        geoTh['features'] = [];        
+        geoTh['features'] = [];     
+        let geoGlides = {};   
+        geoGlides['type'] = 'FeatureCollection';
+        geoGlides['features'] = [];
  
         for (let f of fixes) {
             t.push(f.timestamp/1000)
@@ -341,6 +344,7 @@
         this.glides = [...finalGlides];
         this.course = [...progList];
         this.geoThermals = geoTh;
+        this.geoGlides = geoGlides;
         this.bestGain = _bestGain;
         this.bestGainEnd = _bestGainEnd;  
         this.avgThermalClimb = _avgThermalClimb;
@@ -448,14 +452,6 @@
             }  // end addEtails 
 
         /**
-         * This is a chronological list of all the events in the track (thermal, transition)
-         * in Logfly5 segments are defined like this
-         * public SimpleStringProperty cTime -> hh:mm:ss
-         * public SimpleStringProperty cElapsed = new SimpleStringProperty();
-         * public SimpleStringProperty cText = new SimpleStringProperty();    
-         * public SimpleStringProperty cHTML = new SimpleStringProperty();  
-         * public SimpleStringProperty cCoord = new SimpleStringProperty();  
-         * public ObjectProperty<LocalDateTime> cLdt = new SimpleObjectProperty();
          * 
          * on a pas à priori besoin de générer du httml maintenant
          * il faut préparer la liste ORDONNEE du déroulement du vol, on aura
@@ -581,17 +577,68 @@
                 let elapsedSeconds = (finalGlides[i].finish_time - fixes[0].timestamp)/1000;                   
                 // from https://stackoverflow.com/questions/6312993/javascript-seconds-to-time-string-with-format-hhmmss
                 let elapsedFormatted = new Date(elapsedSeconds* 1000).toUTCString().match(/(\d\d:\d\d)/)[0];
+                let durationFormatted = new Date(finalGlides[i].duration* 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
                 // coordinates lat-long formating
                 let segCoords = (Math.round(fixes[finalGlides[i].idxStart].latitude * 100000) / 100000).toFixed(5)+',';
                 segCoords += (Math.round(fixes[finalGlides[i].idxStart].longitude * 100000) / 100000).toFixed(5)+',';
                 segCoords += (Math.round(fixes[finalGlides[i].idxEnd].latitude * 100000) / 100000).toFixed(5)+',';
                 segCoords += (Math.round(fixes[finalGlides[i].idxEnd].longitude * 100000) / 100000).toFixed(5);
-                let progTh =  new progSegment('G',finalGlides[i].finish_time, hEnd, elapsedFormatted, finalGlides[i].finish_altitude, (finalGlides[i].distance_metres/1000).toFixed(2),Math.round(finalGlides[i].average_speed),segCoords);                
-                progList.push(progTh);
+                let progGl =  new progSegment('G',finalGlides[i].finish_time, hEnd, elapsedFormatted, finalGlides[i].finish_altitude, (finalGlides[i].distance_metres/1000).toFixed(2),Math.round(finalGlides[i].average_speed),segCoords);                
+                progList.push(progGl);
+                // geojson generation
+                // We want to place a marker on center of a line string
+                // a Simple linear math seems to work  (https://gis.stackexchange.com/questions/18584/how-to-find-a-point-half-way-between-two-other-points)
+                let latMiddle = fixes[finalGlides[i].idxEnd].latitude + ((fixes[finalGlides[i].idxStart].latitude - fixes[finalGlides[i].idxEnd].latitude) / 2);
+                let longMiddle = fixes[finalGlides[i].idxEnd].longitude + ((fixes[finalGlides[i].idxStart].longitude - fixes[finalGlides[i].idxEnd].longitude) / 2);
+                let featurePoint = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [(Math.round(longMiddle * 100000) / 100000), (Math.round(latMiddle * 100000) / 100000)]
+                    },
+                    "properties": {
+                        "alt_change": finalGlides[i].deltaAlt,
+                        "avg_descent": Math.round(finalGlides[i].climbAverage*10)/10,
+                        "distance" : Math.round((finalGlides[i].distance_metres/1000)*10)/10,
+                        "avg_glide" : Math.round(finalGlides[i].average_ld*10)/10,
+                        "avg_speed" : Math.round(finalGlides[i].average_speed*10)/10,
+                        "start_alt" : finalGlides[i].start_altitude,
+                        "finish_alt" : finalGlides[i].finish_altitude,
+                        "start_time" : hStart,
+                        "finish_time" : hEnd,
+                        "duration" : durationFormatted,
+                        "acc_gain" : finalGlides[i].accumulated_altitude_gain,
+                        "acc_loss" : finalGlides[i].accumulated_altitude_loss,
+                    }
+                }
+                geoGlides['features'].push(featurePoint);            
+                let linecoord = [];
+                // start line point
+                let startPoint = [];
+                startPoint.push((Math.round(fixes[finalGlides[i].idxStart].longitude * 100000) / 100000));
+                startPoint.push((Math.round(fixes[finalGlides[i].idxStart].latitude * 100000) / 100000));
+                linecoord.push(startPoint);
+                let endPoint = [];
+                endPoint.push((Math.round(fixes[finalGlides[i].idxEnd].longitude * 100000) / 100000));
+                endPoint.push((Math.round(fixes[finalGlides[i].idxEnd].latitude * 100000) / 100000));
+                linecoord.push(endPoint);                
+                let featureLine = {
+                    "type": "Feature",
+                    "properties": {
+                        "id": "glide "+i,
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": linecoord
+                    }
+                }
+                geoGlides['features'].push(featureLine);                       
+                
                 // total calculations
                 totSpeed += finalGlides[i].average_speed;
                 totGlides += (finalGlides[i].finish_time - finalGlides[i].start_time)/1000; 
-            }            
+            }    
+            console.log(JSON.stringify(geoGlides));      
             if (nbGlides > 0)
                 _avgTransSpeed = totSpeed/nbGlides;
             else

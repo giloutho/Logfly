@@ -13,6 +13,7 @@ var Highcharts = require('highcharts');
 var myMeasure = require('../../leaflet/measure.js')
 var useGoogle = require('../../leaflet/google-leaflet.js')
 var layerTree = require('leaflet.control.layers.tree')
+var awesomeMarker = require('../../leaflet/leaflet.awesome-markers.min.js')
 
 iniForm()
 
@@ -105,21 +106,35 @@ function buildMap(track) {
  // var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(map)
  // modifié
   var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions })
-  var geoThermals =  L.geoJson(anaTrack.geoThermals,{ style: thermOptions, onEachFeature: createPopThermal})
-// code proviuent d'une mine de snippet Leaflet https://gist.github.com/geog4046instructor
+  // code proviuent d'une mine de snippet Leaflet https://gist.github.com/geog4046instructor
+  var thermalLayerOption = {
+    style: thermOptions, 
+    pointToLayer: thermalIcon,
+    onEachFeature: createPopThermal
+  }
+  var geoThermals =  L.geoJson(anaTrack.geoThermals,thermalLayerOption);
+  //var geoThermals =  L.geoJson(anaTrack.geoThermals,{ style: thermOptions, onEachFeature: createPopThermal})
+  var geoGlides =  L.geoJson(anaTrack.geoGlides,{ color: '#848484',weight: 3, dashArray: '10,5', opacity: 1 , onEachFeature: createPopGlide})
   var tracksGroup = new L.LayerGroup();
   tracksGroup.addTo(map);
   tracksGroup.addLayer(geojsonLayer);
 
   var thermalGroup = new L.LayerGroup();
- // thermalGroup.addTo(map);
   thermalGroup.addLayer(geoThermals);
+  var GlidesGroup = new L.LayerGroup();
+  GlidesGroup.addLayer(geoGlides);
 
+  let mAisrpaces = i18n.gettext('Airspaces');
+  console.log('mAisrpaces = '+mAisrpaces)
+  let mTrack = i18n.gettext('Track');
+  let mThermal = i18n.gettext('Thermals');
+  let mTrans = i18n.gettext('Transitions');
+  //ES6 introduces computed property names -> var myObj = {[a]: b};
   var Affichage = {
-    "Airspaces" : openaip_cached_basemap,  
-    "Track" : tracksGroup,
-    "Thermals": thermalGroup,
-   // "Transitions": GLmarkers,
+    [mAisrpaces] : openaip_cached_basemap,  
+    [mTrack] : tracksGroup,
+    [mThermal] : thermalGroup,
+    [mTrans]: GlidesGroup,
   };
 
   L.control.layers(baseMaps,Affichage).addTo(map);
@@ -243,7 +258,7 @@ function buildMap(track) {
 }
 
 function createPopThermal(feature, layer) {
-  htmlTable = '<table><caption>'+feature.properties.alt_gain+'m - '+feature.properties.avg_climb+'m/s</caption>';                
+  let htmlTable = '<table><caption>'+feature.properties.alt_gain+'m - '+feature.properties.avg_climb+'m/s</caption>';                
   htmlTable +='<tr><td>'+i18n.gettext('Altitude gain')+'</td><td>'+feature.properties.alt_gain+'m</td></tr>';
   htmlTable += '<tr><td>'+i18n.gettext('Average climb')+'</td><td>'+feature.properties.avg_climb+'m/s</td></tr>';
   htmlTable += '<tr><td>'+i18n.gettext('Maximum climb')+'</td><td>'+feature.properties.max_climb+'m/s</td></tr>';
@@ -264,6 +279,29 @@ function createPopThermal(feature, layer) {
   
 }
 
+function createPopGlide(feature, layer) {
+  let htmlTable = '<table><caption>'+feature.properties.distance+'km - ['+feature.properties.avg_glide+'] '+feature.properties.avg_speed+'km/h</caption>';                
+  htmlTable +='<tr><td>'+i18n.gettext('Altitude change')+'</td><td>'+feature.properties.alt_change+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Average descent')+'</td><td>'+feature.properties.avg_descent+'m/s</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Distance')+'</td><td>'+feature.properties.distance+'km</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Average glide ratio')+'</td><td>'+feature.properties.avg_glide+':1</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Average speed')+'</td><td>'+feature.properties.avg_speed+'km/h</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Start altitude')+'</td><td>'+feature.properties.start_alt+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Finish altitude')+'</td><td>'+feature.properties.finish_alt+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Start time')+'</td><td>'+feature.properties.start_time+'</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Finish time')+'</td><td>'+feature.properties.finish_time+'</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Duration')+'</td><td>'+feature.properties.duration+'</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude gain')+'</td><td>'+feature.properties.acc_gain+'m</td></tr>';
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude loss')+'</td><td>'+feature.properties.acc_loss+'m</td></tr>';
+  htmlTable += '</table>';
+ // htmlTable = '<table><caption>1028m - 1,3 m/s</caption><tr><td>Altitude gain</td><td>1028m</td></tr><tr><td>Average climb</td><td>1,3m/s</td></tr><tr><td>Maximum climb</td><td>2,7m/s</td></tr><tr><td>Peak climb</td><td>5,0m/s</td></tr><tr><td>Efficiency</td><td>50%</td></tr><tr><td>Start altitude</td><td>1845m</td></tr><tr><td>Finish altitude</td><td>2873m</td></tr><tr><td>Start time</td><td>13:00:17</td></tr><tr><td>Finish time</td><td>13:13:04</td></tr><tr><td>Duration</td><td>12mn47s</td></tr><tr><td>Accumulated altitude gain</td><td>1081m</td></tr><tr><td>Accumulated altitude loss</td><td>-53m</td></tr><tr><td>Drift</td><td>7,5km/h SW</td></tr></table>';
+  layer.bindPopup(htmlTable);
+  //layer.bindPopup('<h1>'+feature.properties.alt_gain+'</h1><p>name: '+feature.properties.avg_climb+'</p>');
+  
+}
+
+
+
 function iniForm() {
   try {    
     let currLang = store.get('lang')
@@ -277,4 +315,12 @@ function iniForm() {
   }
   document.getElementById('bt-close').innerHTML = i18n.gettext('Close')
  
+}
+
+// from https://gist.github.com/geog4046instructor/80ee78db60862ede74eacba220809b64
+function thermalIcon (feature, latlng) {
+  // si on le désire on peut récuperer une properties pour customiser l'icône genre plus gros thermique ou plus grosse transition
+  //console.log('feature.properties.avg_climb = '+feature.properties.avg_climb)
+  let myIcon = L.AwesomeMarkers.icon({icon: 'fa-cloud-upload', markerColor: 'blue', prefix: 'fa', iconColor: 'white'}) 
+  return L.marker(latlng, { icon: myIcon })
 }
