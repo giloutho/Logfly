@@ -185,7 +185,6 @@ function buildMap(track) {
     chart: {      
     type: 'line',
     renderTo: 'graphe',
-    reflow: true
     },
     title: {
         text: ''
@@ -299,10 +298,20 @@ function createPopThermal(feature, layer) {
 }
 
 function openNav() {
+  // https://stackoverflow.com/questions/4787527/how-to-find-the-width-of-a-div-using-vanilla-javascript
+  // http://jsfiddle.net/juxy42ev/    -> Toggle sidebar
+  console.log('OpenNav')
   document.getElementById("sideNavigation").style.width = "260px";
   document.getElementById("carte").style.marginLeft = "260px";
+  document.getElementById("carte").style.width = 1353 + 'px';
+  console.log('avant '+document.getElementById('graphe').offsetWidth)
   document.getElementById("graphe").style.marginLeft = "260px";
-  hgChart.highcharts().redraw();
+//  console.log('avant '+document.getElementById('graphe').style.width)
+ //  document.getElementById('graphe').style.width = '1353px';
+  document.getElementById('graphe').style.width = 1353 + 'px';
+ // console.log('après '+document.getElementById('graphe').style.offsetWidth)
+  console.log('reflow : '+hgChart.reflow);
+  hgChart.reflow();
   $('.leaflet-control-layers-selector')[9].click();
   $('.leaflet-control-layers-selector')[10].click();
 }
