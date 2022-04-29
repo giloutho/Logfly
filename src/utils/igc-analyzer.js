@@ -1,3 +1,5 @@
+const { truncate } = require("original-fs");
+
 /**
  * It's a pure adaptation of analyze class in igc2Kmz/track.py, an effective code of Tom Payne
  * This is probably not a very good translation :
@@ -593,6 +595,11 @@
                 // a Simple linear math seems to work  (https://gis.stackexchange.com/questions/18584/how-to-find-a-point-half-way-between-two-other-points)
                 let latMiddle = fixes[finalGlides[i].idxEnd].latitude + ((fixes[finalGlides[i].idxStart].latitude - fixes[finalGlides[i].idxEnd].latitude) / 2);
                 let longMiddle = fixes[finalGlides[i].idxEnd].longitude + ((fixes[finalGlides[i].idxStart].longitude - fixes[finalGlides[i].idxEnd].longitude) / 2);
+                let glToRight;
+                if (fixes[finalGlides[i].idxStart].longitude < fixes[finalGlides[i].idxEnd].longitude )
+                    glToRight = true
+                else
+                    glToRight = false;            
                 let featurePoint = {
                     "type": "Feature",
                     "geometry": {
@@ -612,6 +619,7 @@
                         "duration" : durationFormatted,
                         "acc_gain" : finalGlides[i].accumulated_altitude_gain,
                         "acc_loss" : finalGlides[i].accumulated_altitude_loss,
+                        "glideToRight" : glToRight
                     }
                 }
                 geoGlides['features'].push(featurePoint);            
