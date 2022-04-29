@@ -14,13 +14,18 @@ var myMeasure = require('../../leaflet/measure.js')
 var useGoogle = require('../../leaflet/google-leaflet.js')
 var layerTree = require('leaflet.control.layers.tree')
 var awesomeMarker = require('../../leaflet/leaflet.awesome-markers.min.js')
+var hgChart
 
 iniForm()
 
 var btnClose = document.getElementById('bt-close')
-
 btnClose.addEventListener('click',(event) => {
     window.close()
+})
+
+var btnPathway  = document.getElementById('bt-pathway')
+btnPathway.addEventListener('click',(event) => {
+  openNav();
 })
 
 ipcRenderer.on('geojson-for-map', (event, track) => {
@@ -101,31 +106,43 @@ function buildMap(track) {
     weight: 6,
     opacity: 0.50
   };
+
+  var glideOptions = {
+    color: '#848484',
+    weight: 3, 
+    dashArray: '10,5', 
+    opacity: 1
+  };
+
   map.removeLayer(L.geoJson);
  //   original
  // var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(map)
  // modifié
   var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions })
-  // code proviuent d'une mine de snippet Leaflet https://gist.github.com/geog4046instructor
-  var thermalLayerOption = {
-    style: thermOptions, 
-    pointToLayer: thermalIcon,
-    onEachFeature: createPopThermal
-  }
-  var geoThermals =  L.geoJson(anaTrack.geoThermals,thermalLayerOption);
-  //var geoThermals =  L.geoJson(anaTrack.geoThermals,{ style: thermOptions, onEachFeature: createPopThermal})
-  var geoGlides =  L.geoJson(anaTrack.geoGlides,{ color: '#848484',weight: 3, dashArray: '10,5', opacity: 1 , onEachFeature: createPopGlide})
   var tracksGroup = new L.LayerGroup();
   tracksGroup.addTo(map);
   tracksGroup.addLayer(geojsonLayer);
 
+  var thermalLayerOption = {
+    style: thermOptions, 
+    pointToLayer: thermalIcon,
+    onEachFeature: createPopThermal // code proviuent d'une mine de snippet Leaflet https://gist.github.com/geog4046instructor
+  }
+  var geoThermals =  L.geoJson(anaTrack.geoThermals,thermalLayerOption);
   var thermalGroup = new L.LayerGroup();
   thermalGroup.addLayer(geoThermals);
+
+  var glideLayerOption = {
+    style: glideOptions, 
+    pointToLayer: glideIcon,
+    onEachFeature: createPopGlide
+  }
+  //var geoGlides =  L.geoJson(anaTrack.geoGlides,{ color: '#848484',weight: 3, dashArray: '10,5', opacity: 1 , onEachFeature: createPopGlide})
+  var geoGlides =  L.geoJson(anaTrack.geoGlides,glideLayerOption)
   var GlidesGroup = new L.LayerGroup();
   GlidesGroup.addLayer(geoGlides);
 
   let mAisrpaces = i18n.gettext('Airspaces');
-  console.log('mAisrpaces = '+mAisrpaces)
   let mTrack = i18n.gettext('Track');
   let mThermal = i18n.gettext('Thermals');
   let mTrans = i18n.gettext('Transitions');
@@ -163,10 +180,12 @@ function buildMap(track) {
   var endLatlng = L.latLng(track.fixes[track.fixes.length - 1].latitude, track.fixes[track.fixes.length - 1].longitude)
   L.marker(endLatlng,{icon: EndIcon}).addTo(map);
 
-  var chart = new Highcharts.Chart({
+  //var chart = new Highcharts.Chart({
+  hgChart = new Highcharts.Chart({
     chart: {      
     type: 'line',
-    renderTo: 'graphe'
+    renderTo: 'graphe',
+    reflow: true
     },
     title: {
         text: ''
@@ -279,6 +298,15 @@ function createPopThermal(feature, layer) {
   
 }
 
+function openNav() {
+  document.getElementById("sideNavigation").style.width = "260px";
+  document.getElementById("carte").style.marginLeft = "260px";
+  document.getElementById("graphe").style.marginLeft = "260px";
+  hgChart.highcharts().redraw();
+  $('.leaflet-control-layers-selector')[9].click();
+  $('.leaflet-control-layers-selector')[10].click();
+}
+
 function createPopGlide(feature, layer) {
   let htmlTable = '<table><caption>'+feature.properties.distance+'km - ['+feature.properties.avg_glide+'] '+feature.properties.avg_speed+'km/h</caption>';                
   htmlTable +='<tr><td>'+i18n.gettext('Altitude change')+'</td><td>'+feature.properties.alt_change+'m</td></tr>';
@@ -319,13 +347,22 @@ function iniForm() {
 
 // from https://gist.github.com/geog4046instructor/80ee78db60862ede74eacba220809b64
 function thermalIcon (feature, latlng) {
-  // si on le désire on peut récuperer une properties pour customiser l'icône genre plus gros thermique ou plus grosse transition
-  //console.log('feature.properties.avg_climb = '+feature.properties.avg_climb)
   let myIcon;
   if (feature.properties.best_thermal) {
     myIcon = L.AwesomeMarkers.icon({icon: 'fa-thumbs-up', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'})
   } else {
     myIcon = L.AwesomeMarkers.icon({icon: 'fa-cloud-upload', markerColor: 'blue', prefix: 'fa', iconColor: 'white'}) 
+  }
+  return L.marker(latlng, { icon: myIcon })
+}
+
+// from https://gist.github.com/geog4046instructor/80ee78db60862ede74eacba220809b64
+function glideIcon (feature, latlng) {
+  let myIcon;
+  if (feature.properties.glideToRight) {
+    myIcon = L.AwesomeMarkers.icon({icon: 'fa-angle-right', markerColor: 'red', prefix: 'fa', iconColor: 'white'})
+  } else {
+    myIcon = L.AwesomeMarkers.icon({icon: 'fa-angle-left', markerColor: 'red', prefix: 'fa', iconColor: 'white'}) 
   }
   return L.marker(latlng, { icon: myIcon })
 }
