@@ -110,5 +110,54 @@ function checkFlightList(flightList) {
   return flightList 
 }
 
+ /**
+ * This method is called rechSiteCorrect in Logfly5
+ * this name came from xLogfly where there was several rechSite methods
+ * this is the name of the last one... the good one
+ * pAlt (altitude) is not required for searching operation but it is necessary
+ * to create a new site with addBlankSite method
+ * @param pLat
+ * @param pLong
+ * @param exAtterro   if true, sites with "A" like landing (Atterrissage in french)are excluded of searching operation   
+ * @return 
+ */
+
+ function searchSiteInDb(pLat, pLong, landingType) {
+    const db = require('better-sqlite3')(store.get('fullPathDb'))
+    // in Logfly 5, distance mini is stored in settings but we never changed the value of 300 m
+    let distMini = 300;            
+    /*
+    * NOTE : under our latitudes, second decimal give a search perimeter of 1,11km. 
+    * third decimal, perimeter is 222 meters ...      
+    */
+    const arrLat = Math.ceil(pLat*1000)/1000;
+    const arrLong = Math.ceil(pLong*1000)/1000;
+    const sLatMin = (arrLat - 0.01).toString();
+    const sLatMax = (arrLat + 0.01).toString();
+    const sLongMin = (arrLong - 0.01).toString();
+    const sLongMax = (arrLong + 0.01).toString();
+    
+    // In old versions, search is limited to launching sites, but this information can be absent
+    // Only landing sites are excluded
+    let selectedSite = '';
+    let surroundingSites;
+    if (landingType == true) 
+      surroundingSites = db.prepare(`SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Alti,S_Localite,S_Pays FROM Site WHERE S_Latitude >'${sLatMin}' AND S_Latitude < '${sLatMax}' AND S_Longitude > '${sLongMin}' AND S_Longitude < '${sLongMax}' `)
+    else
+      surroundingSites = db.prepare(`SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Alti,S_Localite,S_Pays FROM Site WHERE S_Latitude >'${sLatMin}' AND S_Latitude < '${sLatMax}' AND S_Longitude > '${sLongMin}' AND S_Longitude < '${sLongMax}' AND S_Type <> 'A' `)
+    for (const site of surroundingSites.iterate()) {
+      let carnetLat = site.S_Latitude;
+      let carnetLong = site.S_Longitude;
+      let distSite = Math.abs(trigo.distance(pLat,pLong,carnetLat,carnetLong, "K") * 1000)   
+      if (distSite < distMini)  {
+        distMini = distSite;
+        selectedSite = site.S_Nom+'*'+site.S_Pays;  // since V3, we add the country
+      }    
+    }
+
+    return selectedSite;
+}
+
 module.exports.flightByTakeOff = flightByTakeOff
 module.exports.checkFlightList = checkFlightList
+module.exports.searchSiteInDb = searchSiteInDb
