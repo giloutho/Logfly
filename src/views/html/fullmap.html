@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../assets/css/font-awesome-450.min.css">  
     <link rel="stylesheet" href="../../../node_modules/leaflet/dist/leaflet.css" />   
     <link rel="stylesheet" href="../../leaflet/leaflet.awesome-markers.css" />   
+    <link rel="stylesheet" href="../../leaflet/sidebar-tabless.css" />   
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
 
@@ -29,17 +30,19 @@
             <a class="nav-link" style="color:rgb(255, 0, 0);" id="bt-close" href="#">Close</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" id="bt-pathway" href="#">Pathway</a>
+            <a class="nav-link" id="bt-infos" href="#">Information</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Link 3</a>
+            <a class="nav-link" id="bt-mail" href="#">Mail</a>
           </li>
         </ul>
       </nav>
       <!-- Begin page content -->
         <div id="carte">carte</div>
         <div id="graphe">graphe</div>
-        <div id="sideNavigation" class="sidenav"></div>
+        <div id="sidebar" class="leaflet-sidebar collapsed">
+          <div class="leaflet-sidebar-content"></div>
+        </div>
 
     <script type="text/javascript">
         var i18n = window.i18n();

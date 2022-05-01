@@ -5,8 +5,11 @@ const log = require('electron-log')
 const Store = require('electron-store')
 const store = new Store();
 
-const IGCAnalyzer = require('../../utils/igc-analyzer.js')
-const anaTrack = new IGCAnalyzer()
+const dblog = require('../../utils/db/db-search.js')
+
+let mainTrack
+let anaTrack
+let tkoffSite
 
 var L = require('leaflet');
 var Highcharts = require('highcharts');
@@ -14,7 +17,9 @@ var myMeasure = require('../../leaflet/measure.js')
 var useGoogle = require('../../leaflet/google-leaflet.js')
 var layerTree = require('leaflet.control.layers.tree')
 var awesomeMarker = require('../../leaflet/leaflet.awesome-markers.min.js')
+var mapSidebar = require('../../leaflet/sidebar-tabless.js')
 var hgChart
+var sidebar
 
 iniForm()
 
@@ -23,31 +28,35 @@ btnClose.addEventListener('click',(event) => {
     window.close()
 })
 
-var btnPathway  = document.getElementById('bt-pathway')
-btnPathway.addEventListener('click',(event) => {
-  openNav();
+var btnInfos  = document.getElementById('bt-infos')
+btnInfos.addEventListener('click',(event) => {
+  sidebar.open('infos');
 })
 
-ipcRenderer.on('geojson-for-map', (event, track) => {
-  console.log('Track points : '+track.fixes.length)
-  console.log('Offset UTC : '+track.info.offsetUTC)
+var btnMail  = document.getElementById('bt-mail')
+btnMail.addEventListener('click',(event) => {
+  testdb();
+})
 
-  anaTrack.compute(track.fixes) 
+ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
+  mainTrack = track
+  anaTrack = analyzedTrack
+  tkoffSite = tkSite
   let percThermals = Number(+anaTrack.percThermals).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
   let percGlides = Number(+anaTrack.percGlides).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
   let percDives = Number(+anaTrack.percDives).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
   console.log('% thermal : '+percThermals+'  % glides : '+percGlides+'  % dives : '+percDives)
-  buildMap(track)
+  buildMap()
 })
 
-function buildMap(track) {
+function buildMap() {
 
   // https://stackoverflow.com/questions/54331439/how-to-map-json-object-to-array
 	// pour mieux comprendre map : https://www.digitalocean.com/community/tutorials/4-uses-of-javascripts-arraymap-you-should-know-fr
-  const arrayAlti = track.GeoJSON.features[0]['geometry']['coordinates'].map(coord => coord[2]);
+  const arrayAlti = mainTrack.GeoJSON.features[0]['geometry']['coordinates'].map(coord => coord[2]);
   // les heures contenues dans le GeoJSon ne sont que des strings
   // la conversion en date est nécessaire pour que Highcharts.dateFormat fonctionne sur l'axe des x
-  var arrayHour = track.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour));
+  var arrayHour = mainTrack.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour));
 
   map = L.map('carte').setView([0, 0], 5);
 
@@ -115,10 +124,7 @@ function buildMap(track) {
   };
 
   map.removeLayer(L.geoJson);
- //   original
- // var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(map)
- // modifié
-  var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions })
+  var geojsonLayer = L.geoJson(mainTrack.GeoJSON,{ style: trackOptions })
   var tracksGroup = new L.LayerGroup();
   tracksGroup.addTo(map);
   tracksGroup.addLayer(geojsonLayer);
@@ -137,7 +143,6 @@ function buildMap(track) {
     pointToLayer: glideIcon,
     onEachFeature: createPopGlide
   }
-  //var geoGlides =  L.geoJson(anaTrack.geoGlides,{ color: '#848484',weight: 3, dashArray: '10,5', opacity: 1 , onEachFeature: createPopGlide})
   var geoGlides =  L.geoJson(anaTrack.geoGlides,glideLayerOption)
   var GlidesGroup = new L.LayerGroup();
   GlidesGroup.addLayer(geoGlides);
@@ -165,7 +170,7 @@ function buildMap(track) {
     shadowSize: [25, 25]
   });
 
-  var startLatlng = L.latLng(track.fixes[0].latitude, track.fixes[0].longitude)
+  var startLatlng = L.latLng(mainTrack.fixes[0].latitude, mainTrack.fixes[0].longitude)
   L.marker(startLatlng,{icon: StartIcon}).addTo(map);
 
   var EndIcon = new L.Icon({
@@ -177,10 +182,19 @@ function buildMap(track) {
     shadowSize: [25, 25]
   });
 
-  var endLatlng = L.latLng(track.fixes[track.fixes.length - 1].latitude, track.fixes[track.fixes.length - 1].longitude)
+  var endLatlng = L.latLng(mainTrack.fixes[mainTrack.fixes.length - 1].latitude, mainTrack.fixes[mainTrack.fixes.length - 1].longitude)
   L.marker(endLatlng,{icon: EndIcon}).addTo(map);
 
-  //var chart = new Highcharts.Chart({
+  sidebar = L.control.sidebar({
+    autopan: false,       // whether to maintain the centered map point when opening the sidebar
+    closeButton: true,    // whether t add a close button to the panes
+    container: 'sidebar', // the DOM container or #ID of a predefined sidebar container that should be used
+    position: 'left',     // left or right
+  }).addTo(map);
+
+  buildSidePanels()
+  sidebar.open('infos');
+
   hgChart = new Highcharts.Chart({
     chart: {      
     type: 'line',
@@ -201,7 +215,7 @@ function buildMap(track) {
             point: {
                 events: {
                     mouseOver: function () {
-                        posMarker = new L.LatLng(track.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], track.GeoJSON.features[0]['geometry']['coordinates'][this.x][0]);
+                        posMarker = new L.LatLng(mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0]);
                         if (mousemarker == null) {
                           // Le x correspond à l'index, ça tombe bien...
                           // https://gis.stackexchange.com/questions/318400/adding-a-start-and-end-marker-to-a-geojson-linestring                                
@@ -215,9 +229,9 @@ function buildMap(track) {
                     click: function () {
                         // On peut préciser un niveau de zoom
                         // On peut utiliser map.setView
-                        console.log('x '+this.x+'  Lat '+track.GeoJSON.features[0]['geometry']['coordinates'][this.x][1]+' Long '+track.GeoJSON.features[0]['geometry']['coordinates'][this.x][0])
+                        console.log('x '+this.x+'  Lat '+mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1]+' Long '+mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0])
                         console.log(arrayHour[this.x])
-                        panMarker = new L.LatLng(track.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], track.GeoJSON.features[0]['geometry']['coordinates'][this.x][0]);
+                        panMarker = new L.LatLng(mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0]);
                         map.panTo(panMarker);
                     }
                 }
@@ -239,7 +253,7 @@ function buildMap(track) {
           }
           var index = this.point.index;
           //var tooltip = Heure[index]+'<br/>Alt : '+altiVal[index]+'m<br/>HS : '+groundVal[index]+'m<br/>Vz : '+Vario[index]+'m/s<br/>Vit : '+Speed[index]+' km/h';
-          var tooltip = Highcharts.dateFormat('%H:%M:%S', arrayHour[index])+'<br/>Alt : '+arrayAlti[index]+'m<br/>Vz : '+track.vz[index].toFixed(2)+'m/s<br/>Vit : '+track.speed[index].toFixed(0)+' km/h'
+          var tooltip = Highcharts.dateFormat('%H:%M:%S', arrayHour[index])+'<br/>Alt : '+arrayAlti[index]+'m<br/>Vz : '+mainTrack.vz[index].toFixed(2)+'m/s<br/>Vit : '+mainTrack.speed[index].toFixed(0)+' km/h'
           return tooltip;
       },
       crosshairs: true
@@ -298,17 +312,18 @@ function createPopThermal(feature, layer) {
 }
 
 function openNav() {
-  // https://stackoverflow.com/questions/4787527/how-to-find-the-width-of-a-div-using-vanilla-javascript
+  // https://stackoverflow.com/questions/4787527/how-to-find-the-width-of-a-div-using-vannilla-javascript
   // http://jsfiddle.net/juxy42ev/    -> Toggle sidebar
-  console.log('OpenNav')
+  let screenWidth = document.getElementById('graphe').offsetWidth
+  console.log('OpenNav largeur '+screenWidth)
   document.getElementById("sideNavigation").style.width = "260px";
   document.getElementById("carte").style.marginLeft = "260px";
-  document.getElementById("carte").style.width = 1353 + 'px';
-  console.log('avant '+document.getElementById('graphe').offsetWidth)
+  document.getElementById("carte").style.width = screenWidth - 260 + 'px';
+ // console.log('avant '+document.getElementById('graphe').offsetWidth)
   document.getElementById("graphe").style.marginLeft = "260px";
 //  console.log('avant '+document.getElementById('graphe').style.width)
  //  document.getElementById('graphe').style.width = '1353px';
-  document.getElementById('graphe').style.width = 1353 + 'px';
+  document.getElementById('graphe').style.width = screenWidth - 260 + 'px';
  // console.log('après '+document.getElementById('graphe').style.offsetWidth)
   console.log('reflow : '+hgChart.reflow);
   hgChart.reflow();
@@ -374,4 +389,159 @@ function glideIcon (feature, latlng) {
     myIcon = L.AwesomeMarkers.icon({icon: 'fa-angle-left', markerColor: 'red', prefix: 'fa', iconColor: 'white'}) 
   }
   return L.marker(latlng, { icon: myIcon })
+}
+
+// Centrage décollage
+function displayTakeOff() {
+//  map.fitBounds([takeOffCoords]);      
+} 
+
+function buildSidePanels()
+{
+
+  sidebar.addPanel({
+    id:   'infos',
+    tab:  '<i class="fa fa-gear"></i>',
+    title: i18n.gettext('General information'),
+    pane: fillSidebarInfo()
+  })  
+
+  sidebar.addPanel({
+    id:   'summary',
+    tab:  '<i class="fa fa-gear"></i>',
+    title: i18n.gettext('Summary'),
+    pane: fillSidebarSummary()
+  })
+  
+  sidebar.addPanel({
+    id:   'pathway',
+    tab:  '<i class="fa fa-gear"></i>',
+    title: i18n.gettext('Pathway'),
+    pane: fillSidebarPathway()
+  })    
+}
+
+// voir https://stackoverflow.com/questions/1519271/what-is-the-best-way-to-override-an-existing-css-table-rule qui fait la différence
+// entre la classe et l'application à une id de table
+
+function fillSidebarInfo() {
+
+  let flightDate
+  const dateTkoff = new Date(mainTrack.fixes[0].timestamp)
+  const dTkOff = String(dateTkoff.getDay()).padStart(2, '0')+'/'+String(dateTkoff.getMonth()).padStart(2, '0')+'/'+dateTkoff.getFullYear()      
+  const hTkoff = String(dateTkoff.getHours()).padStart(2, '0')+':'+String(dateTkoff.getMinutes()).padStart(2, '0')
+  const dateLand = new Date(mainTrack.fixes[mainTrack.fixes.length - 1].timestamp);
+  const hLand = String(dateLand.getHours()).padStart(2, '0')+':'+String(dateLand.getMinutes()).padStart(2, '0')+':'+String(dateLand.getSeconds()).padStart(2, '0');     
+  const durationFormatted = new Date(mainTrack.stat.duration*1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
+  const arrTakeOff = tkoffSite.split("*");
+  let formattedSite
+  if (arrTakeOff.length > 1)
+    formattedSite = arrTakeOff[0]+' ('+arrTakeOff[1]+')'
+  else
+    formattedSite = tkoffSite
+  let trackSecurity
+  console.log('mainTrack.info.security '+mainTrack.info.security.toString())
+  if (mainTrack.info.security.toString() == (null || ""))
+    trackSecurity = i18n.gettext('No')
+  else {      
+    trackSecurity = i18n.gettext('Yes')
+  }
+  let htmlText = fillSidebarButtons()
+  htmlText += '<div><table>'
+  htmlText += '    <tbody>'
+  htmlText += '      <tr><td>'+i18n.gettext('Date')+'</td><td>'+mainTrack.info.date+'</td></tr>'      
+  htmlText += '      <tr><td>'+i18n.gettext('Pilot')+'</td><td>'+mainTrack.info.pilot+'</td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Glider')+'</td><td>'+mainTrack.info.gliderType+'</td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td>'+durationFormatted+'</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Take off')+'</td><td>'+hTkoff+'</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('GPS alt')+'</td><td>'+mainTrack.fixes[0].gpsAltitude+' m</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Site')+'</td><td>'+formattedSite+'</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Landing')+'</td><td>'+hLand+'</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('GPS alt')+'</td><td>'+mainTrack.fixes[mainTrack.fixes.length - 1].gpsAltitude+' m</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('City')+'</td><td></td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Max GPS alt')+'</td><td>'+mainTrack.stat.maxalt.gps+' m</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Min GPS alt')+'</td><td>'+mainTrack.stat.minialt.gps+' m</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Max climb')+'</td><td>'+mainTrack.stat.maxclimb+' m/s</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Max sink')+'</td><td>'+mainTrack.stat.maxsink+' m/s</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Max gain')+'</td><td>'+anaTrack.bestGain+' m</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Max speed')+'</td><td>'+mainTrack.stat.maxspeed+' km/h</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Best transition')+'</td><td>'+(anaTrack.bestGlide/1000).toFixed(2)+' km</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Points')+'</td><td>'+mainTrack.fixes.length+'</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Range')+'</td><td>'+mainTrack.stat.interval+' s</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Size')+'</td><td>'+mainTrack.stat.distance.toFixed(2)+' km</td></tr>'   
+  htmlText += '      <tr><td>'+i18n.gettext('Signature')+'</td><td>'+trackSecurity+'</td></tr>' 
+  htmlText += '    </tbody>'
+  htmlText += '  </table></div>'
+
+  return htmlText
+}
+
+function fillSidebarSummary() {
+  let htmlText = fillSidebarButtons()
+  htmlText += '<br><br>'
+  htmlText += '<h2>Summary</h2>'
+  htmlText += '<div class="container">'
+  htmlText += '<h2>Contextual Classes</h2>'
+  htmlText += '<p>Contextual classes can be used to color the table, table rows or table cells. The classes that can be used are: .table-primary, .table-success, .table-info, .table-warning, .table-danger, .table-active, .table-secondary, .table-light and .table-dark:</p>'
+  htmlText += '<table class="table">'
+  htmlText += '<thead>'
+  htmlText += '      <tr>'
+  htmlText += '        <th>Firstname</th>'
+  htmlText += '        <th>Lastname</th>'
+  htmlText += '        <th>Email</th>'
+  htmlText += '      </tr>'
+  htmlText += '    </thead>'
+  htmlText += '    <tbody>'
+  htmlText += '      <tr>'
+  htmlText += '        <td>Default</td>'
+  htmlText += '        <td>Defaultson</td>'
+  htmlText += '        <td>def@somemail.com</td>'
+  htmlText += '      </tr>'      
+  htmlText += '      <tr class="table-primary">'
+  htmlText += '        <td>Primary</td>'
+  htmlText += '        <td>Joe</td>'
+  htmlText += '        <td>joe@example.com</td>'
+  htmlText += '      </tr>'
+  htmlText += '      <tr class="table-success">'
+  htmlText += '        <td>Success</td>'
+  htmlText += '        <td>Doe</td>'
+  htmlText += '        <td>john@example.com</td>'
+  htmlText += '      </tr>'
+  htmlText += '    </tbody>'
+  htmlText += '  </table>'
+  htmlText += '</div>'
+  htmlText += '<h3>End of page</h3>'
+
+  return htmlText
+}
+
+function fillSidebarPathway() {
+  let htmlText = fillSidebarButtons()
+  htmlText += '<div><table style="width: 100%;margin-top: 200px;">'
+  htmlText += '    <tbody>'
+  htmlText += '      <tr><td>'+i18n.gettext('Date')+'</td><td>'+mainTrack.info.date+'</td></tr>'      
+  htmlText += '      <tr><td>'+i18n.gettext('Pilot')+'</td><td>'+mainTrack.info.pilot+'</td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Glider')+'</td><td>'+mainTrack.info.gliderType+'</td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td>'+mainTrack.stat.duration+'</td></tr>' 
+  htmlText += '      <tr><td>test align</td><td>resultat</td></tr>' 
+  htmlText += '    </tbody>'
+  htmlText += '  </table></div>'
+
+  return htmlText
+
+  return htmlText
+}
+
+function fillSidebarButtons() {
+  let htmlText = '<br>'
+  htmlText += '<div class="btn-toolbar pull-left">'
+  htmlText += ' <button type="button" class="btn-secondary btn-sm mr-3" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
+  htmlText += ' <button type="button" class="btn-success btn-sm mr-3" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
+  htmlText += ' <button type="button" class="btn-warning btn-sm" onclick="sidebar.open(\'pathway\')">'+i18n.gettext('Pathway')+'</button>'
+  htmlText += '</div>'
+  return htmlText
+}
+
+function testdb() {
+  console.log(dblog.searchSiteInDb(45.85314, 6.2228, false));
 }
