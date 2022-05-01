@@ -1,6 +1,8 @@
 const {ipcMain, BrowserWindow} = require('electron')
 const path = require('path')
 const log = require('electron-log')
+const IGCAnalyzer = require('../../utils/igc-analyzer.js')
+const anaTrack = new IGCAnalyzer()
 
 ipcMain.on('display-map', (event, track) => {
    openWindow(event,track)    
@@ -23,8 +25,10 @@ function openWindow(event,track) {
     win.webContents.openDevTools();
     win.on('close', () => { win = null })
     win.loadURL(mapHtmlPath)
+    // Computation is much faster in the main process
+    anaTrack.compute(track.fixes) 
     win.webContents.on('did-finish-load', function() {    
-        win.send('geojson-for-map', track)  
+        win.send('geojson-for-map', [track,anaTrack])  
         win.show();
     });
 }
