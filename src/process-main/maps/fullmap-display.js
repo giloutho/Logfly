@@ -3,6 +3,7 @@ const path = require('path')
 const log = require('electron-log')
 const IGCAnalyzer = require('../../utils/igc-analyzer.js')
 const anaTrack = new IGCAnalyzer()
+const dblog = require('../../utils/db/db-search.js')
 
 ipcMain.on('display-map', (event, track) => {
    openWindow(event,track)    
@@ -26,9 +27,10 @@ function openWindow(event,track) {
     win.on('close', () => { win = null })
     win.loadURL(mapHtmlPath)
     // Computation is much faster in the main process
-    anaTrack.compute(track.fixes) 
+    anaTrack.compute(track.fixes)
+    let tkSite = dblog.searchSiteInDb(track.fixes[0].latitude, track.fixes[0].longitude, false);
     win.webContents.on('did-finish-load', function() {    
-        win.send('geojson-for-map', [track,anaTrack])  
+        win.send('geojson-for-map', [track,anaTrack,tkSite])  
         win.show();
     });
 }
