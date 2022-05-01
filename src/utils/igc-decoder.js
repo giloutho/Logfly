@@ -79,7 +79,8 @@ class IGCDecoder {
 		// https://github.com/Turbo87/igc-parser/pull/20    Implement `lenient` parsing modet
     let result = IGCParser.parse(this.igcData, { lenient: true });
     try {
-      this.info.date = result.date
+	  // on passe de YYYY-MM-DD à DD/MM/YYYY
+      this.info.date =  result.date.split("-").reverse().join("/");
       this.info.numFlight = result.numFlight
       this.info.pilot = result.pilot
       this.info.gliderType = result.gliderType
@@ -200,10 +201,15 @@ class IGCDecoder {
 			const smoothed = smooth(rawspeed, smoothOffset)			
 			const varioSmoothOffset = 10
 			const varioSmoothed = smooth(rawvario, varioSmoothOffset)	
+			const sinkSmoothOffset = 10
+			const sinkSmoothed = smooth(rawvario, sinkSmoothOffset)	
 			let maxRawSpeed = 0
 			let maxSmoothed = 0
 			let maxRawVario = 0
 			let maxVarioSmoothed = 0
+			let minRawVario = 0
+			let minVarioSmoothed = 0
+
 			// Il y a plusieurs méthodes pour extraire le minimum et le maximum
 			// mais selon plusieurs articles comme par exemple :
 			// https://medium.com/coding-at-dawn/the-fastest-way-to-find-minimum-and-maximum-values-in-an-array-in-javascript-2511115f8621
@@ -213,12 +219,14 @@ class IGCDecoder {
 				if (smoothed[i] > maxSmoothed) maxSmoothed = smoothed[i]
 				if (rawvario[i] > maxRawVario) maxRawVario = rawvario[i]
 				if (varioSmoothed[i] > maxVarioSmoothed) maxVarioSmoothed = varioSmoothed[i]		
+				if (rawvario[i] < minRawVario) minRawVario = rawvario[i]
+				if (sinkSmoothed[i] < minVarioSmoothed) minVarioSmoothed = sinkSmoothed[i]	
 			}		
 			this.speed = smoothed
 			this.vz = varioSmoothed
 			this.stat.maxclimb = maxVarioSmoothed.toFixed(2)
-			this.stat.maxspeed = maxSmoothed.toFixed(2)   // à vérifier
-
+			this.stat.maxspeed = maxSmoothed.toFixed(2) 
+			this.stat.maxsink = minVarioSmoothed.toFixed(2)  
 		} catch (error) {
 			console.log(error)
 		}

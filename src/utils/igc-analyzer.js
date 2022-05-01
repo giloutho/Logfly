@@ -49,8 +49,8 @@ const { truncate } = require("original-fs");
         let _percThermals = 0;
         let _percGlides = 0;
         let _percDives = 0;
-        let bestGlide = 0.0;
-        let bestGlideEnd;
+        let _bestGlide = 0.0;
+        let _bestGlideEnd;
         let progressValue = 0.7;   
         let coords = [];   
         let t = [];  
@@ -354,6 +354,8 @@ const { truncate } = require("original-fs");
         this.percThermals = _percThermals;
         this.percGlides = _percGlides;
         this.percDives = _percDives;
+        this.bestGlide = _bestGlide;
+        this.bestGlideEnd = _bestGlideEnd;
         
         // fin de compute
 
@@ -421,9 +423,9 @@ const { truncate } = require("original-fs");
                 else
                     segment.efficiency = Math.round(100.0 * dz / divisor);
                     segment.bruteDistance = dp;
-                if (dp > bestGlide) {
-                    bestGlide = dp;
-                    bestGlideEnd = idxEnd;
+                if (dp > _bestGlide) {
+                    _bestGlide = dp;
+                    _bestGlideEnd = idxEnd;
                 }
                 let average_ld = (-dp / dz);
                 segment.distance_metres = dp;
