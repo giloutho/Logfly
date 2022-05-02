@@ -75,10 +75,23 @@ function buildMap() {
   var googleLayer = new L.Google('TERRAIN');
   var googleSat = new L.Google('SATELLITE');
 
+  var ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
+        '&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
+        '&LAYER={ignLayer}&STYLE={style}&FORMAT={format}'+
+        '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}',
+        {
+          ignApiKey: 'pratique',
+          ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+          style: 'normal',
+          format: 'image/png',
+          service: 'WMTS',
+      });
+
   OpenTopoMap.addTo(map);
 
   var baseMaps = {
       "OpenTopo" : OpenTopoMap,
+      "IGN" : ignlayer,
       "OSM": osmlayer,
       "MTK" : mtklayer,
       "4UMaps" : fouryoulayer,
@@ -519,13 +532,18 @@ function fillSidebarPathway() {
   let htmlText = fillSidebarButtons()
   htmlText += '<div><table style="width: 100%;margin-top: 200px;">'
   htmlText += '    <tbody>'
-  htmlText += '      <tr><td>'+i18n.gettext('Date')+'</td><td>'+mainTrack.info.date+'</td></tr>'      
-  htmlText += '      <tr><td>'+i18n.gettext('Pilot')+'</td><td>'+mainTrack.info.pilot+'</td></tr>'  
-  htmlText += '      <tr><td>'+i18n.gettext('Glider')+'</td><td>'+mainTrack.info.gliderType+'</td></tr>'  
-  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td>'+mainTrack.stat.duration+'</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Date')+'</td><td><i class="fa fa-gear"></i></td></tr>'      
+  htmlText += '      <tr><td>'+i18n.gettext('Pilot')+'</td><td><i class="fa fa-cloud-upload fa-2x"</td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Glider')+'</td><td><i class="fa fa-arrow-right fa-2x"</td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td><i class="fa fa-play"</td></tr>' 
+  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td><i class="fa fa-stop"</td></tr>' 
   htmlText += '      <tr><td>test align</td><td>resultat</td></tr>' 
   htmlText += '    </tbody>'
   htmlText += '  </table></div>'
+
+  for (let cr of anaTrack.course) {
+    console.log('cat '+cr.category+' timestamp '+cr.timestamp+' time '+cr.time+' elapsed '+cr.elapsed+' alt '+cr.alt+' data 1 '+cr.data1+' data 2 '+cr.data2+' coords '+cr.coords)
+  }
 
   return htmlText
 
