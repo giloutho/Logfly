@@ -28,8 +28,12 @@ function testDb() {
         // how many tables in database
         const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
         let countTables = stmt.get()
+        console.log('Test '+dbFullPath+' '+countTables['COUNT(*)']+' tables')
         // countTables is an object, the value is recovered with a notation between brackets 
         countTables['COUNT(*)'] >= 2 ? store.set('checkDb',true) : store.set('checkDb',false)     
+        const stmtSites = db.prepare('SELECT COUNT(*) FROM Site')
+        let countSites = stmtSites.get()
+        console.log(`Connected : ${countSites['COUNT(*)']} sites`);
     } else {
         store.set('checkDb',false)
         console.log('db checked file not exist '+store.get('checkDb'))  
