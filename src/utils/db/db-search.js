@@ -7,7 +7,7 @@ function flightByTakeOff(flLat, flLng, dayDate) {
   let maxDist = 300
   let maxDelay = 120
   let flFound = false
-  const db = require('better-sqlite3')(store.get('fullPathDb'))
+  const db = require('better-sqlite3')(store.get('dbFullPath'))
   if (db.open) {
     // Convert timestamp to milliseconds
     let date = new Date(dayDate);
@@ -53,7 +53,7 @@ function flightByTakeOff(flLat, flLng, dayDate) {
  */
 function checkFlightList(flightList) {
   let regexMinSec = /:([0-5][0-9]):([0-5][0-9])/
-  const db = require('better-sqlite3')(store.get('fullPathDb'))
+  const db = require('better-sqlite3')(store.get('dbFullPath'))
   if (db.open) {
     flightList.flights.forEach(flight => {
       let arrDate = flight['date'].split('.')
@@ -105,7 +105,7 @@ function checkFlightList(flightList) {
     });
   } else {
     flightList.error = true
-    flightList.otherlines.push('unable to open '+store.get('fullPathDb'))
+    flightList.otherlines.push('unable to open '+store.get('dbFullPath'))
   } 
   return flightList 
 }
@@ -123,7 +123,8 @@ function checkFlightList(flightList) {
  */
 
  function searchSiteInDb(pLat, pLong, landingType) {
-    const db = require('better-sqlite3')(store.get('fullPathDb'))
+    const db = require('better-sqlite3')(store.get('dbFullPath'))
+
     // in Logfly 5, distance mini is stored in settings but we never changed the value of 300 m
     let distMini = 300;            
     /*
@@ -132,19 +133,20 @@ function checkFlightList(flightList) {
     */
     const arrLat = Math.ceil(pLat*1000)/1000;
     const arrLong = Math.ceil(pLong*1000)/1000;
-    const sLatMin = (arrLat - 0.01).toString();
-    const sLatMax = (arrLat + 0.01).toString();
-    const sLongMin = (arrLong - 0.01).toString();
-    const sLongMax = (arrLong + 0.01).toString();
-    
+    const sLatMin = (arrLat - 0.01).toFixed(4).toString();
+    const sLatMax = (arrLat + 0.01).toFixed(4).toString();
+    const sLongMin = (arrLong - 0.01).toFixed(4).toString();
+    const sLongMax = (arrLong + 0.01).toFixed(4).toString();
     // In old versions, search is limited to launching sites, but this information can be absent
     // Only landing sites are excluded
     let selectedSite = '';
     let surroundingSites;
     if (landingType == true) 
       surroundingSites = db.prepare(`SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Alti,S_Localite,S_Pays FROM Site WHERE S_Latitude >'${sLatMin}' AND S_Latitude < '${sLatMax}' AND S_Longitude > '${sLongMin}' AND S_Longitude < '${sLongMax}' `)
-    else
+    else {
+      //console.log(`SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Alti,S_Localite,S_Pays FROM Site WHERE S_Latitude >'${sLatMin}' AND S_Latitude < '${sLatMax}' AND S_Longitude > '${sLongMin}' AND S_Longitude < '${sLongMax}' AND S_Type <> 'A' `)
       surroundingSites = db.prepare(`SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Alti,S_Localite,S_Pays FROM Site WHERE S_Latitude >'${sLatMin}' AND S_Latitude < '${sLatMax}' AND S_Longitude > '${sLongMin}' AND S_Longitude < '${sLongMax}' AND S_Type <> 'A' `)
+    }
     for (const site of surroundingSites.iterate()) {
       let carnetLat = site.S_Latitude;
       let carnetLong = site.S_Longitude;
