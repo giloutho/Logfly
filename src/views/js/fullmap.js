@@ -6,6 +6,7 @@ const Store = require('electron-store')
 const store = new Store();
 
 const dblog = require('../../utils/db/db-search.js')
+const pieGnerator = require('../../utils/graphic/pie-generator.js')
 
 let mainTrack
 let anaTrack
@@ -42,10 +43,6 @@ ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
   mainTrack = track
   anaTrack = analyzedTrack
   tkoffSite = tkSite
-  let percThermals = Number(+anaTrack.percThermals).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
-  let percGlides = Number(+anaTrack.percGlides).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
-  let percDives = Number(+anaTrack.percDives).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}); 
-  console.log('% thermal : '+percThermals+'  % glides : '+percGlides+'  % dives : '+percDives)
   buildMap()
 })
 
@@ -431,7 +428,7 @@ function buildSidePanels()
     tab:  '<i class="fa fa-gear"></i>',
     title: i18n.gettext('Pathway'),
     pane: fillSidebarPathway()
-  })    
+  }) 
 }
 
 // voir https://stackoverflow.com/questions/1519271/what-is-the-best-way-to-override-an-existing-css-table-rule qui fait la différence
@@ -489,41 +486,55 @@ function fillSidebarInfo() {
   return htmlText
 }
 
+
 function fillSidebarSummary() {
+  
+  let percThermals = Math.round(anaTrack.percThermals*100);
+  let percGlides = Math.round(anaTrack.percGlides*100)
+  let percDives = Math.round(anaTrack.percDives*100)
+  let percVarious = Math.round(100-(percThermals+percGlides+percDives))
+  console.log('% thermal : '+percThermals+'  % glides : '+percGlides+'  % dives : '+percDives)
+
+  let data  = [];
+  let color = [];
+  data.push({ value: percThermals });
+  color.push('#F6BB42');
+  data.push({ value: percGlides });
+  color.push('#8CC152');
+  data.push({ value: percVarious });
+  color.push('#DA4453');
+  if (percDives > 0) {
+    data.push({ value: percDives });
+    color.push('#967ADC');
+  }
+  var centerX = 200;
+  var centerY = 200;
+  var radius = 180;
+  let mysvg = '';
+  let arr = pieGnerator.pie(centerX, centerY, radius, data);
+  for (var i = 0; i < arr.length; i++) {
+      var item = arr[i];
+      mysvg +=`<g transform="${item.transform}"><path d="${item.d}" fill="${color[i]}" /><text fill="white" font-size="25" ${item.text}">${item.value}%</text></g>`;
+  }
+  console.log(mysvg);
+
   let htmlText = fillSidebarButtons()
-  htmlText += '<br><br>'
-  htmlText += '<h2>Summary</h2>'
-  htmlText += '<div class="container">'
-  htmlText += '<h2>Contextual Classes</h2>'
-  htmlText += '<p>Contextual classes can be used to color the table, table rows or table cells. The classes that can be used are: .table-primary, .table-success, .table-info, .table-warning, .table-danger, .table-active, .table-secondary, .table-light and .table-dark:</p>'
-  htmlText += '<table class="table">'
-  htmlText += '<thead>'
-  htmlText += '      <tr>'
-  htmlText += '        <th>Firstname</th>'
-  htmlText += '        <th>Lastname</th>'
-  htmlText += '        <th>Email</th>'
-  htmlText += '      </tr>'
-  htmlText += '    </thead>'
-  htmlText += '    <tbody>'
-  htmlText += '      <tr>'
-  htmlText += '        <td>Default</td>'
-  htmlText += '        <td>Defaultson</td>'
-  htmlText += '        <td>def@somemail.com</td>'
-  htmlText += '      </tr>'      
-  htmlText += '      <tr class="table-primary">'
-  htmlText += '        <td>Primary</td>'
-  htmlText += '        <td>Joe</td>'
-  htmlText += '        <td>joe@example.com</td>'
-  htmlText += '      </tr>'
-  htmlText += '      <tr class="table-success">'
-  htmlText += '        <td>Success</td>'
-  htmlText += '        <td>Doe</td>'
-  htmlText += '        <td>john@example.com</td>'
-  htmlText += '      </tr>'
-  htmlText += '    </tbody>'
-  htmlText += '  </table>'
-  htmlText += '</div>'
-  htmlText += '<h3>End of page</h3>'
+  htmlText +='<br><br><br><br>'
+  htmlText += '<svg id="onePieDiv" width="400" height="400">';
+  htmlText += mysvg;
+  htmlText += '</svg>';
+
+  // htmlText +='<svg height="300" width="300" viewBox="0 0 100 100">' 
+  // htmlText +='<circle r="100" cx="10" cy="10" fill="white" />'
+  // htmlText +='<circle r="100" cx="10" cy="10" fill="bisque" />'
+  // htmlText +='<svg height="400" width="400">'
+  // htmlText +='<circle cx="200" cy="200" r="190" stroke="black" stroke-width="3" fill="red" />'
+  // htmlText +='</svg>'
+
+  // htmlText +='<svg height="200" width="200">' 
+  // htmlText +='<path d="M 100 0 A 100 100 0 0 1 186.6 150 L 100 100 L 100 0 Z" class=\'type0\'/>'
+  // htmlText +='<path d="M 186.6 150 A 100 100 0 1 1 100 0 L 100 100 L 186.6 150 Z" class=\'type1\'/>'
+  // htmlText +='</svg>'
 
   return htmlText
 }
@@ -541,9 +552,9 @@ function fillSidebarPathway() {
   htmlText += '    </tbody>'
   htmlText += '  </table></div>'
 
-  for (let cr of anaTrack.course) {
-    console.log('cat '+cr.category+' timestamp '+cr.timestamp+' time '+cr.time+' elapsed '+cr.elapsed+' alt '+cr.alt+' data 1 '+cr.data1+' data 2 '+cr.data2+' coords '+cr.coords)
-  }
+  // for (let cr of anaTrack.course) {
+  //   console.log('cat '+cr.category+' timestamp '+cr.timestamp+' time '+cr.time+' elapsed '+cr.elapsed+' alt '+cr.alt+' data 1 '+cr.data1+' data 2 '+cr.data2+' coords '+cr.coords)
+  // }
 
   return htmlText
 
