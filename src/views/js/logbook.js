@@ -8,64 +8,75 @@ const fs = require('fs');
 const Store = require('electron-store')
 let store = new Store(); 
 let db = require('better-sqlite3')(store.get('dbFullPath'))
+let menuFill = require('../../views/tpl/sidebar.js')
+let btnMenu = document.getElementById('toggleMenu')
+
 var mapPm
 var table
 var currIdFlight
 var track
 var btnFullmap = document.getElementById('fullmap')
+let btnScoring = document.getElementById('scoring')
+let btnFlyxc = document.getElementById('bizarre')
 
+ipcRenderer.on('translation', (event, langJson) => {
+  let currLang = store.get('lang')
+  i18n.setMessages('messages', currLang, langJson)
+  i18n.setLocale(currLang);
+  iniForm()
+})
 
-$(document).ready(function () {
-    $('#sidebarCollapse').on('click', function () {
-        console.log('clic sidebar')
-        $('#sidebar').toggleClass('active');
-    });    
-});
+function iniForm() {
+  let menuOptions = menuFill.fillMenuOptions(i18n)
+  $.get('../../views/tpl/sidebar.html', function(templates) { 
+      var template = $(templates).filter('#temp-menu').html();  
+      var rendered = Mustache.render(template, menuOptions)
+    //  console.log(template)
+      document.getElementById('target-sidebar').innerHTML = rendered
+  })
+  document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
+}
 
 tableStandard()
 
-ipcRenderer.on('translation', (event, langJson) => {
-    let currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, langJson)
-    i18n.setLocale(currLang);
-    const menuOptions = {
-      logbook : i18n.gettext('Logbook'),
-      overview : i18n.gettext('Overview'),
-      import : i18n.gettext('Import'),
-      external : i18n.gettext('External track'),
-      stat : i18n.gettext('Statistics'),
-      sites : i18n.gettext('Sites'),
-      wayp : i18n.gettext('Waypoints'),
-      airspaces : i18n.gettext('Airspaces'),
-      photos : i18n.gettext('Photos'),
-      settings : i18n.gettext('Settings'),
-      tools : i18n.gettext('Tools'),     // Original display - Logbook copy - Csv Import - Csv Export - Backup/Restore - Translation
-      support : i18n.gettext('Support'),    // Send an email - Log file - System Report - Send logbook - miniTeamViewer ?
-    };    
-    var rendered = Mustache.render($('#temp-menu').html(), menuOptions)
-    document.getElementById('target-menu').innerHTML = rendered;
-  })
-
+// Calls up the relevant page 
 function callPage(pageName) {
-    console.log('clic page')
     ipcRenderer.send("changeWindow", pageName);    // main.js
 }
 
-// lnkActions.addEventListener('click', (event) => {
-//     if (track.fixes.length> 0) {    
-//       let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
-//     } else {
-//       log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
-//       let err_title = i18n.gettext("Program error")
-//       let err_content = i18n.gettext("Decoding problem in track file")
-//       ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
-//     }      
-//   })
+btnMenu.addEventListener('click', (event) => {
+  if (btnMenu.innerHTML === "Menu On") {
+      btnMenu.innerHTML = "Menu Off";
+  } else {
+      btnMenu.innerHTML = "Menu On";
+  }
+  $('#sidebar').toggleClass('active');
+})
 
-btnFullmap.addEventListener('click', (event) => {
+btnScoring.addEventListener('click', (event) => {  
+  console.log('clic scoring')
+  $('#div_table').removeClass('d-block')
+  $('#div_table').addClass('d-none')
+  $('#div_waiting').addClass('d-block')
+})
+
+btnFlyxc.addEventListener('click', (event) => { 
+  console.log('clic flyxc')
+  let hideWaitng = ipcRenderer.send('hide-waiting-gif',null)
+  // $('#div_waiting').removeClass('d-block')
+  // $('#div_waiting').addClass('d-none')
+  // $('#div_table').addClass('d-block')
+})
+
+
+btnFullmap.addEventListener('click', (event) => {  
   console.log('clic fullmap')
+  displayWait()
   if (track.fixes.length> 0) {    
+    // functionnal code
     let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
+    // try wit fullmap-compute
+    //let disp_map = ipcRenderer.send('compute-map', track)   // process-main/maps/fullmap-compute.js
   } else {
     log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
     let err_title = i18n.gettext("Program error")
@@ -246,7 +257,25 @@ function readIgc(igcID) {
   
   }
   
-  
+  function displayWait() {
+    $('#div_table').removeClass('d-block')
+    $('#div_table').addClass('d-none')
+    $('#div_waiting').addClass('d-block')
+  }
+
+  // function hideWait() {
+  //   $('#div_waiting').removeClass('d-block')
+  //   $('#div_waiting').addClass('d-none')
+  //   $('#div_table').addClass('d-block')
+  // }
+
+  ipcRenderer.on('remove-waiting-gif', (event, result) => {
+    console.log('remove-waiting-gif reçu...')
+    $('#div_waiting').removeClass('d-block')
+    $('#div_waiting').addClass('d-none')
+    $('#div_table').addClass('d-block')
+  })
+
   function initmapBasic(viewlat,viewlon,viewzoom) {
     var L = require('leaflet');
     mapBasic = L.map('mapid').setView([viewlat,viewlon], viewzoom);
