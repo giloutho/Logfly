@@ -5,10 +5,10 @@ const log = require('electron-log')
 const IGCAnalyzer = require('../../utils/igc-analyzer.js')
 const anaTrack = new IGCAnalyzer()
 const dblog = require('../../utils/db/db-search.js')
-const SyncTileSet = require('srtm-elevation').SyncTileSet;
+const SyncTileSet = require('srtm-elevation').SyncTileSet
 const Store = require('electron-store')
 const store = new Store();
-const pathW  = store.get('pathw')
+const pathW  = store.get('pathWork')
 let tkSite 
 let tileset
 
@@ -27,6 +27,7 @@ function trackComputing(event,track) {
     // strm download process
     let pathOk = false
     let pathSrtm =  path.join(pathW,'Srtm') 
+    console.log('before test : '+pathSrtm)
     if (fs.existsSync(pathSrtm)) {
         pathOk = true
     } else {
