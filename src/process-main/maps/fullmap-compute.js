@@ -5,7 +5,6 @@ const log = require('electron-log')
 const IGCAnalyzer = require('../../utils/igc-analyzer.js')
 const anaTrack = new IGCAnalyzer()
 const dblog = require('../../utils/db/db-search.js')
-const SyncTileSet = require('srtm-elevation').SyncTileSet;
 
 const Store = require('electron-store')
 const store = new Store();
