@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs') 
 const Store = require('electron-store')
 const process = require('process')
+//const propertiesReader = require('../../node_modules/properties-reader')
 const propertiesReader = require('properties-reader')
 
 
@@ -10,7 +11,9 @@ function checkSettings (electronPack, progVersion) {
     var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
     if (propertiesPath != null) 
     {
-        console.log(path.resolve(propertiesPath, "logfly.properties")); 
+        let forcheck = path.resolve(propertiesPath, "logfly.properties")
+        console.log(forcheck)
+        checkPropWindows(forcheck)
     } 
     if (electronPack) { 
         prodSettings(progVersion)
@@ -58,14 +61,35 @@ function prodSettings(progVersion) {
 
 function devSettings() {
     const store = new Store(); 
-  //  getEnv()
-    store.set('dbFullPath','./db/test6.db')
-    store.set('dbName','test6.db')
-    store.set('pathdb','./db')
-    store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
-    store.set('pathSyride','/Users/gil/syride')  
-    store.set('pathWork','/Users/gil/Documents/Logfly')
-    store.set('lang','fr')
+    getEnv()
+    let currOS = store.get('currOS')
+    switch(currOS) {
+        case 'darwin': 
+            store.set('dbFullPath','./db/test6.db')
+            store.set('dbName','test6.db')
+            store.set('pathdb','./db')
+            store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
+            store.set('pathSyride','/Users/gil/syride')  
+            store.set('pathWork','/Users/gil/Documents/Logfly')
+            store.set('lang','fr')
+            break;
+        case 'linux': 
+            currOs = 'linux'
+            break;
+        case 'win':
+            store.set('dbFullPath','./db/test6.db')
+            store.set('dbName','test6.db')
+            store.set('pathdb','./db')
+            store.set('pathImport',process.env.USERPROFILE+'\\Documents\\import')
+            store.set('pathSyride', process.env.USERPROFILE+'\\Documents\\Syride')
+            store.set('pathWork', process.env.USERPROFILE+'\\Documents\\Logfly')
+            store.set('lang','fr')
+            break;    
+        default: 
+            currOS = 'ns'  // non supported  
+    }
+
+
   //  console.log('mode developpement sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion'))
   console.log('devSettings Ok')
 }
@@ -119,7 +143,7 @@ function getEnv() {
             store.set('finderlong',properties.get('finderlong'))
             store.set('finderlat',properties.get('finderlat'))
             store.set('urllogfly',properties.get('urllogfly'))
-            store.set('pathw',properties.get('pathw'))
+            store.set('pathWork',properties.get('pathw'))
             store.set('urlicones',properties.get('urlicones'))
             store.set('dbFullPath',properties.get('fullpathdb'))
             store.set('pathimport',properties.get('pathimport'))
@@ -128,6 +152,18 @@ function getEnv() {
             // Logfly5 settings not found, default values will be defined
 
         }
+    }
+}
+
+function checkPropWindows(logflyPath) {
+    if (fs.existsSync(logflyPath)) {   
+        const store = new Store()
+        var properties = propertiesReader(logflyPath);
+        let pathdb = properties.get('pathdb')
+        let pathw = properties.get('pathw')
+        let pathfulldb = properties.get('fullpathdb')
+        store.set('debugFullPath',properties.get('fullpathdb'))
+        console.log(pathdb+'   '+pathw+'   '+properties.get('fullpathdb'))
     }
 }
 
