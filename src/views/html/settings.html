@@ -2,219 +2,171 @@
 <html>
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Logfly</title>
-  <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
-  <link rel="stylesheet" href="../../assets/css/home.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Logfly</title>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="../../assets/css/home.css">
+    <!-- if necessary some specifics css will be added like leaflet.css -->
 </head>
 
 <body>
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script>
-      let $ = require('jquery');
-    </script>
+    <script>let $ = require('jquery');</script>
     <script>require('popper.js');</script>
-    <script>require('bootstrap');</script>      
+    <script>require('bootstrap');</script>  
     <div class="wrapper">
         <!-- Sidebar  -->
-        <nav id="sidebar" class="active">
-            <div class="sidebar-header" id="dismiss">
-                <h4><img src="../../assets/img/Logo_JS_36_Blc.png" class="d-inline-block align-bottom" alt="">&nbsp;&nbsp;Logfly</h4>
-            </div>
-            <div id="target-menu">Loading...</div>
-            <script id="temp-menu" type="x-tmpl-mustache">
-            <ul class="list-unstyled components">
-              <li>
-                <a href="#logbook" onclick="callPage('logbook')">{{logbook}}</a>
-              </li>    
-              <li>
-                <a href="#overview" id="overview">{{overview}}</a>
-              </li>    
-              <li>
-                <a href="#import" id="import">{{import}}</a>
-              </li>             
-              <li>
-                <a href="#external" id="external">{{external}}</a>
-              </li>    
-              <li>
-                <a href="#stat" id="stat">{{stat}}</a>
-              </li>    
-              <li>
-                <a href="#sites" onclick="callPage('sites')">{{sites}}</a>
-              </li>        
-              <li>
-                <a href="#waypoints" id="waypoints">{{wayp}}</a>
-              </li>    
-              <li>
-                <a href="#airspaces" id="airspaces">{{airspaces}}</a>
-              </li>    
-              <li>
-                <a href="#photos" id="photos">{{photos}}</a>
-              </li>        
-              <li>
-                <a href="#settings" onclick="callPage('settings')">{{settings}}</a>
-              </li>                       
-              <li>
-                <a href="#logfile" id="logfile">{{support}}</a>
-              </li>                                                                                          
-            </ul>   
-            <ul class="list-unstyled CTAs">
-                <li>
-                    <a href="#about" class="download">{{about}}</a>
-                </li>
-            </ul>
-          </script>
-        </nav>
-      <!-- Page Content  -->     
-      <div id="content">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <div class="container-fluid">
-              <button type="button" id="sidebarCollapse"  class="btn btn-outline-primary"">
-                  <i class="fas fa-align-left"></i>
-                  <span>Menu</span>
-              </button>
-              <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
-              <span class="navbar-text mx-3" id="db-state"></span>
-              <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
-                    pour comprendre les possibilités immenses de cette navbar 
-              -->
-              <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="nav navbar-nav ml-auto">
-                  <li class="nav-item">
-                    <a class="nav-link" id="lnk_logbook" href="#">Logbook</a>
-                  </li>     
-                  <li class="nav-item">
-                    <a class="nav-link" id="lnk_pilot" href="#pilot">Pilot</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" id="lnk_map" href="#">Map</a>
-                  </li>              
-                  <li class="nav-item">
-                    <a class="nav-link" id="lnk_misc" href="#"" >Miscellaneous</a>
-                  </li>      
-                  <li class="nav-item">
-                    <a class="nav-link" id="lnk_web" href="#"" >Web</a>
-                  </li>                        
-              </ul>
-              </div>
-          </div>
-        </nav>
-         
-        <!----  tab div    -->
-        <div>
-          <div class="container-fluid">
-            <div id="accordionDiv">
-        
-                <div id="div_logbook">
-                    <div class="row">
-                        <div class="col-md-8">
-                          <div class="card top-buffer">
-                            <div class="card-header">
-                                <h4 class="card-title" id="lg_logbook" >Logbook</h4>
-                            </div>
-                            <div class="card-body">
-                                <form>
-                                    <div class="row">
-                                      <div class="col-md-8 pr-1">
-                                        <label id="lg-working-path">Working folder path</label>
-                                      </div>
-                                    </div>
-                                    <div class="row">
-                                          <div class="col-sm-8 my-1">                                    
-                                              <input type="text" class="form-control" id="tx-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
-                                          </div>
-                                          <div class="col-auto my-1 align-self-center">
-                                              <button type="button" class="btn btn-outline-info" id="bt-work-path">Modify</button>
-                                          </div>
-                                    </div>
-                                    <div class="row top-buffer">
-                                      <div class="col-md-8 pr-1">
-                                        <label id="lg-folder-path">Current logbook folder</label>
-                                      </div>
-                                    </div>         
-                                    <div class="row">
-                                      <div class="col-sm-8 my-1">                                    
-                                          <input type="text" class="form-control" id="tx-log-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
-                                      </div>
-                                    </div>       
-                                    <div class="row top-buffer">
-                                      <div class="col-md-8 pr-1">
-                                        <label id="lg-curr-logbook">Current logbook</label>
-                                      </div>
-                                    </div>         
-                                    <div class="row">
-                                      <div class="col-sm-4 my-1">     
-                                          <select class="custom-select mr-sm-4" id="sel-logbook">
-                                          </select>                                 
-                                      </div>
-                                    </div>                                   
-                                    <div class="row top-buffer">
-                                      <div class="col-sm-8 my-1">                                    
-                                        <input type="text" class="form-control" id="lg-log-folder" disabled="" value="Choose a new logbook folder">
-                                      </div>
-                                      <div class="col-auto my-1 align-self-center">
-                                          <button type="button" class="btn btn-outline-info" id="bt-choose-folder">Choose</button>
-                                      </div>
-                                    </div>                                                                             
-                                    <div class="row top-buffer">
-                                      <div class="col-sm-8 my-1">                                    
-                                        <input type="text" class="form-control" id="lg-move-logbook" disabled="" value="Move logbook(s) to a different folder">
-                                      </div>
-                                      <div class="col-auto my-1 align-self-center">
-                                          <button type="button" class="btn btn-outline-info" id="bt-move-folder">Move</button>
-                                      </div>
-                                    </div>         
-                                    <div class="row top-buffer">
-                                      <div class="col-sm-8 my-1">                                    
-                                        <input type="text" class="form-control" id="lg-new-logbook" disabled="" value="Create a new logbook">
-                                      </div>
-                                      <div class="col-auto my-1 align-self-center">
-                                          <button type="button" class="btn btn-outline-info" id="bt-new-logbook">Create</button>
-                                      </div>
-                                    </div>      
-                                    <div class="row top-buffer">
-                                      <div class="col-sm-8 my-1">                                    
-                                        <input type="text" class="form-control" id="lg-repatriate" disabled="" value="Recover a copy">
-                                      </div>
-                                      <div class="col-auto my-1 align-self-center">
-                                          <button type="button" class="btn btn-outline-info" id="bt-repatriate">Recover</button>
-                                      </div>
-                                    </div>                                                                           
-        
-                                    <div class="clearfix"></div>
-                                </form>
-                            </div>
-                        </div>
-                        </div>
+        <div id="target-sidebar"></div>
+        <div id="content">
+            <!-- Horizontal navbar with menu button and different options -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
+                    <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+                    <span class="navbar-text mx-3" id="db-state"></span>
+                    <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp pour comprendre les possibilités immenses de cette navbar -->
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                      <script id="navtemplate" type="x-tmpl-mustache">
+                        <ul class="nav navbar-nav ml-auto">
+                          <li class="nav-item">
+                            <a class="nav-link" id="lnk_logbook" href="#">{{logbook}}</a>
+                          </li>     
+                          <li class="nav-item">
+                            <a class="nav-link" id="lnk_pilot" href="#pilot">{{pilot}}</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="lnk_map" href="#">{{map}}</a>
+                          </li>              
+                          <li class="nav-item">
+                            <a class="nav-link" id="lnk_misc" href="#"" >{{miscell}}</a>
+                          </li>      
+                          <li class="nav-item">
+                            <a class="nav-link" id="lnk_web" href="#"" >{{web}}</a>
+                          </li>                      
+                        </ul>
+                      </script>
                     </div>
-                  </div>  
-        
-                <div id="div_pilot" style="display:none">
-                  <h1>Pilote</h1>    
-                  <p>paramètres concernant le pilote</p>
                 </div>
-        
-                <div id="div_map" style="display:none">
-                  <h1>Carte</h1>    
-                  <p>paramètres concernant la cartographie</p>      
+            </nav>  
+            <!-- End of horizontal nabar  -->
+            <!-- Main page content -->
+            <div>
+                <div class="container-fluid">
+                    <div>
+                        <div class="container-fluid">
+                          <div id="accordionDiv">
+                      
+                              <div id="div_logbook">
+                                  <div class="row">
+                                      <div class="col-md-8">
+                                        <div class="card top-buffer">
+                                          <div class="card-header">
+                                              <h4 class="card-title" id="lg_logbook" >Logbook</h4>
+                                          </div>
+                                          <div class="card-body">
+                                              <form>
+                                                  <div class="row">
+                                                    <div class="col-md-8 pr-1">
+                                                      <label id="lg-working-path">Working folder path</label>
+                                                    </div>
+                                                  </div>
+                                                  <div class="row">
+                                                        <div class="col-sm-8 my-1">                                    
+                                                            <input type="text" class="form-control" id="tx-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                                                        </div>
+                                                        <div class="col-auto my-1 align-self-center">
+                                                            <button type="button" class="btn btn-outline-info" id="bt-work-path">Modify</button>
+                                                        </div>
+                                                  </div>
+                                                  <div class="row top-buffer">
+                                                    <div class="col-md-8 pr-1">
+                                                      <label id="lg-folder-path">Current logbook folder</label>
+                                                    </div>
+                                                  </div>         
+                                                  <div class="row">
+                                                    <div class="col-sm-8 my-1">                                    
+                                                        <input type="text" class="form-control" id="tx-log-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                                                    </div>
+                                                  </div>       
+                                                  <div class="row top-buffer">
+                                                    <div class="col-md-8 pr-1">
+                                                      <label id="lg-curr-logbook">Current logbook</label>
+                                                    </div>
+                                                  </div>         
+                                                  <div class="row">
+                                                    <div class="col-sm-4 my-1">     
+                                                        <select class="custom-select mr-sm-4" id="sel-logbook">
+                                                        </select>                                 
+                                                    </div>
+                                                  </div>                                   
+                                                  <div class="row top-buffer">
+                                                    <div class="col-sm-8 my-1">                                    
+                                                      <input type="text" class="form-control" id="lg-log-folder" disabled="" value="Choose a new logbook folder">
+                                                    </div>
+                                                    <div class="col-auto my-1 align-self-center">
+                                                        <button type="button" class="btn btn-outline-info" id="bt-choose-folder">Choose</button>
+                                                    </div>
+                                                  </div>                                                                             
+                                                  <div class="row top-buffer">
+                                                    <div class="col-sm-8 my-1">                                    
+                                                      <input type="text" class="form-control" id="lg-move-logbook" disabled="" value="Move logbook(s) to a different folder">
+                                                    </div>
+                                                    <div class="col-auto my-1 align-self-center">
+                                                        <button type="button" class="btn btn-outline-info" id="bt-move-folder">Move</button>
+                                                    </div>
+                                                  </div>         
+                                                  <div class="row top-buffer">
+                                                    <div class="col-sm-8 my-1">                                    
+                                                      <input type="text" class="form-control" id="lg-new-logbook" disabled="" value="Create a new logbook">
+                                                    </div>
+                                                    <div class="col-auto my-1 align-self-center">
+                                                        <button type="button" class="btn btn-outline-info" id="bt-new-logbook">Create</button>
+                                                    </div>
+                                                  </div>      
+                                                  <div class="row top-buffer">
+                                                    <div class="col-sm-8 my-1">                                    
+                                                      <input type="text" class="form-control" id="lg-repatriate" disabled="" value="Recover a copy">
+                                                    </div>
+                                                    <div class="col-auto my-1 align-self-center">
+                                                        <button type="button" class="btn btn-outline-info" id="bt-repatriate">Recover</button>
+                                                    </div>
+                                                  </div>                                                                           
+                      
+                                                  <div class="clearfix"></div>
+                                              </form>
+                                          </div>
+                                      </div>
+                                      </div>
+                                  </div>
+                                </div>  
+                      
+                              <div id="div_pilot" style="display:none">
+                                <h1>Pilote</h1>    
+                                <p>paramètres concernant le pilote</p>
+                              </div>
+                      
+                              <div id="div_map" style="display:none">
+                                <h1>Carte</h1>    
+                                <p>paramètres concernant la cartographie</p>      
+                              </div>
+                      
+                              <div id="div_misc" style="display:none">
+                                <h1>Miscellaneous</h1>    
+                                <p>paramètres divers</p>
+                              </div>
+                      
+                              <div id="div_web" style="display:none">
+                                <h1>Internet</h1>    
+                                <p>paramètres des url internet</p>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
                 </div>
-        
-                <div id="div_misc" style="display:none">
-                  <h1>Miscellaneous</h1>    
-                  <p>paramètres divers</p>
-                </div>
-        
-                <div id="div_web" style="display:none">
-                  <h1>Internet</h1>    
-                  <p>paramètres des url internet</p>
-                </div>
-              </div>
-          </div>
+            </div>
+            <!-- End of main page content -->
         </div>
-      </div>
-    </div>
+    </div>    
     <script src="../../views/js/settings.js" type="text/javascript"></script>
 </body>
-
-</html>

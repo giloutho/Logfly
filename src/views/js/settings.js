@@ -5,23 +5,17 @@ var path = require('path');
 var log = require('electron-log')
 var Store = require('electron-store')
 var Mustache = require('mustache')
+let menuFill = require('../../views/tpl/sidebar.js')
 var store = new Store()
 var dbList = null
 
-
-var btnLogbook = document.getElementById('lnk_logbook')
-var btnPilot = document.getElementById('lnk_pilot')
-var btnMap = document.getElementById('lnk_map')
-var btnMisc = document.getElementById('lnk_misc')
-var btnWeb = document.getElementById('lnk_web')
+let btnMenu = document.getElementById('toggleMenu')
+var btnLogbook
+var btnPilot
+var btnMap
+var btnMisc
+var btnWeb
 var btnWorkPath = document.getElementById('bt-work-path')
-
-$(document).ready(function () {
-    $('#sidebarCollapse').on('click', function () {
-        console.log('clic sidebar')
-        $('#sidebar').toggleClass('active');
-    });    
-});
 
 ipcRenderer.on('translation', (event, langJson) => {
     let currLang = store.get('lang')
@@ -36,6 +30,14 @@ function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName);    // main.js
 }
 
+btnMenu.addEventListener('click', (event) => {
+    if (btnMenu.innerHTML === "Menu On") {
+        btnMenu.innerHTML = "Menu Off";
+    } else {
+        btnMenu.innerHTML = "Menu On";
+    }
+    $('#sidebar').toggleClass('active');
+})
 
 $('#sel-logbook').on('change', function() {
     if (dbList.length > 0) {
@@ -44,49 +46,6 @@ $('#sel-logbook').on('change', function() {
         store.set('dbName',dbList[this.value])
     }
   });
-
-btnLogbook.addEventListener('click',(event) => {
-    console.log('clic logbook')
-    $('#div_logbook').show()
-    $('#div_pilot').hide()
-    $('#div_map').hide()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-})
-
-btnPilot.addEventListener('click',(event) => {
-    console.log('clic pilot')
-    $('#div_logbook').hide()
-    $('#div_pilot').show()
-    $('#div_map').hide()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-})
-
-btnMap.addEventListener('click',(event) => {
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_map').show()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-})
-
-btnMisc.addEventListener('click',(event) => {
-    console.log('clic Misc')
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_map').hide()   
-    $('#div_misc').show()
-    $('#div_web').hide()
-})
-
-btnWeb.addEventListener('click',(event) => {
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_map').hide()   
-    $('#div_misc').hide()
-    $('#div_web').show()
-})
 
 btnWorkPath.addEventListener('click', (event) => {
     const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathWork'))
@@ -97,27 +56,47 @@ btnWorkPath.addEventListener('click', (event) => {
   })
 
 function iniForm() {
-    const menuOptions = {
+    let menuOptions = menuFill.fillMenuOptions(i18n)
+    $.get('../../views/tpl/sidebar.html', function(templates) { 
+        var template = $(templates).filter('#temp-menu').html();  
+        var rendered = Mustache.render(template, menuOptions)
+      //  console.log(template)
+        document.getElementById('target-sidebar').innerHTML = rendered
+    })
+    const navOptions = {
         logbook : i18n.gettext('Logbook'),
-        overview : i18n.gettext('Overview'),
-        import : i18n.gettext('Import'),
-        external : i18n.gettext('External track'),
-        stat : i18n.gettext('Statistics'),
-        sites : i18n.gettext('Sites'),
-        wayp : i18n.gettext('Waypoints'),
-        airspaces : i18n.gettext('Airspaces'),
-        photos : i18n.gettext('Photos'),
-        settings : i18n.gettext('Settings'),
-        support : i18n.gettext('Support'),
-        about : i18n.gettext('About'),
-    };    
-    var rendered = Mustache.render($('#temp-menu').html(), menuOptions)
-    document.getElementById('target-menu').innerHTML = rendered;
-    document.getElementById('lnk_logbook').innerHTML = i18n.gettext('Logbook')
-    document.getElementById('lnk_pilot').innerHTML = i18n.gettext('Pilot')
-    document.getElementById('lnk_map').innerHTML = i18n.gettext('Map')
-    document.getElementById('lnk_misc').innerHTML = i18n.gettext('Miscellaneous')
-    document.getElementById('lnk_web').innerHTML = i18n.gettext('Web')
+        pilot : i18n.gettext('Pilot'),
+        map : i18n.gettext('Map'),
+        miscell : i18n.gettext('Miscellaneous'),
+        web : i18n.gettext('Web')
+      };    
+    let templateNav = document.getElementById('navtemplate').innerHTML;
+    let navRendered = Mustache.render(templateNav, navOptions)
+    console.log(navRendered)
+    document.getElementById('navbarSupportedContent').innerHTML = navRendered;
+
+    btnLogbook = document.getElementById('lnk_logbook')
+    btnLogbook.addEventListener('click',(event) => {
+      fnLogbook()
+    })
+    btnPilot = document.getElementById('lnk_pilot')
+    btnPilot.addEventListener('click',(event) => {
+      fnPilot()
+    })
+    btnMap = document.getElementById('lnk_map')
+    btnMap.addEventListener('click',(event) => {
+      fnMap()
+    })
+    btnMisc = document.getElementById('lnk_misc')
+    btnMisc.addEventListener('click',(event) => {
+      fnMisc()
+    })
+    btnWeb = document.getElementById('lnk_web')
+    btnWeb.addEventListener('click',(event) => {
+      fnWeb()
+    })
+
+
     document.getElementById('lg_logbook').innerHTML = i18n.gettext('Logbook')
     document.getElementById('lg-working-path').innerHTML = i18n.gettext('Working folder path')   
     $('#tx-work-path').val(store.get('pathWork'))
@@ -133,6 +112,49 @@ function iniForm() {
     document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
     $('#lg-repatriate').val(i18n.gettext('Recover a copy'))
     document.getElementById('bt-repatriate').innerHTML = i18n.gettext('Recover')
+}
+
+function fnLogbook() {
+    console.log('clic logbook')
+    $('#div_logbook').show()
+    $('#div_pilot').hide()
+    $('#div_map').hide()   
+    $('#div_misc').hide()
+    $('#div_web').hide()
+}
+
+function fnPilot() {
+    console.log('clic pilot')
+    $('#div_logbook').hide()
+    $('#div_pilot').show()
+    $('#div_map').hide()   
+    $('#div_misc').hide()
+    $('#div_web').hide()
+}
+
+function fnMap() {
+    $('#div_logbook').hide()
+    $('#div_pilot').hide()
+    $('#div_map').show()   
+    $('#div_misc').hide()
+    $('#div_web').hide()
+}
+
+function fnMisc() {
+    console.log('clic Misc')
+    $('#div_logbook').hide()
+    $('#div_pilot').hide()
+    $('#div_map').hide()   
+    $('#div_misc').show()
+    $('#div_web').hide()
+}
+
+function fnWeb() {
+    $('#div_logbook').hide()
+    $('#div_pilot').hide()
+    $('#div_map').hide()   
+    $('#div_misc').hide()
+    $('#div_web').show()
 }
 
 function fillSelect() {
