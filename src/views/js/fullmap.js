@@ -21,11 +21,14 @@ var awesomeMarker = require('../../leaflet/leaflet.awesome-markers.min.js')
 var mapSidebar = require('../../leaflet/sidebar-tabless.js')
 var hgChart
 var sidebar
+var endLatlng 
+var startLatlng
 
 iniForm()
 
 var btnClose = document.getElementById('bt-close')
 btnClose.addEventListener('click',(event) => {
+    ipcRenderer.send('hide-waiting-gif',null)
     window.close()
 })
 
@@ -54,6 +57,8 @@ function buildMap() {
   // les heures contenues dans le GeoJSon ne sont que des strings
   // la conversion en date est nécessaire pour que Highcharts.dateFormat fonctionne sur l'axe des x
   var arrayHour = mainTrack.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour));
+
+  console.log('array Alti taille : '+arrayAlti.length+' Elevation : '+anaTrack.elevation.length)
 
   map = L.map('carte').setView([0, 0], 5);
 
@@ -180,7 +185,7 @@ function buildMap() {
     shadowSize: [25, 25]
   });
 
-  var startLatlng = L.latLng(mainTrack.fixes[0].latitude, mainTrack.fixes[0].longitude)
+  startLatlng = L.latLng(mainTrack.fixes[0].latitude, mainTrack.fixes[0].longitude)
   L.marker(startLatlng,{icon: StartIcon}).addTo(map);
 
   var EndIcon = new L.Icon({
@@ -192,7 +197,7 @@ function buildMap() {
     shadowSize: [25, 25]
   });
 
-  var endLatlng = L.latLng(mainTrack.fixes[mainTrack.fixes.length - 1].latitude, mainTrack.fixes[mainTrack.fixes.length - 1].longitude)
+  endLatlng = L.latLng(mainTrack.fixes[mainTrack.fixes.length - 1].latitude, mainTrack.fixes[mainTrack.fixes.length - 1].longitude)
   L.marker(endLatlng,{icon: EndIcon}).addTo(map);
 
   sidebar = L.control.sidebar({
@@ -205,9 +210,11 @@ function buildMap() {
   buildSidePanels()
   sidebar.open('infos');
 
+  console.log(anaTrack.elevation[0]+1000)
+
   hgChart = new Highcharts.Chart({
     chart: {      
-    type: 'line',
+  //  type: 'line',
     renderTo: 'graphe',
     },
     title: {
@@ -254,6 +261,10 @@ function buildMap() {
                     }
                 }
             }
+        },
+        areaspline: {
+          fillOpacity: 0.5,
+          threshold: 9000
         }
     },
     tooltip: {
@@ -287,16 +298,28 @@ function buildMap() {
         }
     },
 
-    series: [{
-      showInLegend: false,
-      data: arrayAlti
-    }]
+    series: [
+      {
+        showInLegend: false,
+        type: 'line',
+        data: arrayAlti
+      },      
+      {  
+        showInLegend: false,
+        type: 'area',
+        color: '#D2691E',
+        data: anaTrack.elevation
+      }      
+    ]
 });
 // est ce nécessaire  ? a voir sur un ordi moins rapide
 // j'imagine que je l'avais placé pour attendre la création de la carte
   //setTimeout(function(){ map.fitBounds(geojsonLayer.getBounds()); }, 1000);
   // on supprime pour l'instant, on y va sans timeout
   map.fitBounds(geojsonLayer.getBounds());
+
+  // test div sidebar
+  document.getElementById('summarygil').innerHTML = 'coucou Gil'
 }
 
 function createPopThermal(feature, layer) {
@@ -401,11 +424,6 @@ function glideIcon (feature, latlng) {
   return L.marker(latlng, { icon: myIcon })
 }
 
-// Centrage décollage
-function displayTakeOff() {
-//  map.fitBounds([takeOffCoords]);      
-} 
-
 function buildSidePanels()
 {
 
@@ -449,12 +467,13 @@ function fillSidebarInfo() {
     formattedSite = arrTakeOff[0]+' ('+arrTakeOff[1]+')'
   else
     formattedSite = tkoffSite
-  let trackSecurity
-  console.log('mainTrack.info.security '+mainTrack.info.security.toString())
-  if (mainTrack.info.security.toString() == (null || ""))
-    trackSecurity = i18n.gettext('No')
-  else {      
-    trackSecurity = i18n.gettext('Yes')
+  let trackSecurity = i18n.gettext('No')
+  if (mainTrack.info.security !== null) 
+  {
+    if (mainTrack.info.security.toString() == (null || ""))
+      trackSecurity = i18n.gettext('No')
+    else 
+      trackSecurity = i18n.gettext('Yes')
   }
   let htmlText = fillSidebarButtons()
   htmlText += '<div><table>'
@@ -524,6 +543,9 @@ function fillSidebarSummary() {
   htmlText += mysvg;
   htmlText += '</svg>';
 
+  // test div preexistante
+  htmlText += '<div id="summarygil"></div>';
+
   // htmlText +='<svg height="300" width="300" viewBox="0 0 100 100">' 
   // htmlText +='<circle r="100" cx="10" cy="10" fill="white" />'
   // htmlText +='<circle r="100" cx="10" cy="10" fill="bisque" />'
@@ -540,23 +562,72 @@ function fillSidebarSummary() {
 }
 
 function fillSidebarPathway() {
+  let lineCatIcon 
+  let lineTime
+  let lineElapsed
+  let lineAlt
+  let lineInfo
+  let climb2dec
   let htmlText = fillSidebarButtons()
-  htmlText += '<div><table style="width: 100%;margin-top: 200px;">'
+  htmlText += '<div><table style="width: 100%;margin-top: 100px;">'
   htmlText += '    <tbody>'
-  htmlText += '      <tr><td>'+i18n.gettext('Date')+'</td><td><i class="fa fa-gear"></i></td></tr>'      
-  htmlText += '      <tr><td>'+i18n.gettext('Pilot')+'</td><td><i class="fa fa-cloud-upload fa-2x"</td></tr>'  
-  htmlText += '      <tr><td>'+i18n.gettext('Glider')+'</td><td><i class="fa fa-arrow-right fa-2x"</td></tr>'  
-  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td><i class="fa fa-play"</td></tr>' 
-  htmlText += '      <tr><td>'+i18n.gettext('Duration')+'</td><td><i class="fa fa-stop"</td></tr>' 
-  htmlText += '      <tr><td>test align</td><td>resultat</td></tr>' 
+  // header
+  htmlText += '      <tr><td>'+i18n.gettext('Time')+'</td><td>'+i18n.gettext('Elapsed')+'</td><td>'+i18n.gettext('Alt')+'</td><td><td></tr>'
+  lineInfo = '<td></td>'
+  for (let cr of anaTrack.course) {
+    switch (cr.category) {
+      case 'K':
+        // Take Off
+        //lineCatIcon = '<td><i class="fa fa-paper-plane fa-2x"></i></td>' 
+       // lineCatIcon = '<td><i class="fa fa-paper-plane"></i></td>' 
+        lineCatIcon = '<td><a href="javascript:void(0)" onclick="displayTakeOff()"><i class="fa fa-paper-plane"></i> '+i18n.gettext('Take off')+'</a></td>'
+        lineTime = '<td>'+cr.time+'</td>'
+        lineElapsed = '<td>00:00</td>'
+        lineAlt = '<td>'+cr.alt+'</td>'
+      //  lineInfo = '<td>'+i18n.gettext('Take off')+'</td>'
+        lineInfo = '<td></td>'
+        break;
+      case 'T':
+          // Thermal
+          //lineCatIcon = '<td><i class="fa fa-cloud-upload fa-2x"></i></td>' 
+         // lineCatIcon = '<td><i class="fa fa-cloud-upload"></i></td>' 
+          lineCatIcon = '<td><a href="javascript:void(0)" onclick="displaySegment('+cr.coords+')"><i class="fa fa-cloud-upload"></i> '+i18n.gettext('Thermal')+'</a></td>'
+          lineTime = '<td>'+cr.time+'</td>'
+          lineElapsed = '<td>'+cr.elapsed+'</td>'
+          lineAlt = '<td>'+cr.alt+'</td>'
+          climb2dec = (Math.round(cr.data2 * 100) / 100).toFixed(2)
+          lineInfo = '<td>[+'+cr.data1+'m '+climb2dec+'m/s]</td>'    
+          console.log(cr.coords)  
+          break;    
+      case 'G':
+        // Glide
+        //lineCatIcon = '<td><i class="fa fa-arrow-right fa-2x"></i></td>' 
+       // lineCatIcon = '<td><i class="fa fa-arrow-right"></i></td>' 
+        lineCatIcon = '<td><a href="javascript:void(0)" onclick="displaySegment('+cr.coords+')"><i class="fa fa-arrow-right"></i> '+i18n.gettext('Glide')+'</td>'
+        lineTime = '<td>'+cr.time+'</td>'
+        lineElapsed = '<td>'+cr.elapsed+'</td>'
+        lineAlt = '<td>'+cr.alt+'</td>'
+        lineInfo = '<td>[+'+cr.data1+'km '+cr.data2+'km/h]</td>'     
+        break;            
+      case 'L':
+        // Landing
+       // lineCatIcon = '<td><i class="fa fa-flag fa-2x"></i></td>' 
+      //  lineCatIcon = '<td><i class="fa fa-flag"></i></td>' 
+       // lineCatIcon = '<td><i class="fa fa-flag"></i> '+i18n.gettext('Landing')+'</td>'
+        lineCatIcon = '<td><a href="javascript:void(0)" onclick="displayLanding()"><i class="fa fa-flag"></i> '+i18n.gettext('Landing')+'</a></td>'
+
+        lineTime = '<td>'+cr.time+'</td>'
+        lineElapsed = '<td>'+cr.elapsed+'</td>'
+        lineAlt = '<td>'+cr.alt+'</td>'
+        //lineInfo = '<td>'+i18n.gettext('Landing')+'</td>'
+        lineInfo = '<td></td>'
+        break;
+        }
+    //htmlText += '      <tr>'+lineCatIcon+lineTime+lineElapsed+lineAlt+lineInfo+'</tr>'     
+    htmlText += '      <tr>'+lineTime+lineElapsed+lineAlt+lineCatIcon+lineInfo+'</tr>'     
+  }
   htmlText += '    </tbody>'
   htmlText += '  </table></div>'
-
-  // for (let cr of anaTrack.course) {
-  //   console.log('cat '+cr.category+' timestamp '+cr.timestamp+' time '+cr.time+' elapsed '+cr.elapsed+' alt '+cr.alt+' data 1 '+cr.data1+' data 2 '+cr.data2+' coords '+cr.coords)
-  // }
-
-  return htmlText
 
   return htmlText
 }
@@ -566,10 +637,35 @@ function fillSidebarButtons() {
   htmlText += '<div class="btn-toolbar pull-left">'
   htmlText += ' <button type="button" class="btn-secondary btn-sm mr-3" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
   htmlText += ' <button type="button" class="btn-success btn-sm mr-3" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
-  htmlText += ' <button type="button" class="btn-warning btn-sm" onclick="sidebar.open(\'pathway\')">'+i18n.gettext('Pathway')+'</button>'
+ // htmlText += ' <button type="button" class="btn-warning btn-sm" onclick="sidebar.open(\'pathway\')">'+i18n.gettext('Pathway')+'</button>'
+  htmlText += ' <button type="button" class="btn-warning btn-sm" onclick="openPathway()">'+i18n.gettext('Pathway')+'</button>'
   htmlText += '</div>'
   return htmlText
 }
+
+
+// Display Thermals
+function openPathway() {
+  $('.leaflet-control-layers-selector')[10].click();
+  $('.leaflet-control-layers-selector')[11].click();
+  sidebar.open('pathway')
+}
+
+
+// Centering on takeoff
+function displayTakeOff() {
+    map.fitBounds([startLatlng]);      
+  } 
+
+// Centering on landing
+function displayLanding() {
+  map.fitBounds([endLatlng]);      
+}    
+
+// Display a segment of the track
+function displaySegment(lat1,long1,lat2,long2) {
+  map.fitBounds([[lat1, long1],[lat2, long2]]);      
+}   
 
 function testdb() {
   console.log(dblog.searchSiteInDb(45.85314, 6.2228, false));

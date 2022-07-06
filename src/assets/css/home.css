@@ -67,6 +67,10 @@ a:focus {
     align-items: stretch;
 }
 
+#target-sidebar {
+    background: #186FCE;    
+}
+
 #sidebar {
     min-width: 150px;
     max-width: 150px;    

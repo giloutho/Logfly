@@ -62,6 +62,7 @@ app.on('activate', () => {
 
 function loadLanguage() {
   // load language
+  console.log(app.getPath('userData'));
   try {
     settings.checkSettings(app.isPackaged, '6.0.0')
     const store = new Store(); 
@@ -74,6 +75,10 @@ function loadLanguage() {
     } else {
       // flag for bad language download
     }
+    // Each time a new page is loaded, the json language file will be sent
+    mainWindow.webContents.on('did-finish-load', function () {
+      mainWindow.send('translation', langjson ) 
+    })    
     if (store.get('checkDb')) {
       openWindow('logbook')
     } else {
@@ -87,6 +92,11 @@ function loadLanguage() {
 
 ipcMain.on("changeWindow", function(event, arg) {
     openWindow(arg)
+});
+
+ipcMain.on('hide-waiting-gif', function(event, arg) {
+  console.log('hide waiting reçu')
+  mainWindow.webContents.send('remove-waiting-gif')
 });
 
 function openWindow(pageName) {
@@ -106,10 +116,13 @@ function openWindow(pageName) {
     case "settings":
         mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
         break;        
+    case "tools":
+      mainWindow.loadFile(path.join(__dirname, './views/html/skeleton.html'));
+      break;            
+    case "support":
+      mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
+      break;             
   } 
-  mainWindow.webContents.on('did-finish-load', function() { 
-    mainWindow.send('translation', langjson )  
-  });
 }
 
 // Require each JS file in the main-process dir

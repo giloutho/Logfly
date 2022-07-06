@@ -68,6 +68,7 @@
     "highcharts": "^10.0.0",
     "iana-tz-data": "^2019.1.0",
     "igc-parser": "^1.1.0",
+    "internet-available": "^1.0.0",
     "jquery": "^3.6.0",
     "leaflet": "^1.7.1",
     "leaflet.control.layers.tree": "^1.1.0",
@@ -79,6 +80,7 @@
     "serialport": "^10.4.0",
     "simplify-geojson": "^1.0.4",
     "spherical-geometry-js": "2.0.0",
+    "srtm-elevation": "^2.0.0",
     "zoned-date-time": "^1.1.0"
   },
   "devDependencies": {

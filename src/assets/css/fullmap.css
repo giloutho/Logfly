@@ -20,6 +20,11 @@ html {
     height: 25%;
     width: 100%;
   }
+  #waiting-center {  
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+  } 
 .leaflet-google-layer{
     z-index: 0 !important;
 }
@@ -49,3 +54,8 @@ caption {
     font-size: 20px;
     margin-top: 8px;
 }
+
+.waiting-center {  
+  display: flex; 
+  justify-content: center; 
+  align-items: center;} 

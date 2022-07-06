@@ -14,6 +14,7 @@ const { truncate } = require("original-fs");
  class IGCAnalyzer {
 
     constructor () {
+        this.elevation = [];
         this.thermals = [];
         this.dives = [];
         this.glides = [];
