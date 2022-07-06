@@ -1,0 +1,47 @@
+<!-- You can define as many templates as you like in a single .htm file; just add additional <script /> blocks with unique ids. --> 
+<script id="temp-menu" type="text/html">               
+        <nav id="sidebar" class="active">
+            <div class="sidebar-header" id="dismiss">
+                <h4><img src="../../assets/img/Logo_JS_36_Blc.png" class="d-inline-block align-bottom" alt="">&nbsp;&nbsp;Logfly</h4>
+            </div>
+            <ul class="list-unstyled components">
+              <li>
+                <a href="#logbook" onclick="callPage('logbook')">{{logbook}}</a>
+              </li>    
+              <li>
+                <a href="#overview" id="overview">{{overview}}</a>
+              </li>    
+              <li>
+                <a href="#import" id="import">{{import}}</a>
+              </li>             
+              <li>
+                <a href="#external" id="external">{{external}}</a>
+              </li>    
+              <li>
+                <a href="#stat" id="stat">{{stat}}</a>
+              </li>    
+              <li>
+                <a href="#sites" onclick="callPage('sites')">{{sites}}</a>
+              </li>        
+              <li>
+                <a href="#waypoints" id="waypoints">{{wayp}}</a>
+              </li>    
+              <li>
+                <a href="#airspaces" id="airspaces">{{airspaces}}</a>
+              </li>    
+              <li>
+                <a href="#photos" id="photos">{{photos}}</a>
+              </li>        
+              <li>
+                <a href="#settings" onclick="callPage('settings')">{{settings}}</a>
+              </li>           
+              <li>
+                <a href="#tools" onclick="callPage('tools')">{{tools}}</a>
+              </li>                           
+              <li>
+                <a href="#support" onclick="callPage('support')">{{support}}</a>
+              </li>                                                                                          
+            </ul>   
+          </script>
+        </nav>
+</script> 
