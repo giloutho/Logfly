@@ -74,7 +74,13 @@ function devSettings() {
             store.set('lang','fr')
             break;
         case 'linux': 
-            currOs = 'linux'
+        store.set('dbFullPath','./db/test6.db')
+            store.set('dbName','test6.db')
+            store.set('pathdb','./db')
+            store.set('pathImport', '/home/thinklinux/Documents/Logfly/import')
+            store.set('pathSyride','/home/thinklinux/Documents/Logfly/syride')  
+            store.set('pathWork','/home/thinklinux/Documents/Logfly')
+            store.set('lang','fr') 
             break;
         case 'win':
             store.set('dbFullPath','./db/test6.db')
@@ -103,7 +109,7 @@ function getEnv() {
             currOS = 'mac'
             break;
         case 'linux': 
-            currOs = 'linux'
+            currOS = 'linux'
             break;
         case 'win32':
             currOS = 'win'
