@@ -22,7 +22,6 @@ var btnClearLog
 var btnSystem
 var btnMail
 var btnLogbook
-var statusContent = document.getElementById("status")
 
 ipcRenderer.on('translation', (event, langJson) => {
     let currLang = store.get('lang')

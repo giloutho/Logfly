@@ -117,11 +117,14 @@ function openWindow(pageName) {
         mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
         break;        
     case "tools":
-      mainWindow.loadFile(path.join(__dirname, './views/html/skeleton.html'));
+      mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
       break;            
     case "support":
       mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
-      break;             
+      break;   
+    case "flyxc":
+      mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
+      break;                 
   } 
 }
 

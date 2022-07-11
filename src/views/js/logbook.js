@@ -6,6 +6,7 @@ var i18n = require('../../lang/gettext.js')()
 const path = require('path');
 const fs = require('fs');
 const Store = require('electron-store')
+let webOk = require("internet-available");
 let store = new Store(); 
 let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js')
@@ -13,11 +14,13 @@ let btnMenu = document.getElementById('toggleMenu')
 
 var mapPm
 var table
-var currIdFlight
+let currIdFlight
+let currIgcText
 var track
 var btnFullmap = document.getElementById('fullmap')
 let btnScoring = document.getElementById('scoring')
-let btnFlyxc = document.getElementById('bizarre')
+let btnFlyxc = document.getElementById('flyxc')
+
 
 ipcRenderer.on('translation', (event, langJson) => {
   let currLang = store.get('lang')
@@ -55,22 +58,31 @@ btnMenu.addEventListener('click', (event) => {
 
 btnScoring.addEventListener('click', (event) => {  
   console.log('clic scoring')
-  $('#div_table').removeClass('d-block')
-  $('#div_table').addClass('d-none')
-  $('#div_waiting').addClass('d-block')
+  // $('#div_table').removeClass('d-block')
+  // $('#div_table').addClass('d-none')
+  // $('#div_waiting').addClass('d-block')
+  hideStatus()
 })
 
 btnFlyxc.addEventListener('click', (event) => { 
-  console.log('clic flyxc')
-  let hideWaitng = ipcRenderer.send('hide-waiting-gif',null)
-  // $('#div_waiting').removeClass('d-block')
-  // $('#div_waiting').addClass('d-none')
-  // $('#div_table').addClass('d-block')
+  //ipcRenderer.send("changeWindow", 'flyxc');    
+  // webOk({
+  //   // Provide maximum execution time for the verification
+  //   timeout: 3000,
+  //   // If it tries 5 times and it fails, then it will throw no internet
+  //   retries: 3
+  // }).then(() => {
+  //   ipcRenderer.send('error-dialog',['Internet', 'Internet Ok'])  
+  // }).catch(() => {
+  //   ipcRenderer.send('error-dialog',['Internet', 'Internet non disponible'])  
+  // });
+  // ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
+  //displayStatus('Decoding problem in track file')  
+  displayFlyxc()
 })
 
 
 btnFullmap.addEventListener('click', (event) => {  
-  console.log('clic fullmap')
   displayWait()
   if (track.fixes.length> 0) {    
     // functionnal code
@@ -84,6 +96,28 @@ btnFullmap.addEventListener('click', (event) => {
     ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
   }      
 })  
+
+function displayFlyxc() {
+  if (track.fixes.length> 0) {  
+    console.log('demande transfert')
+    let resUpload = ipcRenderer.sendSync('upload-igc', currIgcText)  // process-main/igc/igc-read.js.js
+    if (resUpload == null) {
+      displayStatus('Download failed')
+    } else {
+      console.log('resUpload '+resUpload)
+      if (resUpload.includes('OK')) {
+        // response is OK:20220711135317_882.igc
+        let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
+        console.log(igcUrl)
+        displayStatus(igcUrl)
+      } else {
+        // response is error = ...
+        displayStatus(resUpload)
+      }
+    }
+    console.log('Transfert terminé')
+  }
+}
 
 function tableStandard() {
 let start = performance.now();
@@ -151,24 +185,22 @@ console.log(`Operation took ${timeTaken} milliseconds`);
 }
 
 function readIgc(igcID) {
-    let msg
+    hideStatus()
     if (db.open) {
       let req ='SELECT V_IGC FROM Vol WHERE V_ID = ?'
       try {
         const stmt = db.prepare(req)
         const selIgc = stmt.get(igcID)
-        if (selIgc.V_IGC === undefined)    
-          msg = 'Record not found'
-        else {
-          msg = 'Trace récupérée dans la db'
-          console.log(msg)
-          igcDisplay(selIgc.V_IGC)
+        if (selIgc.V_IGC === undefined) {
+          displayStatus('Not found') 
+        } else {
+          currIgcText = selIgc.V_IGC
+          igcDisplay(currIgcText)
         }
       } catch (err) {
-        msg ='Database error'
+        displayStatus('Database error')        
       }
     }
-    console.log(msg)
   }
   
   function igcDisplay(stringIgc) {
@@ -181,12 +213,10 @@ function readIgc(igcID) {
         console.log('Offset UTC : '+track.info.offsetUTC)
         buildMap(track)  
       } else {
-        console.log('Track decoding error'+' : '+track.info.parsingError)
-       // barre de status à créer $('#title').text(i18n.__('Track decoding error')+' : '+track.info.parsingError)
+        displayStatus(track.info.parsingError)
       }        
     } catch (error) {
-      console.log('Error '+' : '+error)
-      // barre de status à créer $('#title').text(i18n.__('Error')+' : '+error)
+      displayStatus('Error '+' : '+error)      
     }      
   }
   
@@ -285,6 +315,15 @@ function readIgc(igcID) {
             });
     tile_layer.addTo(mapBasic); 
     tile_layer.on("load",function() { console.log("Basique -> all visible tiles have been loaded") });
+  }
+
+  function displayStatus(content) {
+    document.getElementById('status').innerHTML = i18n.gettext(content)
+    $('#status').show(); 
+  }
+
+  function hideStatus() {
+    if ($('#status').show().is(":visible")) $('#status').hide();  
   }
   
   // inutilisée pour l'instant
