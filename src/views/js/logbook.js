@@ -38,6 +38,43 @@ function iniForm() {
       document.getElementById('target-sidebar').innerHTML = rendered
   })
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
+  document.getElementById('dropdownMenuButton').innerHTML = i18n.gettext('Sites')
+  document.getElementById('site-rename').innerHTML = i18n.gettext('Rename site')
+  document.getElementById('site-form').innerHTML = i18n.gettext('Site form')
+  document.getElementById('site-change').innerHTML = i18n.gettext('Change site')
+
+  $(function(){
+    $('#table_id').contextMenu({
+        selector: 'tr', 
+        callback: function(key, options) {
+            switch (key) {
+              case "Comment" : 
+                var m = "clicked: " + key + " on " + $(this).text();
+                alert(m); 
+                break                
+              case "Change": 
+                break
+              case "Glider" :
+                break
+              case "Day" :
+                break
+              case "Delete" : 
+                break
+              case "Export" : 
+                break
+            }
+        },
+        items: {
+            "Comment" : {name: i18n.gettext('Comment')},            
+            "Change": {name: i18n.gettext("Change glider")},
+            "Glider": {name: i18n.gettext("Glider flight time")},
+            "Day": {name: i18n.gettext("Photo of the day")},
+            "Delete": {name: i18n.gettext("Delete")},
+            "Export": {name: i18n.gettext("Export")},
+        }
+    });
+});
+  
 }
 
 tableStandard()
@@ -108,8 +145,10 @@ function displayFlyxc() {
       if (resUpload.includes('OK')) {
         // response is OK:20220711135317_882.igc
         let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
-        console.log(igcUrl)
-        displayStatus(igcUrl)
+        console.log('igcUrl : '+igcUrl)
+        store.set('igcVisu',igcUrl)
+        callPage('flyxc')
+        // displayStatus(igcUrl)
       } else {
         // response is error = ...
         displayStatus(resUpload)
@@ -177,9 +216,14 @@ if (db.open) {
     } );
     table.row(':eq(0)').select();    // Sélectionne la première lmigne
     $('#table_id').removeClass('d-none')
+
+
+
 } else {
     msgdbstate = 'db connection error'
 }
+
+
 let timeTaken = performance.now()-start;
 console.log(`Operation took ${timeTaken} milliseconds`);   
 }

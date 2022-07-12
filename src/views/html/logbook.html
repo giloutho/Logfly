@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
   <link rel="stylesheet" href="../../../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../../../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
+  <link rel="stylesheet" href="../../../node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.css">
   <link rel="stylesheet" href="../../../node_modules/leaflet/dist/leaflet.css" />  
   <link rel="stylesheet" href="../../assets/css/home.css">
 </head>
@@ -19,6 +20,7 @@
       // jQuery datatables script
       const dtbs = require('datatables.net-bs4')()   
       const dtselect = require( 'datatables.net-select-bs4' )() 
+      const conmenu = require('jquery-contextmenu')
     </script>
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>      
@@ -69,14 +71,11 @@
               <button class="btn btn-outline-secondary" id="fullmap">Fullscreen map</button>
               <button class="btn btn-outline-secondary" id="scoring">Scoring</button>
               <button class="btn btn-outline-secondary" id="flyxc">FlyXC</button>
-              <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">More...</button>
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">Sites</button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
-                  <a class="dropdown-item" href="#">Something else here</a>
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
-                  <a class="dropdown-item" href="#">Something else here</a>
+                  <a class="dropdown-item" id="site-rename" href="#"></a>
+                  <a class="dropdown-item" id="site-form" href="#"></a>
+                  <a class="dropdown-item" id="site-change" href="#"></a>
               </div>
             </div>
           </div>  
