@@ -71,6 +71,7 @@
     "igc-parser": "^1.1.0",
     "internet-available": "^1.0.0",
     "jquery": "^3.6.0",
+    "jquery-contextmenu": "^2.9.2",
     "leaflet": "^1.7.1",
     "leaflet.control.layers.tree": "^1.1.0",
     "mustache": "^4.2.0",
