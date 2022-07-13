@@ -6,7 +6,7 @@ const process = require('process')
 const propertiesReader = require('properties-reader')
 
 
-function checkSettings (electronPack, progVersion) {      
+function checkSettings (electronPack, progVersion) {          
     // pour debugging
     var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
     if (propertiesPath != null) 
@@ -61,6 +61,7 @@ function prodSettings(progVersion) {
 
 function devSettings() {
     const store = new Store(); 
+    console.log(store.path)  // Linux -> /home/thinklinux/.config/Logfly
     getEnv()
     let currOS = store.get('currOS')
     switch(currOS) {
@@ -81,6 +82,8 @@ function devSettings() {
             store.set('pathSyride','/home/thinklinux/Documents/Logfly/syride')  
             store.set('pathWork','/home/thinklinux/Documents/Logfly')
             store.set('lang','fr') 
+            store.set('urlvisu','https://flyxc.app/?track=')
+            store.set('urllogflyigc','http://logfly.org/Visu/')
             break;
         case 'win':
             store.set('dbFullPath','./db/test6.db')
