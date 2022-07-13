@@ -38,9 +38,13 @@ a:focus {
     background: #fff;
     border: none;
     border-radius: 0;
+    font-size: 14px!important;;
     margin-bottom: 0!important;
     box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
+
+/* https://youtu.be/PRMtNdlSpzY */
+.navbar-inverse .navbar-nav .active a,.navbar-inverse .navbar-nav .active a:focus,.navbar-inverse .navbar-nav .active a:hover{color:whitesmoke;background-color: pink;}
 
 .navbar-btn {
     box-shadow: none;
@@ -100,7 +104,7 @@ a:focus {
 
 #sidebar ul li a {
     padding: 10px;
-    font-size: 1.3em;
+    font-size: 1.2em;
     display: block;
 }
 
