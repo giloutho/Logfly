@@ -15,22 +15,28 @@ ipcMain.on('disk-import', (event, importPath) => {
 
 
 function openWindow(event,importPath) {
-  const modalPath = path.join('file://', __dirname, '../../views/html/waiting-or.html')
-  let win = new BrowserWindow({ 
-    width: 350,
-    height: 300,
-    frame: false 
+  // const modalPath = path.join('file://', __dirname, '../../views/html/waiting-or.html')
+  // let win = new BrowserWindow({ 
+  //   width: 350,
+  //   height: 300,
+  //   frame: false 
+  // })
+  // win.on('close', () => { win = null })
+  // win.loadURL(modalPath)
+  // win.webContents.on('did-finish-load', function() {
+  //   win.show();
+  //   runSearchIgc(importPath,function(searchResult) {
+  //     event.returnValue = searchResult
+  //     console.log('on ferme...')
+  //     win.close()
+  //   })
+  // });
+
+
+  runSearchIgc(importPath,function(searchResult) {
+        event.returnValue = searchResult
   })
-  win.on('close', () => { win = null })
-  win.loadURL(modalPath)
-  win.webContents.on('did-finish-load', function() {
-    win.show();
-    runSearchIgc(importPath,function(searchResult) {
-      event.returnValue = searchResult
-      console.log('on ferme...')
-      win.close()
-    })
-  });
+
 }
 
 function runSearchIgc(importPath,_callback) {
