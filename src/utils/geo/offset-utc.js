@@ -18,9 +18,7 @@ function computeOffsetUTC(lat, lng, timest) {
   let rawOffset = zdt.getTimezoneOffset()
   // The direction is reversed. getTimezoneOffset gives us the operation to be carried out to obtain the UTC time.
   // For France getTimezoneOffset result is -120mn.
-  let offsetUTC = -1 * rawOffset		
-
-  console.log('computeOffsetUTC returns : '+offsetUTC)
+  let offsetUTC = -1 * rawOffset	
 
   return offsetUTC
 }
