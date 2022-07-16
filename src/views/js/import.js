@@ -49,9 +49,10 @@ function iniForm() {
     btnFlymSD.addEventListener('click',(event) => {callFlymSD()})      
     btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
     btnFlytec20.addEventListener('click',(event) => {callFlytec20()})
-    btnOudie.addEventListener('click',(event) => {callOudie()})
+    btnOudie.addEventListener('click',(event) => {callUsbGps('oudie')})
     btnSkytrax.addEventListener('click',(event) => {callSkytrax()})
-    btnConnect.addEventListener('click',(event) => {callConnect()})
+    btnConnect.addEventListener('click',(event) => {callUsbGps('connect')})
+   //btnConnect.addEventListener('click',(event) => {callConnect()})
     btnFlynet.addEventListener('click',(event) => {callFlynet()})
     btnElement.addEventListener('click',(event) => {callElement()})
     btnCPilot.addEventListener('click',(event) => {callCPilot()})
@@ -94,45 +95,13 @@ function callUsbGps(typeGPS) {
   displayWaiting()
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
       if (logResult != null) {     
-          if (typeGPS != 'reverlog')       
-            callDiskImport(logResult,gpsStatus)  
-          else 
-            // Reversale need special treatment
-            callDiskImport(logResult,gpsStatus)  
-      } else {
-          clearPage()
-          let errorMsg = gpsStatus+' not found'
-          displayStatus(errorMsg,false)      
-      }
-  })     
-}
-
-function callConnect() {
-    displayWaiting()
-    let gpsStatus = '<strong>GPS Connect : </strong>'
-    ipcRenderer.invoke('check-usb-gps','connect').then((logResult) => {   
-        if (logResult != null) {            
-            callDiskImport(logResult,gpsStatus)  
-        } else {
-            clearPage()
-            let errorMsg = gpsStatus+' not found'
-            displayStatus(errorMsg,false)      
-        }
-    })      
-}
-
-function callOudie() {
-  displayWaiting()
-  let gpsStatus = '<strong>GPS Oudie : </strong>'
-  ipcRenderer.invoke('check-usb-gps','oudie').then((logResult) => {   
-      if (logResult != null) {            
           callDiskImport(logResult,gpsStatus)  
       } else {
           clearPage()
           let errorMsg = gpsStatus+' not found'
           displayStatus(errorMsg,false)      
       }
-  })      
+  })     
 }
 
 function callManu() {
@@ -168,7 +137,7 @@ function callDiskImport(selectedPath, statusContent) {
     }
 }
 
-// TODO  Il manque le tri par date de la liste
+// TODO  Il manque le tri par date de la liste et eventuellement la visu sur un contextuel ou une icone. On a la place
 function tableStandard(igcForImport) {
     if ( $.fn.dataTable.isDataTable( '#tableimp_id' ) ) {
       $('#tableimp_id').DataTable().clear().destroy()
