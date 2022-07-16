@@ -61,7 +61,7 @@ function runSearchIgc(importPath,_callback) {
           try {
             let flightData = IGCParser.parse(igcData, { lenient: true });  
             checkedIgc = new validIGC(arrayIGC[index],flightData)
-            searchResult.igcForImport.push(checkedIgc)
+            if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
           } catch (error) {
             log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error);
             searchResult.igcBad.push(arrayIGC[index])
@@ -91,9 +91,11 @@ function validIGC(path, flightData) {
     let inLogbook = dblog.flightByTakeOff(this.firstLat, this.firstLong, this.startLocalTime) 
     // Opposite boolean value : if present in the logbook, it's not for import
     this.forImport = !inLogbook
+    this.validtrack = true
   } else {
     this.pointsNumber = 0
     this.errors = flightData.errors  // igc-parser returns an array
+    this.validtrack = false
   }
 }
 

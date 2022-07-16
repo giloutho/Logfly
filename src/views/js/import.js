@@ -58,7 +58,7 @@ function iniForm() {
     btnSensbox.addEventListener('click',(event) => {callSensbox()})
     btnVarduino.addEventListener('click',(event) => {callVarduino()})
     btnXctracer.addEventListener('click',(event) => {callXctracer()})
-    btnRever.addEventListener('click',(event) => {callRever()})
+    btnRever.addEventListener('click',(event) => {callUsbGps('reverlog')})
     btnSyride.addEventListener('click', (event) => {callSyride()})
     btnDisk.addEventListener('click', (event) => {callDisk()})
     btnManu.addEventListener('click', (event) => {callManu()})
@@ -78,6 +78,35 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
+function callUsbGps(typeGPS) {
+  let gpsStatus
+  switch (typeGPS) {
+    case 'reverlog':
+      gpsStatus = '<strong>Reversale : </strong>'
+      break;  
+    case 'connect':
+      gpsStatus = '<strong>GPS Connect : </strong>'     
+      break;
+    case 'oudie':
+      gpsStatus = '<strong>GPS Oudie : </strong>'     
+      break;      
+  }
+  displayWaiting()
+  ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
+      if (logResult != null) {     
+          if (typeGPS != 'reverlog')       
+            callDiskImport(logResult,gpsStatus)  
+          else 
+            // Reversale need special treatment
+            callDiskImport(logResult,gpsStatus)  
+      } else {
+          clearPage()
+          let errorMsg = gpsStatus+' not found'
+          displayStatus(errorMsg,false)      
+      }
+  })     
+}
+
 function callConnect() {
     displayWaiting()
     let gpsStatus = '<strong>GPS Connect : </strong>'
@@ -90,6 +119,20 @@ function callConnect() {
             displayStatus(errorMsg,false)      
         }
     })      
+}
+
+function callOudie() {
+  displayWaiting()
+  let gpsStatus = '<strong>GPS Oudie : </strong>'
+  ipcRenderer.invoke('check-usb-gps','oudie').then((logResult) => {   
+      if (logResult != null) {            
+          callDiskImport(logResult,gpsStatus)  
+      } else {
+          clearPage()
+          let errorMsg = gpsStatus+' not found'
+          displayStatus(errorMsg,false)      
+      }
+  })      
 }
 
 function callManu() {
@@ -109,9 +152,9 @@ function callDiskImport(selectedPath, statusContent) {
             }
           });
           // result display
-          statusContent += searchDisk.igcForImport.length+' tracks decoded&nbsp;/&nbsp;'
-          statusContent += searchDisk.totalIGC+' igc files found'+'&nbsp;&nbsp;&nbsp;'
-          statusContent += '<strong>[&nbsp;'+'Tracks to be added : '+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+          statusContent += searchDisk.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
+          statusContent += searchDisk.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
+          statusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
           displayStatus(statusContent,true)
           tableStandard(searchDisk.igcForImport)          
       } else {

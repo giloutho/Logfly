@@ -184,7 +184,7 @@ function exploreDrives(typeGPS,arrayDrives) {
               // }     
             }                                            
             break;   
-          case 'revercomp':
+          case 'revercomp':   //*** DEPRECATED ***/
             // Reversale  : with comp option, some igc files could be found in a folder called 'COMP' 
             // there is a settings file called PARAM.VGP  in root folder    
             // We keep the code for historical purposes only
