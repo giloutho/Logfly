@@ -20,13 +20,16 @@ let btnFlymOld = document.getElementById('imp-gps-flyold')
 let btnFlytec20 = document.getElementById('imp-gps-fly20')
 let btnFlytec15 = document.getElementById('imp-gps-fly15')
 let btnSyride = document.getElementById('imp-gps-syr')
+let btnSyrUsb = document.getElementById('imp-gps-syrusb')
 let btnXctracer = document.getElementById('imp-gps-xct')
 let btnRever = document.getElementById('imp-gps-rever')
-let btnSkytrax = document.getElementById('imp-gps-sky')
+let btnSkytrax2 = document.getElementById('imp-gps-sky2')
+let btnSkytrax3 = document.getElementById('imp-gps-sky3')
 let btnOudie = document.getElementById('imp-gps-oud')
 let btnCPilot = document.getElementById('imp-gps-cpil')
 let btnElement = document.getElementById('imp-gps-elem')
 let btnConnect = document.getElementById('imp-gps-conn')
+let btnSkydrop = document.getElementById('imp-gps-skydrop')
 let btnVarduino = document.getElementById('imp-gps-vardui')
 let btnFlynet = document.getElementById('imp-gps-flynet')
 let btnSensbox = document.getElementById('imp-gps-sens')    
@@ -50,17 +53,19 @@ function iniForm() {
     btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
     btnFlytec20.addEventListener('click',(event) => {callFlytec20()})
     btnOudie.addEventListener('click',(event) => {callUsbGps('oudie')})
-    btnSkytrax.addEventListener('click',(event) => {callSkytrax()})
+    btnSkytrax2.addEventListener('click',(event) => {callUsbGps('sky2')})
+    btnSkytrax3.addEventListener('click',(event) => {callUsbGps('sky3')})
     btnConnect.addEventListener('click',(event) => {callUsbGps('connect')})
-   //btnConnect.addEventListener('click',(event) => {callConnect()})
-    btnFlynet.addEventListener('click',(event) => {callFlynet()})
-    btnElement.addEventListener('click',(event) => {callElement()})
-    btnCPilot.addEventListener('click',(event) => {callCPilot()})
-    btnSensbox.addEventListener('click',(event) => {callSensbox()})
+    btnSkydrop.addEventListener('click',(event) => {callUsbGps('skydrop')})
+    btnFlynet.addEventListener('click',(event) => {callUsbGps('flynet')})
+    btnElement.addEventListener('click',(event) => {callUsbGps('element')})
+    btnCPilot.addEventListener('click',(event) => {callUsbGps('cpilot')})
+    btnSensbox.addEventListener('click',(event) => {callUsbGps('sensbox')})
     btnVarduino.addEventListener('click',(event) => {callVarduino()})
     btnXctracer.addEventListener('click',(event) => {callXctracer()})
     btnRever.addEventListener('click',(event) => {callUsbGps('reverlog')})
     btnSyride.addEventListener('click', (event) => {callSyride()})
+    btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
     btnDisk.addEventListener('click', (event) => {callDisk()})
     btnManu.addEventListener('click', (event) => {callManu()})
 }
@@ -88,9 +93,33 @@ function callUsbGps(typeGPS) {
     case 'connect':
       gpsStatus = '<strong>GPS Connect : </strong>'     
       break;
+    case 'sensbox' :
+      gpsStatus = '<strong>GPS Sensbox : </strong>'     
+      break;    
+    case 'element' :
+      gpsStatus = '<strong>GPS Element : </strong>'     
+      break;           
+    case 'flynet' :
+      gpsStatus = '<strong>GPS Flynet : </strong>'     
+      break;             
+    case 'sky2' :
+      gpsStatus = '<strong>GPS Skytraax 2 : </strong>'     
+      break;
+    case 'sky3' :
+      gpsStatus = '<strong>GPS Skytraax 3/4 : </strong>'     
+      break;     
+    case 'cpilot' : 
+      gpsStatus = '<strong>GPS C-Pilot: </strong>'     
+      break; 
     case 'oudie':
       gpsStatus = '<strong>GPS Oudie : </strong>'     
-      break;      
+      break;   
+    case 'skydrop' :
+      gpsStatus = '<strong>GPS Skydrop : </strong>'     
+      break;
+    case 'syrideusb':
+      gpsStatus = '<strong>GPS Syride via Usb : </strong>'     
+      break;          
   }
   displayWaiting()
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
@@ -102,6 +131,20 @@ function callUsbGps(typeGPS) {
           displayStatus(errorMsg,false)      
       }
   })     
+}
+
+function callSyride() {
+  let syrideSetting = store.get('pathSyride')
+  log.info('[Import Syride] from '+syrideSetting)
+  var syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
+  if (syridePath.parapentepath != null) {
+    let gpsStatus = '<strong>Syride : </strong>'  
+    callDiskImport(syridePath.parapentepath,gpsStatus)  
+  } else {
+    clearPage()
+    let errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
+    displayStatus(errorMsg,false)
+  }
 }
 
 function callManu() {

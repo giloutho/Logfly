@@ -96,14 +96,14 @@ function exploreDrives(typeGPS,arrayDrives) {
                 }
               }             
               break;        
-            case 'sensbox':
+          case 'sensbox':
               // Sensbox : igc files are in a folder called 'tracks' 
               // A folder called 'System' or 'system' exists            
               arrFolders = getUsbFolders(usbPath) 
               if (arrFolders instanceof Array) { 
                 for (let j = 0; j < arrFolders.length; j++) {
                   switch (arrFolders[j]) {
-                    case 'flights':
+                    case 'tracks':
                       validFlights = true
                       pathFlights = path.join(usbPath, path.sep+'tracks')
                       log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
@@ -118,9 +118,9 @@ function exploreDrives(typeGPS,arrayDrives) {
                 }
               }             
               break;                      
-            case 'cpilot':
-              // Connect : igc files are in a folder called 'flights' 
-              // A folder called 'config' exists            
+          case 'cpilot':
+              // C-Pilot : igc files are in a folder called 'tracks' 
+              // A folder called 'displays' exists            
               arrFolders = getUsbFolders(usbPath) 
               if (arrFolders instanceof Array) { 
                 for (let j = 0; j < arrFolders.length; j++) {
@@ -136,8 +136,27 @@ function exploreDrives(typeGPS,arrayDrives) {
                   }                       
                 }
               }             
-              break;                  
-            case 'element':
+              break;        
+          case 'skydrop':
+            // Skydrop : igc files are in a folder called 'LOGS' 
+            // A folder called 'AIR' exists            
+            arrFolders = getUsbFolders(usbPath) 
+            if (arrFolders instanceof Array) { 
+              for (let j = 0; j < arrFolders.length; j++) {
+                switch (arrFolders[j]) {
+                  case 'LOGS':
+                    validFlights = true
+                    pathFlights = path.join(usbPath, path.sep+'LOGS')
+                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
+                    break;   
+                  case 'AIR':
+                    validSpecial = true
+                    break;                                                    
+                }                       
+              }
+            }             
+            break;                            
+          case 'element':
                 // Element : igc files are in a folder called 'flights' 
                 // A folder called 'config' exists      
                 // A folder called 'waypoints' exists        
@@ -159,7 +178,30 @@ function exploreDrives(typeGPS,arrayDrives) {
                     }                       
                   }
                 }             
-                break;                 
+                break;     
+          case 'syrideusb':
+              // Nav XL : igc files are in a folder called 'IGC' 
+              // A folder called 'KEYS' exists      
+              // A folder called 'update' exists        
+              arrFolders = getUsbFolders(usbPath) 
+              if (arrFolders instanceof Array) { 
+                for (let j = 0; j < arrFolders.length; j++) {
+                  switch (arrFolders[j]) {
+                    case 'IGC':
+                      validFlights = true
+                      pathFlights = path.join(usbPath, path.sep+'IGC')
+                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
+                      break;   
+                    case 'KEYS':
+                      validSpecial = true
+                      break;       
+                    case 'update':
+                      validSpecial = true
+                      break;                                                      
+                  }                       
+                }
+              }             
+              break;                              
           case 'reverlog':
             // there is a settings file called PARAM.VGP  in root folder    
             var vgpFile = glob.sync(usbPath + '/PARAM.VGP')
@@ -247,8 +289,13 @@ function exploreDrives(typeGPS,arrayDrives) {
                       pathFlights = path.join(usbPath, path.sep+'flights')
                       break;          
                       case 'pilot_profiles':
+                        // exists on Skytraxx 3
                         validSpecial = true
-                        break;         
+                        break;        
+                      case 'flightscreens':
+                        // exists on Skytraxx 4
+                        validSpecial = true
+                        break;                            
                       case 'waypoints':
                         validSpecial = true
                         break;                         
