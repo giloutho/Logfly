@@ -38,6 +38,9 @@ function iniForm() {
       document.getElementById('target-sidebar').innerHTML = rendered
   })
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
+  document.getElementById('bt-search').innerHTML = i18n.gettext('Search')
+  document.getElementById('fullmap').innerHTML = i18n.gettext('Full screen map')
+  document.getElementById('scoring').innerHTML = i18n.gettext('Scoring')
   document.getElementById('dropdownMenuButton').innerHTML = i18n.gettext('Sites')
   document.getElementById('site-rename').innerHTML = i18n.gettext('Rename site')
   document.getElementById('site-form').innerHTML = i18n.gettext('Site form')
