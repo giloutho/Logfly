@@ -49,7 +49,7 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    btnFlymSD.addEventListener('click',(event) => {callFlymSD()})      
+    btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
     btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
     btnFlytec20.addEventListener('click',(event) => {callFlytec20()})
     btnOudie.addEventListener('click',(event) => {callUsbGps('oudie')})
@@ -61,8 +61,8 @@ function iniForm() {
     btnElement.addEventListener('click',(event) => {callUsbGps('element')})
     btnCPilot.addEventListener('click',(event) => {callUsbGps('cpilot')})
     btnSensbox.addEventListener('click',(event) => {callUsbGps('sensbox')})
-    btnVarduino.addEventListener('click',(event) => {callVarduino()})
-    btnXctracer.addEventListener('click',(event) => {callXctracer()})
+    btnVarduino.addEventListener('click',(event) => {callUsbGps('varduino')})
+    btnXctracer.addEventListener('click',(event) => {callUsbGps('xctracer')})
     btnRever.addEventListener('click',(event) => {callUsbGps('reverlog')})
     btnSyride.addEventListener('click', (event) => {callSyride()})
     btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
@@ -111,6 +111,12 @@ function callUsbGps(typeGPS) {
     case 'cpilot' : 
       gpsStatus = '<strong>GPS C-Pilot: </strong>'     
       break; 
+    case 'xctracer' :
+      gpsStatus = '<strong>GPS C-Pilot: </strong>'     
+      break;
+    case 'varduino' :
+      gpsStatus = '<strong>GPS Varduino: </strong>'     
+      break; 
     case 'oudie':
       gpsStatus = '<strong>GPS Oudie : </strong>'     
       break;   
@@ -126,8 +132,13 @@ function callUsbGps(typeGPS) {
       if (logResult != null) {     
           callDiskImport(logResult,gpsStatus)  
       } else {
+          let errorMsg
           clearPage()
-          let errorMsg = gpsStatus+' not found'
+          if (typeGPS == 'varduino') {
+            errorMsg = gpsStatus+' '+i18n.gettext('The USB connection being very random, it is advised to use directly the microSD connected to the computer')
+          } else {
+            errorMsg = gpsStatus+' '+i18n.gettext('Not found')
+          }
           displayStatus(errorMsg,false)      
       }
   })     
@@ -144,6 +155,17 @@ function callSyride() {
     clearPage()
     let errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
     displayStatus(errorMsg,false)
+  }
+}
+
+
+function callDisk() {
+  console.log(store.get('pathImport'))
+  const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
+  if (selectedPath != null) {
+    log.info('[Import disk] for '+selectedPath)
+    var importStatus = selectedPath+' : '
+    callDiskImport(selectedPath,importStatus)
   }
 }
 
@@ -179,6 +201,213 @@ function callDiskImport(selectedPath, statusContent) {
         log.error('[callDiskImport] '+error)    
     }
 }
+
+function serialGpsCall(gpsModel) {
+  let gpsCom = []
+  let msg
+  clearPage()
+
+  ipcRenderer.invoke('ports-list').then((result) => {
+    if (result instanceof Array) { 
+      switch (gpsModel) {
+        case 'FlymasterSD':
+          msg = '[Import Flymaster SD]  '  
+          break;      
+        case 'FlymasterOld':
+          msg = '[Import Flymaster Old]  '  
+          break;             
+        case 'Flytec20':
+          msg = '[Import Flytec/Brau 6020-30 ]  '  
+          break;  
+        case 'Flytec15':
+          msg = '[Import Flytec 6015/Brau IQ]  '  
+          break;             
+      }      
+      log.info(msg+result.length+' ports detected')
+      for (let i = 0; i < result.length; i++) {        
+        if (typeof result[i].manufacturer != 'undefined') {
+          var regexProlif = /prolific/i
+          var regexFlym = /flymas/i
+          if (result[i].manufacturer.search(regexProlif) >= 0) {
+            // Dès Logfly5, on avait un problème avec Flytec
+            // deux ports dev/cu.usbserial et dev/cu.usbserial-1440 apparaissent
+            // plantage si on utilise cu.usbserial alors que cela fonctionne avec cu.usbserial-1440            
+            // FIXME pour debugging  if en dur pour le 6015   
+            if (result[i].path.includes('-')) {
+              gpsReq =  {
+                'chip': result[i].manufacturer,
+                'model': gpsModel,
+                'port': result[i].path
+              }          
+              gpsCom.push(gpsReq)                            
+              log.info(msg+' Prolific manufacturer detected on '+result[i].path)
+            }
+          } else if (result[i].manufacturer.search(regexFlym) >= 0) {
+            gpsReq =  {
+              'chip': result[i].manufacturer,
+              'model': gpsModel,
+              'port': result[i].path
+            }          
+            gpsCom.push(gpsReq)
+            log.info(msg+' Flymaster manufacturer detected on '+result[i].path)
+          }
+        }
+      }
+    } else {
+      log.error(ms+' No serial port found')
+    }
+    if (gpsCom.length > 0) {
+      callFlightList(gpsCom)  
+    } else {
+      displayStatus(i18n.gettext('No usable serial port detected',false))
+    }
+  })
+}
+
+function callFlightList(gpsCom) {
+  // GpsDump is called in gpsdump-list.js 
+  var flightList = ipcRenderer.send('flightlist', gpsCom)
+  ipcRenderer.on('gpsdump-flist', (event, flightList) => {
+    if (typeof flightList !== 'undefined') { 
+      if (Array.isArray(flightList.flights)) {
+        if (flightList.flights.length > 0) {
+          tableFromGpsDump(flightList.flights, flightList.model)
+        } else {
+          log.error('['+flightList.model+' callFlihtList] returned an empty flightList.flights array')
+          let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;flightList.flights array is empty'
+          displayStatus(statusContent,true)  
+        }
+      } else {
+        log.error('['+flightList.model+' callFlihtList did not return a flightList.flights array')
+        let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;callFlihtList did not return a flightList.flights array'
+        displayStatus(statusContent,true)  
+      }
+    } else {
+      log.error('['+flightList.model+' callFlihtList returned undefined flightList')
+      let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;callFlihtList returned undefined flightList'
+      displayStatus(statusContent,true)        
+    }
+  })
+}
+
+function getOneFlight(gpsParam, flightIndex) {
+  console.log('gpsParam '+gpsParam)
+  var igcFile = ipcRenderer.send('getflight', gpsParam, flightIndex)  
+  ipcRenderer.on('gpsdump-fone', (event, igcString) => {
+    if (igcString != null) {
+      console.log(igcString)
+    }
+  })  
+}
+
+function tableFromGpsDump(flighList,gpsModel) {
+  if ($.fn.DataTable.isDataTable('#tableimp_id')) {
+    $('#tableimp_id').DataTable().clear().destroy()
+  }   
+  var dataTableOption = {
+    data: flighList, 
+    // // the select plugin is used -> https://datatables.net/extensions/select/
+    // pas nécessaire ici
+    // select: {
+    //   style: 'multi'
+    // },
+    columns: [  
+      {
+        // display boolean as checkbox -> http://live.datatables.net/kovegexo/1/edit
+        title : 'Logbook',
+        data: 'new',
+        render: function(data, type, row) {
+          if (data === true) {
+            return '<input type="checkbox" class="editor-active" checked >';
+          } else {
+         //   return '<input type="checkbox" class="editor-active">';
+              return '<img src="./assets/img/check-white.png" alt=""></img>';
+          }
+          return data;
+        },
+       className: "dt-body-center text-center"
+      },      
+      { title : 'Date', data: 'date'},
+      { title : 'Time', data: 'takeoff'},
+      { title : 'Duration' , data: 'duration'},      
+      { title : 'Pilot name', data: null},    //unused in this table version     
+      {
+        title : '',
+        data: 'forImport',
+        render: function(data, type, row) {
+          // action on the click is described below
+          return '<button type="button" class="btn btn-outline-secondary btn-sm">Display</button>';
+        },
+       className: "dt-body-center text-center"
+      },          
+      { title : 'Path' , data: 'gpsdump'},         //unused in this table version
+    ],   
+    columnDefs : [
+      {
+        "targets": [ 4 ],           // 'Pilot name' column is hidden
+        "visible": false,
+        "searchable": false
+      },      
+      {
+          "targets": [ 6 ],           // 'Path' column is hidden
+          "visible": false,
+          "searchable": false
+      },
+    ],             
+    // change color according cell value -> http://live.datatables.net/tohehohe/1/edit
+    'createdRow': function( row, data, dataIndex ) {
+      if ( data['new'] === true ) {        
+        $(row).addClass('importred');
+      } else {
+        $(row).addClass('importgreen');
+      }
+    },  
+    bInfo : false,          // hide "Showing 1 to ...  row selected"
+    lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
+    searching : false,      // hide search abilities in table
+    ordering: false,        // Sinon la table est triée et écrase le tri sql
+    pageLength: 12,         // ce sera à calculer avec la hauteur de la fenêtre
+    pagingType : 'full',
+    language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
+      paginate: {
+        first: '<<',
+        last: '>>',
+        next: '>', // or '→'
+        previous: '<' // or '←' 
+      }
+    },     
+    select: true             // Activation du plugin select
+  }
+  table = $('#tableimp_id').DataTable(dataTableOption )
+  $("#tableimp_id").on("click", "td input[type=checkbox]", function () {
+    var isChecked = this.checked;
+    // set the data item associated with the row to match the checkbox
+    var dtRow = table.rows($(this).closest("tr"));
+    dtRow.data()[0].forImport = isChecked;
+  })
+  // example from https://datatables.net/examples/ajax/null_data_source.html
+  $('#tableimp_id').on( 'click', 'button', function () {
+    var dtRow = table.row( $(this).parents('tr') ).data();
+    let rowIndex = table.row( $(this).parents('tr') ).index()
+    alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['gpsdump']);
+    $('#img_waiting').addClass('d-none')
+    getOneFlight(dtRow['gpsdump'],rowIndex)
+  } );  
+  $('#tableimp_id').removeClass('d-none')
+  $('#img_waiting').addClass('d-none')
+
+  let statusContent = '<strong>'+gpsModel+' : </strong>'+flighList.length+' igc files found'+'&nbsp;&nbsp;&nbsp;'
+  var nbInsert = 0
+  flighList.forEach(element => {
+    if (element.new === true ) {
+      nbInsert++
+    }
+  });
+  // affichage du resultat
+  statusContent += '<strong>[&nbsp;'+'Tracks to be added : '+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+  displayStatus(statusContent,true)  
+}
+
 
 // TODO  Il manque le tri par date de la liste et eventuellement la visu sur un contextuel ou une icone. On a la place
 function tableStandard(igcForImport) {
