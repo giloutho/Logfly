@@ -94,6 +94,9 @@ doc/
 # Db folder
 db/
 
+#i18n folder
+i18/
+
 # lock files
 package-lock.json
 yarn.lock
