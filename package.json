@@ -79,7 +79,7 @@
     "properties-reader": "^2.2.0",
     "reverse-line-reader": "^0.2.6",
     "save": "^2.4.0",
-    "serialport": "9.2.8",
+    "serialport": "^10.4.0",
     "simplify-geojson": "^1.0.4",
     "spherical-geometry-js": "2.0.0",
     "srtm-elevation": "^2.0.0",
