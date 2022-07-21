@@ -4,7 +4,7 @@ const {ipcMain} = require('electron')
 const { SerialPort } = require('serialport')
 
 async function listPorts() {
-  const ports = await serialPort.list()
+  const ports = await SerialPort.list()
   return ports
 }
 
