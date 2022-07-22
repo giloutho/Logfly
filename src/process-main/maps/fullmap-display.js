@@ -72,7 +72,7 @@ function openFenetre(event,track) {
     win.on('close', () => { win = null })
     win.loadURL(mapHtmlPath)
     win.webContents.on('did-finish-load', function() {    
-        win.send('geojson-for-map', [track,anaTrack,tkSite])  
+        win.send('geojson-for-map', [track,anaTrack,tkSite])    // This is a simple passage of variables intended for fullmap.js
         win.show();
     });
 }
