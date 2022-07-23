@@ -85,9 +85,6 @@ typings/
 # Webpack
 .webpack/
 
-# VSCode
-.vscode/
-
 # Electron-Forge
 out/
 
