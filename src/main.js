@@ -80,7 +80,7 @@ function loadLanguage() {
       mainWindow.send('translation', langjson ) 
     })    
     if (store.get('checkDb')) {
-      openWindow('import')
+      openWindow('overview')
     } else {
       openWindow('problem')
     }
@@ -105,7 +105,7 @@ function openWindow(pageName) {
         mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
         break;
     case "overview":
-      mainWindow.loadFile(path.join(__dirname, './views/html/import1.html'));
+      mainWindow.loadFile(path.join(__dirname, './views/html/littlemap.html'));
       mainWindow.webContents.openDevTools();  
       break;      
     case "import":
