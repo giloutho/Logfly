@@ -18,6 +18,7 @@ switch (currOS) {
     case 'mac':
         // https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
         gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin/gpsdumpMac64_9')
+        // only fir debug purpose
         testPath = path.join(path.dirname(__dirname), '../../docs/flight_list.txt')
         break
     case 'linux':
@@ -28,24 +29,26 @@ switch (currOS) {
 let flightList = {}
 
 ipcMain.on('flightlist', (event, gpsCom) => {
-  openWindow(event,gpsCom)
+  //openWindow(event,gpsCom)
+  readOnPorts(gpsCom)
+  event.sender.send('gpsdump-flist', flightList)
 })
 
-function openWindow(event,gpsCom) {
-  const modalPath = path.join('file://', __dirname, '../../views/html/waiting2.html')
-  let win = new BrowserWindow({ 
-    width: 300,
-    height: 300,
-    frame: false 
-  })
-  win.loadURL(modalPath)
-  win.webContents.on('did-finish-load', function() {
-    win.show()
-    readOnPorts(gpsCom)
-    event.sender.send('gpsdump-flist', flightList)
-    win.close()
-  })
-}
+// function openWindow(event,gpsCom) {
+//   const modalPath = path.join('file://', __dirname, '../../views/html/waiting2.html')
+//   let win = new BrowserWindow({ 
+//     width: 300,
+//     height: 300,
+//     frame: false 
+//   })
+//   win.loadURL(modalPath)
+//   win.webContents.on('did-finish-load', function() {
+//     win.show()
+//     readOnPorts(gpsCom)
+//     event.sender.send('gpsdump-flist', flightList)
+//     win.close()
+//   })
+// }
 
 function readOnPorts(gpsCom) {
   /**
@@ -91,26 +94,24 @@ function askFlightList(gpsModel) {
           switch (currOS) {
             case 'win':
               paramGPS = '/gps=flymaster'
-              break;
-                break
+              break
             case 'mac':
             case 'linux':
               paramGPS = '-gyn'  
-               break
+              break
           }                    
-          break;      
+          break      
         case 'FlymasterOld':
           switch (currOS) {
             case 'win':
               paramGPS = '/gps=flymasterold'
-              break;
-                break
+              break
             case 'mac':
             case 'linux':
               paramGPS = '-gy'   // Whatever the model, this old protocol displays the list of flights
-                break
+              break
           }                    
-          break;                
+          break                
         case 'Flytec20':
           // Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
           switch (currOS) {
@@ -122,19 +123,19 @@ function askFlightList(gpsModel) {
               paramGPS = '-gc'  
               break
           }                    
-          break;      
-          case 'Flytec15':
-            // IQ-Basic / Flytec 6015
-            switch (currOS) {
-              case 'win':
-                paramGPS = '/gps=iqbasic'	
-                break;
-              case 'mac':
-              case 'linux':
-                paramGPS =  '-giq'
-                break
-            }                    
-            break;                      
+          break      
+        case 'Flytec15':
+          // IQ-Basic / Flytec 6015
+          switch (currOS) {
+            case 'win':
+              paramGPS = '/gps=iqbasic'	
+              break;
+            case 'mac':
+            case 'linux':
+              paramGPS =  '-giq'
+              break
+          }                    
+          break                     
       }
       // formatting of the serial port expression depends of operating system
       switch (currOS) {
@@ -142,8 +143,8 @@ function askFlightList(gpsModel) {
             // ...
             break
         case 'mac':
-            // dans Logfly5, on obtenait /dev/cu dans la liste des ports
-            // avec cette lib, ici il semblerait que ce soit tty !!
+            // In Logfly5, we got /dev/cu in ports list
+            // with this module, it seems that it is tty !!
             paramPort = gpsModel.port.replace('/dev/tty','-cu')
             break
         case 'linux':

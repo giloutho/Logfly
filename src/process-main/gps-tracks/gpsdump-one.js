@@ -23,28 +23,46 @@ switch (currOS) {
         break
 }
 
-ipcMain.on('getflight', (event, gpsParam, flightIndex) => {
-  openWindow(event,gpsParam, flightIndex)
+ipcMain.on('getflighformap', (event, gpsParam, flightIndex) => {
+    let igcString = getFlight(event,gpsParam, flightIndex)
+    // const mapTrack = elemMap.buildMapElements(igcString)
+    // console.log(mapTrack.ready+' '+mapTrack.flDate+' '+mapTrack.flToffTime+' '+mapTrack.glider)
+    // if (mapTrack.ready) {
+    //     event.sender.send('gpsdump-fone', true) 
+    //     openWindow(mapTrack)
+    // } else {
+    //     event.sender.send('gpsdump-fone', false) 
+    // }
+   // event.sender.send('gpsdump-fone', 'Error reading gpsdump result') 
 })
 
-function openWindow(event,gpsParam, flightIndex) {
-  const modalPath = path.join('file://', __dirname, '../../views/html/waiting2.html')
-  let win = new BrowserWindow({ 
-    width: 768,
-    height: 480
-  })
-  win.loadURL(modalPath)
-  win.webContents.on('did-finish-load', function() {
-    win.show()    
-    let igcString = getFlight(gpsParam, flightIndex)
+function openWindow(event, igcString) {
+    const modalPath = path.join('file://', __dirname, '../../views/html/littlemap.html')
     const mapTrack = elemMap.buildMapElements(igcString)
     console.log(mapTrack.ready+' '+mapTrack.flDate+' '+mapTrack.flToffTime+' '+mapTrack.glider)
-    event.sender.send('gpsdump-fone', igcString)    
-    win.close()
-  })
+    if (mapTrack.ready) {
+        let win = new BrowserWindow({ 
+            width: 1024,
+            height: 620,
+            parent: BrowserWindow.getFocusedWindow(),
+           // modal: true,  modal = frameless don gestion bootsrap d'une barre en ahut avec bouton fermé etc.. on verra
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false, 
+            }              
+        })
+        win.on('close', () => { win = null, event.sender.send('gpsdump-fone', null) })
+        win.loadURL(modalPath)
+        win.webContents.on('did-finish-load', function() {
+          //  win.send('little-map-elements', mapTrack)  // This is a simple trick to pass some variables to littlemap.js
+            win.show();
+        })
+    } else {
+        event.sender.send('gpsdump-fone', 'An error occurred during the map generation') 
+    }
 }
 
-function getFlight(gpsParam, flightIndex) {
+function getFlight(event, gpsParam, flightIndex) {
   // gpsParam contains parameters for GpsDump
   // something like -giq,-cu.usbserial-14140
   // First one is gps type, second serial port
@@ -69,6 +87,7 @@ function getFlight(gpsParam, flightIndex) {
       try {
         const igcString = fs.readFileSync(tempFileName, 'utf8')
         res = igcString
+        openWindow(event, igcString) 
       } catch (err) {
         log.error('Error reading gpsdump result '+tempFileName+' '+error)
       }      

@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-20 14:01+0200\n"
-"PO-Revision-Date: 2022-07-20 14:01+0200\n"
+"POT-Creation-Date: 2022-07-20 15:09+0200\n"
+"PO-Revision-Date: 2022-07-20 15:09+0200\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: no-wrap\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: views/js/import.js:167
@@ -196,7 +196,7 @@ msgstr ""
 msgid "Pathway"
 msgstr ""
 
-#: views/js/fullmap.js:481 views/js/logbook.js:178
+#: views/js/fullmap.js:481 views/js/logbook.js:181
 msgid "Date"
 msgstr ""
 
@@ -204,7 +204,7 @@ msgstr ""
 msgid "Pilot"
 msgstr ""
 
-#: views/js/fullmap.js:483 views/js/logbook.js:182
+#: views/js/fullmap.js:483 views/js/logbook.js:185
 msgid "Glider"
 msgstr ""
 
@@ -272,7 +272,7 @@ msgstr ""
 msgid "Signature"
 msgstr ""
 
-#: views/js/fullmap.js:575 views/js/logbook.js:179
+#: views/js/fullmap.js:575 views/js/logbook.js:182
 msgid "Time"
 msgstr ""
 
@@ -300,51 +300,63 @@ msgstr ""
 msgid "Downloading digital elevation data"
 msgstr ""
 
-#: views/js/logbook.js:41 views/tpl/sidebar.js:13
-msgid "Sites"
+#: views/js/logbook.js:41
+msgid "Search"
 msgstr ""
 
 #: views/js/logbook.js:42
-msgid "Rename site"
+msgid "Full screen map"
 msgstr ""
 
 #: views/js/logbook.js:43
+msgid "Scoring"
+msgstr ""
+
+#: views/js/logbook.js:44 views/tpl/sidebar.js:13
+msgid "Sites"
+msgstr ""
+
+#: views/js/logbook.js:45
+msgid "Rename site"
+msgstr ""
+
+#: views/js/logbook.js:46
 msgid "Site form"
 msgstr ""
 
-#: views/js/logbook.js:44
+#: views/js/logbook.js:47
 msgid "Change site"
 msgstr ""
 
-#: views/js/logbook.js:68
+#: views/js/logbook.js:71
 msgid "Comment"
 msgstr ""
 
-#: views/js/logbook.js:69
+#: views/js/logbook.js:72
 msgid "Change glider"
 msgstr ""
 
-#: views/js/logbook.js:70
+#: views/js/logbook.js:73
 msgid "Glider flight time"
 msgstr ""
 
-#: views/js/logbook.js:71
+#: views/js/logbook.js:74
 msgid "Photo of the day"
 msgstr ""
 
-#: views/js/logbook.js:72
+#: views/js/logbook.js:75
 msgid "Delete"
 msgstr ""
 
-#: views/js/logbook.js:73
+#: views/js/logbook.js:76
 msgid "Export"
 msgstr ""
 
-#: views/js/logbook.js:131
+#: views/js/logbook.js:134
 msgid "Program error"
 msgstr ""
 
-#: views/js/logbook.js:132
+#: views/js/logbook.js:135
 msgid "Decoding problem in track file"
 msgstr ""
 

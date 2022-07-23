@@ -1,0 +1,2324 @@
+# Language –no-wrap translations for PACKAGE package.
+# Copyright (C) 2019 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-28 15:47+0100\n"
+"PO-Revision-Date: 2019-01-01 16:14+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language: es\n"
+"Language-Team: none\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"MIME-Version: 1.0\n"
+"X-Generator: Poedit 2.2\n"
+
+#: src/main/java/settings/listLangues.java:35
+msgid "German"
+msgstr "Alemán"
+
+#: src/main/java/settings/listLangues.java:36
+msgid "English"
+msgstr "Inglés"
+
+#: src/main/java/settings/listLangues.java:37
+msgid "French"
+msgstr "Francés"
+
+#: src/main/java/settings/listGPS.java:61
+#: src/main/java/settings/listGPS.java:93
+#: src/main/java/controller/GPSViewController.java:1494
+msgid "Select GPS"
+msgstr "Seleccione GPS"
+
+#: src/main/java/database/dbImport.java:61
+msgid "imported sites"
+msgstr ""
+
+#: src/main/java/database/dbImport.java:62
+msgid "rejected sites"
+msgstr ""
+
+#: src/main/java/database/dbImport.java:81
+#: src/main/java/database/dbParawing.java:149
+msgid "List saved in"
+msgstr ""
+
+#: src/main/java/database/dbParawing.java:129
+msgid "imported flights"
+msgstr ""
+
+#: src/main/java/database/dbParawing.java:130
+msgid "rejected flights"
+msgstr ""
+
+#: src/main/java/database/dbAdd.java:162
+msgid "To rename"
+msgstr "Para renombrar"
+
+#: src/main/java/dialogues/alertbox.java:33
+msgid "Program error"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:51
+#: src/main/java/dialogues/alertbox.java:211
+msgid "Undefined error"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:55
+msgid "Successful operation"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:58
+#: src/main/java/dialogues/alertbox.java:64
+msgid "File not found"
+msgstr "Archivo no encontrado"
+
+#: src/main/java/dialogues/alertbox.java:61
+msgid "File Output Input Problem"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:67
+msgid "Parsing error"
+msgstr "Error de análisis"
+
+#: src/main/java/dialogues/alertbox.java:70
+msgid "NullPointerException error"
+msgstr "Error NullPointerException"
+
+#: src/main/java/dialogues/alertbox.java:73
+msgid "InterruptedException error"
+msgstr "Error InterruptedException"
+
+#: src/main/java/dialogues/alertbox.java:76
+msgid "Loading resource failed"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:79
+msgid "Unable to create temporary file"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:82
+msgid "No Internet connection"
+msgstr "Sin conexión a internet"
+
+#: src/main/java/dialogues/alertbox.java:85
+msgid "Settings are not valid"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:88
+msgid "Database connection failed"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:91
+msgid "Reading problem in logbook"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:94
+msgid "Unable to create AIRSP folder"
+msgstr "No es posible crear archivo AIRSP"
+
+#: src/main/java/dialogues/alertbox.java:97
+msgid "Reverbin program not found"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:100
+msgid "Reversale not connected"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:103
+msgid "FRIDX.Bin not generated"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:106
+msgid "FRDATA.Bin not generated"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:109
+msgid "Error copying FRDATA. bin and FRIDX. bin"
+msgstr "Error al copiar FRDATA.BIN y FRIDX.bin"
+
+#: src/main/java/dialogues/alertbox.java:112
+msgid "FRDATA.bin and FRIDX.bin generation successful"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:115
+msgid "Unable to create airspaces selection"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:119
+msgid "Reading settings failed"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:122
+msgid "Points program not found"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:125
+msgid "Wrong JSON score"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:129
+msgid "Error during generation of simple track"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:133
+msgid "Error during generation of colored track by climb"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:137
+msgid "Error during generation of colored track by altitude"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:141
+msgid "Error during generation of colored track by speed"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:145
+msgid "Error during generation of scoring track"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:149
+msgid "Error during generation of thermals track"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:153
+msgid "Error during generation of track replay"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:156
+msgid "Unable to run Google Earth"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:159
+msgid "Decoding picture failed"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:162
+msgid "No GPS response"
+msgstr "Sin respuesta GPS"
+
+#: src/main/java/dialogues/alertbox.java:165
+msgid "Track file is empty"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:168
+msgid "No tracks in the GPS"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:172
+msgid "File Extension not recognized"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:175
+msgid "Reading problem in flights file"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:178
+msgid "Inserting in the flights file failed"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:181
+msgid "Flights must be on the same day"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:184
+msgid "Only one flight selected"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:187
+msgid "GpsDump program not found"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:191
+msgid "Quota displaying VisuGPS exceeded"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:194
+msgid "The file is too large"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:197
+msgid "Error while transferring file"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:200
+msgid "Decoding problem in Open Air file"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:203
+msgid "Error during GeoJSON generation"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:207
+msgid "Unable to generate GPX"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:207
+msgid "empty"
+msgstr "vacío"
+
+#: src/main/java/dialogues/alertbox.java:214
+msgid "Completed task"
+msgstr ""
+
+#: src/main/java/dialogues/alertbox.java:226
+msgid "Important information"
+msgstr ""
+
+#: src/main/java/dialogues/dialogbox.java:40
+#: src/main/java/controller/ConfigViewController.java:596
+msgid "Yes"
+msgstr "Sí"
+
+#: src/main/java/dialogues/dialogbox.java:41
+#: src/main/java/littlewins/winPoints.java:142
+msgid "No"
+msgstr "No"
+
+#: src/main/java/controller/AirspaceController.java:374
+msgid "airspaces"
+msgstr "espacio aéreo"
+
+#: src/main/java/controller/AirspaceController.java:375
+msgid "displayed"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:523
+#: src/main/java/controller/TraceViewController.java:459
+#: src/main/java/controller/CarnetViewController.java:761
+msgid "GPX format"
+msgstr "Formato GPX"
+
+#: src/main/java/controller/AirspaceController.java:805
+msgid "Polygon"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:850
+msgid "Circle"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:993
+msgid "Reversale uploading not supported in Linux"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:1097
+msgid "FRDATA. bin and FRIDX. bin generation successful"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:1183
+msgid "Merge into memory successful"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:1184
+msgid "decoded airspaces"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:1189
+msgid "Decoding problem"
+msgstr ""
+
+#: src/main/java/controller/AirspaceController.java:1198
+#: src/main/java/controller/FullMapController.java:362
+#: src/main/java/littlewins/winAirDraw.java:230
+msgid "OpenAir format"
+msgstr "Formato OpenAir"
+
+#: src/main/java/controller/AirspaceController.java:1297
+msgid "OpenAir"
+msgstr "OpenAir"
+
+#: src/main/java/controller/AirspaceController.java:1298
+msgid "Draw"
+msgstr "Dibujar"
+
+#: src/main/java/controller/AirspaceController.java:1299
+#: src/main/java/controller/WaypViewController.java:1815
+#: src/main/java/controller/KmlViewController.java:362
+#: src/main/java/controller/SiteFormController.java:1148
+#: src/main/java/controller/CarnetViewController.java:1768
+#: src/main/java/controller/CarnetViewController.java:1848
+#: src/main/java/controller/ConfigViewController.java:596
+#: src/main/java/controller/ConfigViewController.java:863
+#: src/main/java/controller/ConfigViewController.java:872
+#: src/main/java/controller/ConfigViewController.java:877
+#: src/main/java/controller/ConfigViewController.java:886
+#: src/main/java/controller/ConfigViewController.java:888
+#: src/main/java/littlewins/winAirDraw.java:150
+#: src/main/java/littlewins/winPoint.java:122
+#: src/main/java/littlewins/winMail.java:218
+#: src/main/java/littlewins/winGlider.java:134
+#: src/main/java/littlewins/winAirSearch.java:79
+#: src/main/java/littlewins/winComment.java:82
+#: src/main/java/littlewins/winSaveXcp.java:507
+#: src/main/java/littlewins/winUsbWWayp.java:74
+#: src/main/java/systemio/webdown.java:109
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/main/java/controller/AirspaceController.java:1300
+#: src/main/java/controller/AirspaceController.java:1303
+#: src/main/java/controller/XcpViewController.java:211
+#: src/main/java/littlewins/winSaveXcp.java:503
+msgid "Save"
+msgstr "Guardar"
+
+#: src/main/java/controller/AirspaceController.java:1301
+#: src/main/java/littlewins/winGPS.java:225
+msgid "Update"
+msgstr "Actualización"
+
+#: src/main/java/controller/AirspaceController.java:1302
+#: src/main/java/controller/CartoViewController.java:270
+msgid "Reset"
+msgstr "Reset"
+
+#: src/main/java/controller/FullMapController.java:375
+msgid "File"
+msgstr "Archivo"
+
+#: src/main/java/controller/FullMapController.java:376
+msgid "violation(s)"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:414
+msgid "Unknown"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:455
+msgid "Update Score"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:456
+#: src/main/java/controller/FullMapController.java:573
+#: src/main/java/controller/KmlViewController.java:349
+msgid "Scoring"
+msgstr "Puntuación"
+
+#: src/main/java/controller/FullMapController.java:567
+msgid "Infos"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:568
+#: src/main/java/controller/CartoViewController.java:268
+msgid "Measure"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:571
+msgid "Measure on map"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:576
+#: src/main/java/controller/TraceViewController.java:579
+msgid "Score evaluation"
+msgstr "Evaluación de la puntuación"
+
+#: src/main/java/controller/FullMapController.java:579
+#: src/main/java/controller/TraceViewController.java:532
+#: src/main/java/controller/CarnetViewController.java:947
+#: src/main/java/controller/CartoViewController.java:272
+msgid "Mail"
+msgstr "Email"
+
+#: src/main/java/controller/FullMapController.java:580
+msgid "Checking"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:583
+msgid "Airspaces checking"
+msgstr ""
+
+#: src/main/java/controller/FullMapController.java:585
+#: src/main/java/controller/CartoViewController.java:273
+#: src/main/java/controller/ManualViewController.java:557
+#: src/main/java/controller/ConfigViewController.java:852
+#: src/main/java/littlewins/winGPS.java:218
+#: src/main/java/littlewins/winLog.java:100
+#: src/main/java/systemio/filesmove.java:72
+#: src/main/java/systemio/webdown.java:68
+msgid "Close"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:236
+msgid "Position"
+msgstr "Posición"
+
+#: src/main/java/controller/WaypViewController.java:244
+msgid "Edit"
+msgstr "Editar"
+
+#: src/main/java/controller/WaypViewController.java:252
+#: src/main/java/controller/CarnetViewController.java:862
+#: src/main/java/controller/CarnetViewController.java:922
+#: src/main/java/controller/CarnetViewController.java:1768
+#: src/main/java/controller/CarnetViewController.java:1848
+#: src/main/java/controller/SitesViewController.java:783
+#: src/main/java/controller/SitesViewController.java:859
+msgid "Delete"
+msgstr "Borrar"
+
+#: src/main/java/controller/WaypViewController.java:260
+msgid "Coordinates"
+msgstr "Coordenadas"
+
+#: src/main/java/controller/WaypViewController.java:322
+#: src/main/java/controller/CoordController.java:583
+#: src/main/java/littlewins/winPoint.java:92
+msgid "Short name"
+msgstr "Nombre corto"
+
+#: src/main/java/controller/WaypViewController.java:323
+msgid "Long name"
+msgstr "Nombre largo"
+
+#: src/main/java/controller/WaypViewController.java:324
+#: src/main/java/controller/WaypViewController.java:1621
+#: src/main/java/controller/SiteFormController.java:1140
+#: src/main/java/controller/SiteFormController.java:1141
+#: src/main/java/controller/SiteFormController.java:1142
+#: src/main/java/controller/ConfigViewController.java:867
+#: src/main/java/controller/CoordController.java:584
+#: src/main/java/controller/CoordController.java:585
+#: src/main/java/controller/CoordController.java:586
+msgid "Latitude"
+msgstr "Latitud"
+
+#: src/main/java/controller/WaypViewController.java:325
+#: src/main/java/controller/WaypViewController.java:1622
+#: src/main/java/controller/SiteFormController.java:1143
+#: src/main/java/controller/SiteFormController.java:1144
+#: src/main/java/controller/SiteFormController.java:1145
+#: src/main/java/controller/ConfigViewController.java:868
+#: src/main/java/controller/CoordController.java:587
+#: src/main/java/controller/CoordController.java:588
+#: src/main/java/controller/CoordController.java:589
+msgid "Longitude"
+msgstr "Longitud"
+
+#: src/main/java/controller/WaypViewController.java:424
+msgid "File format not recognized"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:433
+#: src/main/java/controller/WaypViewController.java:437
+#: src/main/java/controller/WaypViewController.java:441
+#: src/main/java/controller/WaypViewController.java:445
+#: src/main/java/controller/WaypViewController.java:449
+#: src/main/java/controller/WaypViewController.java:453
+#: src/main/java/controller/WaypViewController.java:457
+#: src/main/java/controller/WaypViewController.java:497
+#: src/main/java/controller/WaypViewController.java:504
+#: src/main/java/controller/WaypViewController.java:511
+#: src/main/java/controller/WaypViewController.java:518
+#: src/main/java/controller/WaypViewController.java:526
+#: src/main/java/controller/WaypViewController.java:532
+#: src/main/java/littlewins/winGPS.java:171
+msgid "Format"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:464
+msgid "Unable to decode the file"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:538
+#: src/main/java/controller/WaypViewController.java:1095
+msgid "waypoints"
+msgstr "waypoints"
+
+#: src/main/java/controller/WaypViewController.java:598
+msgid "Left"
+msgstr "Izquierda"
+
+#: src/main/java/controller/WaypViewController.java:599
+msgid "Bottom"
+msgstr "Abajo"
+
+#: src/main/java/controller/WaypViewController.java:600
+msgid "Right"
+msgstr "Derecho"
+
+#: src/main/java/controller/WaypViewController.java:601
+msgid "Top"
+msgstr "Arriba"
+
+#: src/main/java/controller/WaypViewController.java:608
+msgid "Bounding box with a margin of"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:612
+msgid "Copy to clipboard"
+msgstr "Añadir al portapapeles"
+
+#: src/main/java/controller/WaypViewController.java:675
+msgid "Turnpoints display"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:675
+msgid "Merge display and new file"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:767
+#: src/main/java/controller/WaypViewController.java:1060
+#: src/main/java/controller/WaypViewController.java:1063
+#: src/main/java/controller/WaypViewController.java:1086
+#: src/main/java/controller/WaypViewController.java:1317
+#: src/main/java/controller/WaypViewController.java:1320
+#: src/main/java/controller/WaypViewController.java:1338
+msgid "No waypoints in this GPS"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:778
+#: src/main/java/controller/WaypViewController.java:797
+#: src/main/java/controller/WaypViewController.java:816
+#: src/main/java/controller/WaypViewController.java:836
+#: src/main/java/controller/WaypViewController.java:1095
+msgid "Sending to"
+msgstr "Enviando a"
+
+#: src/main/java/controller/WaypViewController.java:852
+msgid "Old Waypoints possibly erased"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:854
+msgid "Sending to GPS"
+msgstr "Enviando a GPS"
+
+#: src/main/java/controller/WaypViewController.java:857
+#: src/main/java/littlewins/winGPS.java:176
+msgid "Long names"
+msgstr "Nombres largos"
+
+#: src/main/java/controller/WaypViewController.java:860
+#: src/main/java/littlewins/winGPS.java:177
+msgid "Short names"
+msgstr "Nombres cortos"
+
+#: src/main/java/controller/WaypViewController.java:863
+#: src/main/java/littlewins/winGPS.java:178
+msgid "Mixed"
+msgstr "Mezclado"
+
+#: src/main/java/controller/WaypViewController.java:1071
+msgid "Save to disk"
+msgstr "Guardar en el disco"
+
+#: src/main/java/controller/WaypViewController.java:1073
+#: src/main/java/controller/WaypViewController.java:1326
+msgid "Use GPSDump to download waypoints"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1102
+msgid "Check GPS content"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1116
+#: src/main/java/controller/WaypViewController.java:1138
+#: src/main/java/controller/WaypViewController.java:1160
+#: src/main/java/controller/WaypViewController.java:1182
+msgid "Incoming"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1383
+#: src/main/java/controller/WaypViewController.java:1427
+#: src/main/java/controller/WaypViewController.java:1474
+msgid "Could not translate the points"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1507
+#: src/main/java/controller/CarnetViewController.java:713
+#: src/main/java/controller/SitesViewController.java:328
+#: src/main/java/controller/SitesViewController.java:576
+#: src/main/java/controller/ManualViewController.java:551
+#: src/main/java/littlewins/winPoint.java:66
+msgid "Altitude"
+msgstr "Altitud"
+
+#: src/main/java/controller/WaypViewController.java:1533
+#: src/main/java/controller/TraceViewController.java:185
+#: src/main/java/controller/CarnetViewController.java:1557
+#: src/main/java/controller/GPSViewController.java:1156
+#: src/main/java/controller/ImportViewController.java:354
+#: src/main/java/controller/SitesViewController.java:588
+#: src/main/java/controller/SitesViewController.java:599
+msgid "An error occurred during the map generation"
+msgstr "Se ha producido un error durante la generación del mapa"
+
+#: src/main/java/controller/WaypViewController.java:1544
+msgid "Default"
+msgstr "Por defecto"
+
+#: src/main/java/controller/WaypViewController.java:1549
+msgid "Cancel current list"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1577
+#: src/main/java/controller/WaypViewController.java:1605
+msgid "New file"
+msgstr "Nuevo archivo"
+
+#: src/main/java/controller/WaypViewController.java:1580
+msgid "Location not found"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1583
+#: src/main/java/controller/SiteFormController.java:767
+msgid "Geolocation problem"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1802
+msgid "Read file"
+msgstr "Lee archivo"
+
+#: src/main/java/controller/WaypViewController.java:1803
+msgid "Read GPS"
+msgstr "Lee GPS"
+
+#: src/main/java/controller/WaypViewController.java:1804
+msgid "Auto short names"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1805
+#: src/main/java/controller/WaypViewController.java:1810
+#: src/main/java/littlewins/winSiteChoice.java:100
+msgid "New"
+msgstr "Nuevo"
+
+#: src/main/java/controller/WaypViewController.java:1806
+msgid "Write file"
+msgstr "Escribir archivo"
+
+#: src/main/java/controller/WaypViewController.java:1807
+msgid "Send to GPS"
+msgstr "Enviando a GPS"
+
+#: src/main/java/controller/WaypViewController.java:1808
+msgid "Email"
+msgstr "Email"
+
+#: src/main/java/controller/WaypViewController.java:1810
+msgid "Enter a city"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1812
+msgid "Turnpoint"
+msgstr ""
+
+#: src/main/java/controller/WaypViewController.java:1813
+#: src/main/java/controller/SitesViewController.java:886
+#: src/main/java/leaflet/map_visu.java:222
+#: src/main/java/littlewins/winSiteChoice.java:124
+msgid "Alt"
+msgstr "Alt"
+
+#: src/main/java/controller/WaypViewController.java:1814
+#: src/main/java/controller/SiteFormController.java:1133
+#: src/main/java/controller/SitesViewController.java:883
+#: src/main/java/littlewins/winAirDraw.java:79
+msgid "Name"
+msgstr "Nombre"
+
+#: src/main/java/controller/TraceViewController.java:117
+msgid "points"
+msgstr "puntos"
+
+#: src/main/java/controller/TraceViewController.java:135
+#: src/main/java/controller/TraceViewController.java:192
+#: src/main/java/controller/GPSViewController.java:1170
+#: src/main/java/controller/ImportViewController.java:301
+msgid "Invalid Track"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:135
+#: src/main/java/controller/TraceViewController.java:192
+#: src/main/java/controller/GPSViewController.java:1170
+#: src/main/java/controller/ImportViewController.java:301
+msgid "Rough Points"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:136
+#: src/main/java/controller/TraceViewController.java:193
+#: src/main/java/controller/GPSViewController.java:1171
+#: src/main/java/controller/ImportViewController.java:302
+msgid "valid points"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:139
+#: src/main/java/controller/TraceViewController.java:196
+#: src/main/java/controller/GPSViewController.java:1174
+#: src/main/java/controller/ImportViewController.java:305
+msgid "No valid points in this track file"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:145
+#: src/main/java/controller/CartoViewController.java:120
+msgid "Accepted files: IGC or GPX"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:276
+msgid "Bad download URL"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:281
+#: src/main/java/controller/CarnetViewController.java:1648
+msgid "Could not download track"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:384
+msgid "Generating KML file"
+msgstr "Generación de archivo KML"
+
+#: src/main/java/controller/TraceViewController.java:442
+#: src/main/java/controller/CarnetViewController.java:2058
+msgid "File generation completed"
+msgstr "Generación de archivos completada"
+
+#: src/main/java/controller/TraceViewController.java:458
+#: src/main/java/controller/CarnetViewController.java:760
+msgid "IGC format"
+msgstr "Formato IGC"
+
+#: src/main/java/controller/TraceViewController.java:507
+msgid "Track file"
+msgstr "Archivo recorrido"
+
+#: src/main/java/controller/TraceViewController.java:515
+#: src/main/java/controller/CarnetViewController.java:930
+msgid "Points list"
+msgstr "Lista de puntos"
+
+#: src/main/java/controller/TraceViewController.java:524
+#: src/main/java/controller/CarnetViewController.java:870
+#: src/main/java/controller/CarnetViewController.java:939
+#: src/main/java/controller/SitesViewController.java:665
+#: src/main/java/controller/SitesViewController.java:827
+msgid "Export"
+msgstr "Exportar"
+
+#: src/main/java/controller/TraceViewController.java:536
+#: src/main/java/controller/KmlViewController.java:353
+msgid "Send via e-mail"
+msgstr "Enviar por correo electrónico"
+
+#: src/main/java/controller/TraceViewController.java:562
+msgid "Select a track"
+msgstr "Seleccione un recorrido"
+
+#: src/main/java/controller/TraceViewController.java:567
+#: src/main/java/controller/CarnetViewController.java:2079
+#: src/main/java/controller/SitesViewController.java:895
+msgid "Full screen map"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:573
+msgid "VisuGPS display"
+msgstr ""
+
+#: src/main/java/controller/TraceViewController.java:585
+#: src/main/java/controller/CarnetViewController.java:2097
+msgid "Google Earth file generation"
+msgstr "Generación de archivo Google Earth"
+
+#: src/main/java/controller/KmlViewController.java:239
+#: src/main/java/leaflet/map_visu.java:573
+msgid "Points"
+msgstr "Puntos"
+
+#: src/main/java/controller/KmlViewController.java:344
+msgid "Reduce the number of points"
+msgstr ""
+
+#: src/main/java/controller/KmlViewController.java:345
+#: src/main/java/kml/trackSimple.java:57
+msgid "Track with profile"
+msgstr "Recorrido con perfil"
+
+#: src/main/java/controller/KmlViewController.java:346
+msgid "Colored track by altitude"
+msgstr "Recorrido coloreado por altitud"
+
+#: src/main/java/controller/KmlViewController.java:347
+msgid "Colored track by climb"
+msgstr "Recorrido coloreado por ascendencia"
+
+#: src/main/java/controller/KmlViewController.java:348
+msgid "Colored track by speed"
+msgstr "Recorrido coloreado por velocidad"
+
+#: src/main/java/controller/KmlViewController.java:350
+#: src/main/java/kml/trackThermals.java:98
+msgid "Thermals"
+msgstr "Térmicas"
+
+#: src/main/java/controller/KmlViewController.java:351
+msgid "Replay"
+msgstr "Reproducir"
+
+#: src/main/java/controller/KmlViewController.java:352
+msgid "Export Google Earth file"
+msgstr "Exportación de archivos Google Earth"
+
+#: src/main/java/controller/KmlViewController.java:354
+msgid "Run Google Earth"
+msgstr "Ejecutar Google Earth"
+
+#: src/main/java/controller/KmlViewController.java:355
+msgid "Sampling points"
+msgstr "Puntos de muestreo"
+
+#: src/main/java/controller/KmlViewController.java:356
+msgid "Distance above the trace"
+msgstr "Distancia sobre el trazado"
+
+#: src/main/java/controller/KmlViewController.java:357
+msgid "Camera timer"
+msgstr "Reloj de la cámara"
+
+#: src/main/java/controller/KmlViewController.java:358
+msgid "Camera recoil"
+msgstr ""
+
+#: src/main/java/controller/KmlViewController.java:359
+msgid "Camera tilt"
+msgstr "Inclinación de la cámara"
+
+#: src/main/java/controller/KmlViewController.java:360
+msgid "GPS alt"
+msgstr "Alti GPS"
+
+#: src/main/java/controller/KmlViewController.java:361
+msgid "Baro alt"
+msgstr "Alti Baro"
+
+#: src/main/java/controller/KmlViewController.java:363
+#: src/main/java/controller/SiteFormController.java:1149
+#: src/main/java/controller/ConfigViewController.java:871
+#: src/main/java/controller/ConfigViewController.java:878
+#: src/main/java/controller/ConfigViewController.java:887
+#: src/main/java/controller/ConfigViewController.java:889
+#: src/main/java/littlewins/winAirDraw.java:142
+#: src/main/java/littlewins/winPoint.java:114
+#: src/main/java/littlewins/winGlider.java:127
+#: src/main/java/littlewins/winAirSearch.java:68
+#: src/main/java/littlewins/winComment.java:76
+msgid "OK"
+msgstr "OK"
+
+#: src/main/java/controller/SiteFormController.java:705
+msgid "Last updated date"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:764
+msgid "Not found"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:961
+msgid "Incomplete input"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:1100
+msgid "Accepted characters"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:1111
+msgid "Fills fields with the button values"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:1115
+msgid "OpenStreetMap search with name"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:1134
+#: src/main/java/controller/SitesViewController.java:887
+msgid "Orientation"
+msgstr "Orientación"
+
+#: src/main/java/controller/SiteFormController.java:1135
+#: src/main/java/littlewins/winOsmCities.java:73
+#: src/main/java/littlewins/winSiteChoice.java:114
+msgid "City"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:1136
+#: src/main/java/controller/SitesViewController.java:885
+msgid "ZIP code"
+msgstr "Código Postal"
+
+#: src/main/java/controller/SiteFormController.java:1137
+#: src/main/java/littlewins/winSiteList.java:88
+#: src/main/java/littlewins/winOsmCities.java:83
+msgid "Country"
+msgstr "País"
+
+#: src/main/java/controller/SiteFormController.java:1138
+#: src/main/java/controller/SitesViewController.java:889
+#: src/main/java/controller/ManualViewController.java:550
+#: src/main/java/leaflet/map_visu.java:458
+msgid "Take off"
+msgstr "Despegue"
+
+#: src/main/java/controller/SiteFormController.java:1139
+#: src/main/java/controller/SitesViewController.java:890
+#: src/main/java/leaflet/map_visu.java:556
+msgid "Landing"
+msgstr "Aterrizaje"
+
+#: src/main/java/controller/SiteFormController.java:1146
+msgid "Take-off alt"
+msgstr "Alt despe"
+
+#: src/main/java/controller/SiteFormController.java:1147
+#: src/main/java/controller/CarnetViewController.java:838
+#: src/main/java/controller/CarnetViewController.java:914
+#: src/main/java/controller/CarnetViewController.java:1768
+#: src/main/java/controller/ManualViewController.java:552
+msgid "Comment"
+msgstr "Comentario"
+
+#: src/main/java/controller/SiteFormController.java:1150
+msgid "Geolocation"
+msgstr ""
+
+#: src/main/java/controller/SiteFormController.java:1151
+msgid "Move marker to change coordinates"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:191
+msgid "Edit/Duplicate"
+msgstr "Editar/Duplicar"
+
+#: src/main/java/controller/CarnetViewController.java:339
+msgid "No flights in the logbook"
+msgstr "Ningún vuelo en el registro"
+
+#: src/main/java/controller/CarnetViewController.java:437
+msgid "No flights in logbook"
+msgstr "Ningún vuelo en el registro"
+
+#: src/main/java/controller/CarnetViewController.java:477
+#: src/main/java/controller/CarnetViewController.java:2073
+#: src/main/java/controller/GPSViewController.java:480
+#: src/main/java/controller/ManualViewController.java:547
+#: src/main/java/leaflet/map_visu.java:454
+msgid "Duration"
+msgstr "Duración"
+
+#: src/main/java/controller/CarnetViewController.java:478
+msgid "Delete flight"
+msgstr "Eliminar vuelo"
+
+#: src/main/java/controller/CarnetViewController.java:494
+msgid "A flight must be selected"
+msgstr "Un vuelo debe ser seleccionado"
+
+#: src/main/java/controller/CarnetViewController.java:573
+msgid "File decoding problem"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:608
+msgid "Selection"
+msgstr "Sélection"
+
+#: src/main/java/controller/CarnetViewController.java:609
+msgid "flight time"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:630
+msgid "hours"
+msgstr "horas"
+
+#: src/main/java/controller/CarnetViewController.java:631
+msgid "minutes"
+msgstr "minutos"
+
+#: src/main/java/controller/CarnetViewController.java:822
+#: src/main/java/controller/CarnetViewController.java:963
+msgid "Change glider"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:830
+#: src/main/java/controller/CarnetViewController.java:906
+#: src/main/java/controller/CarnetViewController.java:1848
+msgid "Photo of the day"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:846
+msgid "Site form"
+msgstr "Registro maestro de lugar"
+
+#: src/main/java/controller/CarnetViewController.java:854
+msgid "Change site"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:887
+#: src/main/java/controller/SitesViewController.java:867
+msgid "More"
+msgstr "Más"
+
+#: src/main/java/controller/CarnetViewController.java:955
+msgid "Track content"
+msgstr "Contenido recorrido"
+
+#: src/main/java/controller/CarnetViewController.java:971
+msgid "Merge flights"
+msgstr "Combinar vuelos"
+
+#: src/main/java/controller/CarnetViewController.java:979
+msgid "Update sites"
+msgstr "Actualización de sitios"
+
+#: src/main/java/controller/CarnetViewController.java:993
+msgid "Visu GPS in Logfly"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1001
+#: src/main/java/controller/ConfigViewController.java:865
+msgid "VisuGPS in browser"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1354
+msgid "Merge IGC tracks"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1465
+msgid "merged flights"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1643
+msgid "Bad download url"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1767
+#: src/main/java/controller/CarnetViewController.java:1847
+msgid "What would you like to do"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1768
+#: src/main/java/controller/CarnetViewController.java:1848
+msgid "Change"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:1897
+msgid "photos files (*.jpg)"
+msgstr "archivos fotos (*.jpg)"
+
+#: src/main/java/controller/CarnetViewController.java:2002
+msgid "Kml file generation"
+msgstr "Generación de archivo KML"
+
+#: src/main/java/controller/CarnetViewController.java:2071
+#: src/main/java/controller/GPSViewController.java:1506
+#: src/main/java/controller/ImportViewController.java:504
+#: src/main/java/controller/ManualViewController.java:544
+msgid "Date"
+msgstr "Fecha"
+
+#: src/main/java/controller/CarnetViewController.java:2072
+#: src/main/java/controller/GPSViewController.java:1507
+#: src/main/java/controller/ImportViewController.java:505
+#: src/main/java/littlewins/winPoints.java:144
+msgid "Time"
+msgstr "Hora"
+
+#: src/main/java/controller/CarnetViewController.java:2074
+#: src/main/java/littlewins/winSiteChoice.java:109
+msgid "Site"
+msgstr "Lugar"
+
+#: src/main/java/controller/CarnetViewController.java:2075
+#: src/main/java/controller/ManualViewController.java:548
+#: src/main/java/controller/ConfigViewController.java:855
+#: src/main/java/littlewins/winGlider.java:100
+msgid "Glider"
+msgstr "Planeador"
+
+#: src/main/java/controller/CarnetViewController.java:2082
+#: src/main/java/controller/SitesViewController.java:888
+msgid "All"
+msgstr "Todo"
+
+#: src/main/java/controller/CarnetViewController.java:2085
+msgid "Display all flights"
+msgstr ""
+
+#: src/main/java/controller/CarnetViewController.java:2091
+msgid "Track scoring"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:215
+#: src/main/java/controller/RootLayoutController.java:515
+msgid "Settings"
+msgstr "Ajustes"
+
+#: src/main/java/controller/RootLayoutController.java:243
+msgid "Back to original size"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:258
+msgid "Coming soon"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:334
+msgid "Send an e-mail"
+msgstr "Enviar un correo electrónico"
+
+#: src/main/java/controller/RootLayoutController.java:342
+#: src/main/java/controller/ConfigViewController.java:844
+msgid "Log file"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:350
+msgid "System report"
+msgstr "Informe del sistema"
+
+#: src/main/java/controller/RootLayoutController.java:364
+msgid "Release notes"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:372
+msgid "Credits"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:386
+msgid "Original display"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:394
+msgid "Logbook copy"
+msgstr "Copia del libro de registro"
+
+#: src/main/java/controller/RootLayoutController.java:402
+msgid "Csv import"
+msgstr "Importar CSV"
+
+#: src/main/java/controller/RootLayoutController.java:410
+msgid "Csv export"
+msgstr "Exportar CSV"
+
+#: src/main/java/controller/RootLayoutController.java:418
+msgid "Sql export"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:426
+msgid "Translation"
+msgstr "Traducción"
+
+#: src/main/java/controller/RootLayoutController.java:472
+msgid "Flight files (*.csv)"
+msgstr "Arch de vuelos (*.csv)"
+
+#: src/main/java/controller/RootLayoutController.java:499
+#: src/main/java/controller/ImportViewController.java:503
+#: src/main/java/controller/ConfigViewController.java:582
+#: src/main/java/controller/ConfigViewController.java:840
+msgid "Logbook"
+msgstr "Libro de registro"
+
+#: src/main/java/controller/RootLayoutController.java:500
+msgid "GPS import"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:501
+msgid "Disk import"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:502
+msgid "Manual import"
+msgstr "Importación manual"
+
+#: src/main/java/controller/RootLayoutController.java:503
+msgid "External track"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:506
+msgid "Overview"
+msgstr "Visión de conjunto"
+
+#: src/main/java/controller/RootLayoutController.java:507
+msgid "Statistics"
+msgstr "Estadística"
+
+#: src/main/java/controller/RootLayoutController.java:508
+#: src/main/java/controller/StatViewController.java:1009
+msgid "Sites"
+msgstr "Lugares"
+
+#: src/main/java/controller/RootLayoutController.java:509
+msgid "Waypoints"
+msgstr "Waypoints"
+
+#: src/main/java/controller/RootLayoutController.java:510
+msgid "Airspaces"
+msgstr "Espacio aéreo"
+
+#: src/main/java/controller/RootLayoutController.java:511
+msgid "Photos"
+msgstr "Fotos"
+
+#: src/main/java/controller/RootLayoutController.java:512
+msgid "Cartography"
+msgstr ""
+
+#: src/main/java/controller/RootLayoutController.java:519
+msgid "Tools"
+msgstr "Herramientas"
+
+#: src/main/java/controller/RootLayoutController.java:523
+msgid "Support"
+msgstr "Ayuda"
+
+#: src/main/java/controller/DashViewController.java:325
+#: src/main/java/controller/DashViewController.java:362
+#: src/main/java/controller/DashViewController.java:400
+#: src/main/java/controller/DashViewController.java:442
+#: src/main/java/controller/DashViewController.java:491
+#: src/main/java/controller/DashViewController.java:534
+msgid "Could not read logbook"
+msgstr ""
+
+#: src/main/java/controller/DashViewController.java:438
+msgid "Best flight"
+msgstr "Mejor vuelo"
+
+#: src/main/java/controller/DashViewController.java:528
+msgid "Top site"
+msgstr ""
+
+#: src/main/java/controller/DashViewController.java:608
+msgid "No track to display"
+msgstr ""
+
+#: src/main/java/controller/DashViewController.java:844
+msgid "Click on a sector to display the value"
+msgstr ""
+
+#: src/main/java/controller/DashViewController.java:874
+msgid "Flights"
+msgstr "Vuelos"
+
+#: src/main/java/controller/DashViewController.java:875
+msgid "Hours"
+msgstr "Horas"
+
+#: src/main/java/controller/DashViewController.java:876
+msgid "Comparison"
+msgstr ""
+
+#: src/main/java/controller/DashViewController.java:877
+msgid "Last twelve months since the"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:224
+msgid "GPS tracks"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:225
+#: src/main/java/controller/ImportViewController.java:277
+msgid "Tracks to be added"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:243
+#: src/main/java/controller/ImportViewController.java:447
+msgid "flights to insert"
+msgstr "vuelos para insertar"
+
+#: src/main/java/controller/GPSViewController.java:714
+msgid "No tracks in the selected folder"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:716
+msgid "No tracks since the"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1031
+msgid "flights inserted in logbook"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1039
+msgid "Start archiving"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1044
+msgid "tracks not inserted in the logbook"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1402
+msgid "GPSDump did not return the requested track"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1455
+#: src/main/java/controller/ImportViewController.java:384
+msgid "Left-click to select a flight"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1495
+#: src/main/java/controller/ImportViewController.java:509
+msgid "Unselect"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1496
+#: src/main/java/controller/ImportViewController.java:510
+msgid "Logbook update"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1499
+msgid "All checked flights will be included in the logbook"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1501
+#: src/main/java/controller/ImportViewController.java:512
+msgid "Track visualization"
+msgstr ""
+
+#: src/main/java/controller/GPSViewController.java:1504
+msgid "The selected flight (left-click) is viewed without incorporation into the logbook"
+msgstr ""
+
+#: src/main/java/controller/XcpViewController.java:118
+msgid "Track files (*.xcp)"
+msgstr "Archivos recorridos (*.xcp)"
+
+#: src/main/java/controller/XcpViewController.java:209
+msgid "Sector"
+msgstr ""
+
+#: src/main/java/controller/XcpViewController.java:210
+msgid "Read"
+msgstr "Leer"
+
+#: src/main/java/controller/CartoViewController.java:96
+msgid "GPX or IGC files"
+msgstr "Archivos GPX o IGC"
+
+#: src/main/java/controller/CartoViewController.java:269
+msgid "Track"
+msgstr "Recorrido"
+
+#: src/main/java/controller/ImportViewController.java:164
+#: src/main/java/controller/ImportViewController.java:275
+msgid "Tracks in folder"
+msgstr ""
+
+#: src/main/java/controller/ImportViewController.java:402
+msgid "tracks to delete in the folder"
+msgstr ""
+
+#: src/main/java/controller/ImportViewController.java:506
+#: src/main/java/littlewins/winSaveXcp.java:469
+#: src/main/java/littlewins/winUsbWWayp.java:56
+msgid "File name"
+msgstr "Nombre del archivo"
+
+#: src/main/java/controller/ImportViewController.java:507
+#: src/main/java/controller/ConfigViewController.java:854
+#: src/main/java/kml/headersKml.java:68
+msgid "Pilot name"
+msgstr "Nombre del Piloto"
+
+#: src/main/java/controller/ImportViewController.java:508
+msgid "Select a folder"
+msgstr "Seleccione una carpeta"
+
+#: src/main/java/controller/ImportViewController.java:511
+msgid "Cleaning folder"
+msgstr "Limpiar carpeta"
+
+#: src/main/java/controller/SitesViewController.java:498
+msgid "Delete site"
+msgstr "Eliminar sitio"
+
+#: src/main/java/controller/SitesViewController.java:518
+msgid "No site selected"
+msgstr ""
+
+#: src/main/java/controller/SitesViewController.java:665
+msgid "selected sites"
+msgstr ""
+
+#: src/main/java/controller/SitesViewController.java:669
+msgid "Csv format"
+msgstr "Formato csv"
+
+#: src/main/java/controller/SitesViewController.java:670
+msgid "Text format"
+msgstr "Formato de texto"
+
+#: src/main/java/controller/SitesViewController.java:720
+msgid "Exported"
+msgstr "Exportación completada"
+
+#: src/main/java/controller/SitesViewController.java:767
+#: src/main/java/controller/SitesViewController.java:843
+#: src/main/java/controller/ConfigViewController.java:846
+msgid "Modify"
+msgstr "Editar"
+
+#: src/main/java/controller/SitesViewController.java:775
+#: src/main/java/controller/SitesViewController.java:851
+#: src/main/java/controller/ManualViewController.java:555
+msgid "Add"
+msgstr "Añadir"
+
+#: src/main/java/controller/SitesViewController.java:791
+msgid "Duplicates"
+msgstr "Duplicados"
+
+#: src/main/java/controller/SitesViewController.java:799
+msgid "Waypoints export"
+msgstr "Exportación de waypoint"
+
+#: src/main/java/controller/SitesViewController.java:803
+msgid "Not implemented"
+msgstr ""
+
+#: src/main/java/controller/SitesViewController.java:808
+#: src/main/java/littlewins/winSiteList.java:148
+msgid "Download"
+msgstr "Descargar"
+
+#: src/main/java/controller/SitesViewController.java:819
+#: src/main/java/systemio/webdown.java:64
+msgid "Import"
+msgstr "Importar"
+
+#: src/main/java/controller/SitesViewController.java:884
+msgid "Locality"
+msgstr "Localidad"
+
+#: src/main/java/controller/SitesViewController.java:891
+msgid "Not defined"
+msgstr "No definido"
+
+#: src/main/java/controller/ManualViewController.java:200
+msgid "Date and time unchanged"
+msgstr ""
+
+#: src/main/java/controller/ManualViewController.java:249
+msgid "Cancel input"
+msgstr ""
+
+#: src/main/java/controller/ManualViewController.java:527
+msgid "Site not found"
+msgstr ""
+
+#: src/main/java/controller/ManualViewController.java:545
+#: src/main/java/kml/headersKml.java:71
+msgid "Take-off time"
+msgstr "Hora Despegue"
+
+#: src/main/java/controller/ManualViewController.java:549
+msgid "Click to list"
+msgstr ""
+
+#: src/main/java/controller/ManualViewController.java:553
+msgid "Site file"
+msgstr "Archivo de lugares"
+
+#: src/main/java/controller/ManualViewController.java:554
+msgid "Click site File"
+msgstr ""
+
+#: src/main/java/controller/ManualViewController.java:556
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#: src/main/java/controller/ManualViewController.java:558
+msgid "Flight added"
+msgstr ""
+
+#: src/main/java/controller/ManualViewController.java:559
+msgid "Flight updated"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:430
+#: src/main/java/controller/ConfigViewController.java:446
+msgid "Unresolved settings problem"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:551
+msgid "Select a folder for the logbook"
+msgstr "Selecciona una carpeta para el registro"
+
+#: src/main/java/controller/ConfigViewController.java:581
+msgid "Select logbook to restore"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:587
+msgid "Select a logbook"
+msgstr "Seleccione uno registro"
+
+#: src/main/java/controller/ConfigViewController.java:595
+msgid "Copy in"
+msgstr "Copiado en"
+
+#: src/main/java/controller/ConfigViewController.java:596
+msgid "Logbook restore"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:596
+msgid "Other folder"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:702
+msgid "No logbook in selected folder"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:841
+#: src/main/java/controller/ConfigViewController.java:869
+msgid "Map"
+msgstr "Mapa"
+
+#: src/main/java/controller/ConfigViewController.java:842
+msgid "Miscellaneous"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:843
+msgid "Web"
+msgstr "Web"
+
+#: src/main/java/controller/ConfigViewController.java:845
+msgid "Working folder path"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:847
+msgid "Logbook(s) path"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:848
+msgid "Create a new logbook"
+msgstr "Crear un nuevo libro de registro"
+
+#: src/main/java/controller/ConfigViewController.java:849
+msgid "Move logbook(s) to a different folder"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:850
+msgid "Choose a new logbook folder"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:851
+msgid "Restore a backup"
+msgstr "Recupere la última copia"
+
+#: src/main/java/controller/ConfigViewController.java:853
+#: src/main/java/littlewins/winGlider.java:77
+msgid "Pilot"
+msgstr "Piloto"
+
+#: src/main/java/controller/ConfigViewController.java:856
+msgid "Usual GPS"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:857
+msgid "Integration"
+msgstr "Intégration"
+
+#: src/main/java/controller/ConfigViewController.java:858
+msgid "USB limit"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:859
+msgid "Pilot mail"
+msgstr "Email del Piloto"
+
+#: src/main/java/controller/ConfigViewController.java:860
+msgid "League"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:861
+msgid "Login"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:862
+msgid "Pass"
+msgstr "Contraseña"
+
+#: src/main/java/controller/ConfigViewController.java:864
+msgid "Ok"
+msgstr "OK"
+
+#: src/main/java/controller/ConfigViewController.java:866
+msgid "Default map"
+msgstr "Mapa por defecto"
+
+#: src/main/java/controller/ConfigViewController.java:870
+msgid "Outliers threshold for map"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:873
+msgid "Language"
+msgstr "Idioma"
+
+#: src/main/java/controller/ConfigViewController.java:874
+msgid "Import folder"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:875
+msgid "Automatic display of photos"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:876
+msgid "Automatic update"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:879
+msgid "Logfly site url"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:880
+msgid "Icons url"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:881
+msgid "Download url"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:882
+msgid "VisuGPS url"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:883
+msgid "mail support url"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:884
+msgid "Claim url"
+msgstr ""
+
+#: src/main/java/controller/ConfigViewController.java:885
+msgid "Export IGC folder"
+msgstr "Exportación de archivo IGC"
+
+#: src/main/java/controller/StatViewController.java:241
+msgid "years"
+msgstr "años"
+
+#: src/main/java/controller/StatViewController.java:242
+msgid "monthes"
+msgstr "meses"
+
+#: src/main/java/controller/StatViewController.java:247
+msgid "Totals"
+msgstr "Totales"
+
+#: src/main/java/controller/StatViewController.java:248
+msgid "Averages"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:262
+msgid "undefined start and end date"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:983
+msgid "Move the mouse over the bar to display the value"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:983
+msgid "and"
+msgstr "y"
+
+#: src/main/java/controller/StatViewController.java:984
+msgid "to display the different parts of the graph"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:985
+#: src/main/java/controller/StatViewController.java:1010
+msgid "List"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:985
+msgid "plaintext visualization"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:993
+#: src/main/java/controller/StatViewController.java:1003
+msgid "Flight hours"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:994
+#: src/main/java/controller/StatViewController.java:1004
+msgid "Total number of flights"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:995
+msgid "Flight period displayed"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:996
+msgid "First flight of the period"
+msgstr "Primer vuelo del periodo"
+
+#: src/main/java/controller/StatViewController.java:997
+msgid "Last flight of the period"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:998
+msgid "Average number of flights per year"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:999
+msgid "Average annual flight time"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:1000
+#: src/main/java/controller/StatViewController.java:1005
+msgid "Average flight time"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:1001
+#: src/main/java/controller/StatViewController.java:1006
+msgid "Average number of flights per month"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:1002
+#: src/main/java/controller/StatViewController.java:1007
+msgid "Average monthly duration"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:1008
+msgid "Gliders"
+msgstr "Planeadores"
+
+#: src/main/java/controller/StatViewController.java:1011
+msgid "Jan"
+msgstr "Ene"
+
+#: src/main/java/controller/StatViewController.java:1012
+msgid "Feb"
+msgstr "Feb"
+
+#: src/main/java/controller/StatViewController.java:1013
+msgid "Mar"
+msgstr "Mar"
+
+#: src/main/java/controller/StatViewController.java:1014
+msgid "Apr"
+msgstr "Abr"
+
+#: src/main/java/controller/StatViewController.java:1015
+msgid "May"
+msgstr "May"
+
+#: src/main/java/controller/StatViewController.java:1016
+msgid "Jun"
+msgstr "Jun"
+
+#: src/main/java/controller/StatViewController.java:1017
+msgid "Jul"
+msgstr "Jul"
+
+#: src/main/java/controller/StatViewController.java:1018
+msgid "Aug"
+msgstr "Ago"
+
+#: src/main/java/controller/StatViewController.java:1019
+msgid "Sep"
+msgstr "Sep"
+
+#: src/main/java/controller/StatViewController.java:1020
+msgid "Oct"
+msgstr "Oct"
+
+#: src/main/java/controller/StatViewController.java:1021
+msgid "Nov"
+msgstr "Nov"
+
+#: src/main/java/controller/StatViewController.java:1022
+msgid "Dec"
+msgstr "Dic"
+
+#: src/main/java/controller/StatViewController.java:1024
+msgid "Flights stats"
+msgstr "Estadí vuelo"
+
+#: src/main/java/controller/StatViewController.java:1024
+#: src/main/java/controller/StatViewController.java:1027
+msgid "Monthly mean"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:1024
+#: src/main/java/controller/StatViewController.java:1027
+msgid "Year-to-date"
+msgstr ""
+
+#: src/main/java/controller/StatViewController.java:1027
+msgid "Flights hours stat"
+msgstr ""
+
+#: src/main/java/controller/CoordController.java:582
+#: src/main/java/littlewins/winPoint.java:80
+msgid "Description"
+msgstr "Descripción"
+
+#: src/main/java/controller/CoordController.java:590
+msgid "Decimal separator must be a point"
+msgstr ""
+
+#: src/main/java/controller/CoordController.java:591
+msgid "Place with coordinates"
+msgstr ""
+
+#: src/main/java/controller/CoordController.java:592
+msgid "Manually place the point on the map"
+msgstr ""
+
+#: src/main/java/leaflet/map_visu.java:224
+msgid "Gain"
+msgstr "Ganancia"
+
+#: src/main/java/leaflet/map_visu.java:265
+#: src/main/java/leaflet/map_visu.java:571
+#: src/main/java/kml/trackThermals.java:283
+msgid "Best transition"
+msgstr "Mejor Transición"
+
+#: src/main/java/leaflet/map_visu.java:321
+#: src/main/java/kml/trackScore.java:175 src/main/java/kml/trackScore.java:294
+#: src/main/java/kml/trackScore.java:350
+msgid "SP"
+msgstr "PI"
+
+#: src/main/java/leaflet/map_visu.java:337
+#: src/main/java/kml/trackScore.java:238 src/main/java/kml/trackScore.java:294
+#: src/main/java/kml/trackScore.java:352
+msgid "EP"
+msgstr "PF"
+
+#: src/main/java/leaflet/map_visu.java:561
+msgid "Max GPS alt"
+msgstr "Alt max GPS"
+
+#: src/main/java/leaflet/map_visu.java:563
+msgid "Min GPS alt"
+msgstr "Mín Alt GPS"
+
+#: src/main/java/leaflet/map_visu.java:565
+#: src/main/java/leaflet/map_pm.java:143 src/main/java/kml/headersKml.java:99
+msgid "Max climb"
+msgstr "Máx Asc"
+
+#: src/main/java/leaflet/map_visu.java:567
+#: src/main/java/kml/headersKml.java:102
+msgid "Max sink"
+msgstr "Máx Desc"
+
+#: src/main/java/leaflet/map_visu.java:568
+#: src/main/java/leaflet/map_pm.java:144 src/main/java/kml/headersKml.java:96
+msgid "Max gain"
+msgstr "Gan máx"
+
+#: src/main/java/leaflet/map_visu.java:570
+#: src/main/java/kml/headersKml.java:105
+msgid "Max speed"
+msgstr "Velo Máx"
+
+#: src/main/java/leaflet/map_visu.java:572
+msgid "Size"
+msgstr ""
+
+#: src/main/java/leaflet/map_visu.java:574
+msgid "Aberrants"
+msgstr "Anómalos"
+
+#: src/main/java/leaflet/map_visu.java:575
+msgid "Signature"
+msgstr "Firma"
+
+#: src/main/java/leaflet/map_visu.java:585
+#: src/main/java/kml/trackScore.java:112
+msgid "French contest"
+msgstr "Competencia francesa"
+
+#: src/main/java/leaflet/map_visu.java:588
+#: src/main/java/kml/trackScore.java:115
+msgid "Swiss contest"
+msgstr "Desafío suizo"
+
+#: src/main/java/leaflet/map_visu.java:591
+#: src/main/java/kml/trackScore.java:118
+msgid "World XContest"
+msgstr "World XContest"
+
+#: src/main/java/leaflet/map_visu.java:598
+msgid "FAI triangle"
+msgstr "Triángulo FAI"
+
+#: src/main/java/leaflet/map_visu.java:601
+#: src/main/java/kml/trackScore.java:138
+msgid "Flight 2 points"
+msgstr "Vuelo 2 puntos"
+
+#: src/main/java/leaflet/map_visu.java:604
+#: src/main/java/kml/trackScore.java:141
+msgid "Flat triangle"
+msgstr ""
+
+#: src/main/java/leaflet/map_visu.java:607
+#: src/main/java/kml/trackScore.java:144
+msgid "Flight 1 point"
+msgstr "Vuelo 1 punto"
+
+#: src/main/java/leaflet/map_visu.java:610
+#: src/main/java/kml/trackScore.java:147
+msgid "Flight 3 points"
+msgstr "Vuelo 3 puntos"
+
+#: src/main/java/leaflet/map_pm.java:141 src/main/java/kml/headersKml.java:86
+msgid "Max GPS Alt"
+msgstr "Alt max GPS"
+
+#: src/main/java/kml/trackScore.java:72
+msgid "Score"
+msgstr "Puntuación"
+
+#: src/main/java/kml/trackScore.java:82
+msgid "Average"
+msgstr ""
+
+#: src/main/java/kml/trackScore.java:135
+msgid "FAI Triangle"
+msgstr "Triángulo FAI"
+
+#: src/main/java/kml/trackScore.java:199 src/main/java/kml/trackScore.java:271
+#: src/main/java/kml/trackScore.java:350 src/main/java/kml/trackScore.java:352
+#: src/main/java/kml/trackScore.java:354
+msgid "P"
+msgstr "P"
+
+#: src/main/java/kml/trackScore.java:389 src/main/java/kml/trackScore.java:395
+msgid "Distance"
+msgstr "Distancia"
+
+#: src/main/java/kml/trackSimple.java:58
+msgid "Right clic for profile"
+msgstr ""
+
+#: src/main/java/kml/trackSimple.java:97
+msgid "Climb"
+msgstr "Vario"
+
+#: src/main/java/kml/trackColor.java:66
+msgid "Colored tracks"
+msgstr "Recorridos coloreados"
+
+#: src/main/java/kml/trackColor.java:111
+msgid "By climb"
+msgstr "Por ascendencia"
+
+#: src/main/java/kml/trackColor.java:189
+msgid "By altitude"
+msgstr "Por altitud"
+
+#: src/main/java/kml/trackColor.java:265
+msgid "By speed"
+msgstr "Por velocidad"
+
+#: src/main/java/kml/headersKml.java:73
+msgid "Landing time"
+msgstr "Hora Aterrizaje"
+
+#: src/main/java/kml/headersKml.java:77
+msgid "Take-off Baro Alt"
+msgstr "Alt despe Baro"
+
+#: src/main/java/kml/headersKml.java:79
+msgid "Max Baro Alt"
+msgstr "Máx Alt Baro"
+
+#: src/main/java/kml/headersKml.java:81
+msgid "Min baro alt"
+msgstr "Mín Alt Baro"
+
+#: src/main/java/kml/headersKml.java:82
+msgid "Landing Baro Alt"
+msgstr "Alt Ater Baro"
+
+#: src/main/java/kml/headersKml.java:84
+msgid "Take-off GPS Alt"
+msgstr "Alt despe GPS"
+
+#: src/main/java/kml/headersKml.java:88
+msgid "Min GPS Alt"
+msgstr "Mín Alt GPS"
+
+#: src/main/java/kml/headersKml.java:89
+msgid "Landing GPS Alt"
+msgstr "Alt Ater GPS"
+
+#: src/main/java/kml/headersKml.java:107
+msgid "Help for exploitation of this kml file"
+msgstr "Ayuda para explotación de este archivo kml"
+
+#: src/main/java/kml/trackReplay.java:92
+msgid "Replay the flight"
+msgstr "Reproducir el vuelo"
+
+#: src/main/java/kml/trackThermals.java:66
+msgid "Analyze"
+msgstr "Analizar"
+
+#: src/main/java/kml/trackThermals.java:138
+msgid "Best gain"
+msgstr "Mejor Ganáncia"
+
+#: src/main/java/kml/trackThermals.java:205
+msgid "Transitions"
+msgstr ""
+
+#: src/main/java/littlewins/winChoose.java:97
+msgid "Sites files (*.csv)"
+msgstr "Archivos lugares (*.csv)"
+
+#: src/main/java/littlewins/winGPS.java:139
+msgid "GPS Choice"
+msgstr ""
+
+#: src/main/java/littlewins/winGPS.java:156
+msgid "Port"
+msgstr "Puerto"
+
+#: src/main/java/littlewins/winGPS.java:215
+msgid "Test GPS connection"
+msgstr ""
+
+#: src/main/java/littlewins/winGPS.java:232
+msgid "Refreshes the list of ports or disks"
+msgstr ""
+
+#: src/main/java/littlewins/winGPS.java:480
+msgid "GPS not detected"
+msgstr ""
+
+#: src/main/java/littlewins/winSiteList.java:93
+msgid "Area"
+msgstr "Zona"
+
+#: src/main/java/littlewins/winSiteList.java:98
+msgid "Source"
+msgstr ""
+
+#: src/main/java/littlewins/winAirDraw.java:70
+msgid "Enter key for confirmation of entries"
+msgstr ""
+
+#: src/main/java/littlewins/winAirDraw.java:92
+msgid "Class"
+msgstr ""
+
+#: src/main/java/littlewins/winAirDraw.java:105
+msgid "Floor"
+msgstr ""
+
+#: src/main/java/littlewins/winAirDraw.java:120
+msgid "Ceiling"
+msgstr ""
+
+#: src/main/java/littlewins/winAirDraw.java:196
+msgid "Ceiling must be above the floor"
+msgstr ""
+
+#: src/main/java/littlewins/winAirDraw.java:201
+msgid "Name must not be null"
+msgstr "El nombre no debe ser nulo"
+
+#: src/main/java/littlewins/winAirDraw.java:206
+msgid "Class must not be null"
+msgstr ""
+
+#: src/main/java/littlewins/winMail.java:163
+msgid "Sender"
+msgstr "Remitente"
+
+#: src/main/java/littlewins/winMail.java:178
+msgid "Recipient"
+msgstr "Destinario"
+
+#: src/main/java/littlewins/winMail.java:197
+msgid "Subject"
+msgstr "Asunto"
+
+#: src/main/java/littlewins/winMail.java:214
+#: src/main/java/littlewins/winLog.java:95
+msgid "Send"
+msgstr "Enviar"
+
+#: src/main/java/littlewins/winMail.java:301
+msgid "Error sending mail"
+msgstr "Error al enviar el correo electrónico"
+
+#: src/main/java/littlewins/winOsmCities.java:78
+#: src/main/java/littlewins/winSiteChoice.java:119
+msgid "ZIP"
+msgstr "CP"
+
+#: src/main/java/littlewins/winAirSearch.java:48
+msgid "Search"
+msgstr "Buscar"
+
+#: src/main/java/littlewins/winSaveXcp.java:424
+msgid "Turnpoints List"
+msgstr ""
+
+#: src/main/java/littlewins/winSaveXcp.java:428
+msgid "Turnpoint prefix"
+msgstr ""
+
+#: src/main/java/littlewins/winSaveXcp.java:455
+msgid "Saving"
+msgstr ""
+
+#: src/main/java/littlewins/winSaveXcp.java:475
+msgid "Logfly Xcp format"
+msgstr ""
+
+#: src/main/java/littlewins/winSaveXcp.java:478
+msgid "Ozi format"
+msgstr "Formato Ozi"
+
+#: src/main/java/littlewins/winSaveXcp.java:481
+msgid "CompeGPS format"
+msgstr ""
+
+#: src/main/java/littlewins/winSaveXcp.java:484
+msgid "PCX5 format"
+msgstr "Formato PCX5"
+
+#: src/main/java/littlewins/winSaveXcp.java:487
+msgid "Kml format"
+msgstr "Formato Kml"
+
+#: src/main/java/littlewins/winSaveXcp.java:490
+msgid "Gpx format"
+msgstr "Formato Gpx"
+
+#: src/main/java/littlewins/winSaveXcp.java:493
+msgid "Cup format"
+msgstr "Formato Cup"
+
+#: src/main/java/littlewins/winSiteChoice.java:94
+msgid "Double click to select a site in the list"
+msgstr ""
+
+#: src/main/java/littlewins/winUsbWWayp.java:92
+msgid "Send in Google format"
+msgstr "Enviando formato Google"
+
+#: src/main/java/littlewins/winUsbWWayp.java:93
+#: src/main/java/littlewins/winUsbWWayp.java:99
+#: src/main/java/littlewins/winUsbWWayp.java:105
+msgid "Send in wpt format"
+msgstr "Enviando formato wpt"
+
+#: src/main/java/littlewins/winUsbWWayp.java:111
+msgid "Send in cup format"
+msgstr "Enviando formato Cup"
+
+#: src/main/java/littlewins/winUsbWWayp.java:120
+#: src/main/java/littlewins/winUsbWWayp.java:132
+msgid "Send in compeGPS format"
+msgstr "Enviando formato CompeGPS"
+
+#: src/main/java/littlewins/winUsbWWayp.java:126
+msgid "Send in OZI format"
+msgstr "Enviando formato OZI"
+
+#: src/main/java/littlewins/winLog.java:83
+msgid "Your e-mail"
+msgstr "Tu correo electrónico"
+
+#: src/main/java/littlewins/winLog.java:163
+msgid "File sent to support"
+msgstr ""
+
+#: src/main/java/littlewins/winLog.java:165
+#: src/main/java/littlewins/winLog.java:173
+msgid "Message could not be sent"
+msgstr ""
+
+#: src/main/java/littlewins/winPoints.java:146
+msgid "Baro Alt"
+msgstr "Alti Baro"
+
+#: src/main/java/littlewins/winPoints.java:148
+msgid "GPS Alt"
+msgstr "Alti GPS"
+
+#: src/main/java/littlewins/winPoints.java:150
+msgid "Lat"
+msgstr "Lat"
+
+#: src/main/java/littlewins/winPoints.java:152
+msgid "Long"
+msgstr ""
+
+#: src/main/java/littlewins/winPoints.java:154
+msgid "Dist (m)"
+msgstr "Dist (m)"
+
+#: src/main/java/littlewins/winPoints.java:156
+msgid "Gd Speed"
+msgstr "Vel resp suelo"
+
+#: src/main/java/littlewins/winPoints.java:183
+msgid "Summer"
+msgstr "Verano"
+
+#: src/main/java/littlewins/winPoints.java:185
+msgid "Winter"
+msgstr "Invierno"
+
+#: src/main/java/systemio/filesmove.java:90
+msgid "Transfer completed"
+msgstr "Transferencia completada"
+
+#: src/main/java/systemio/filesmove.java:100
+msgid "Problem during transfer"
+msgstr ""
+
+#: src/main/java/systemio/webdown.java:65
+msgid "The file has been downloaded"
+msgstr "El archivo ha sido descargado"
+
+#: src/main/java/systemio/webdown.java:115
+msgid "Download stop"
+msgstr ""
+
+#: src/main/java/systemio/webdown.java:125
+msgid "Download failed"
+msgstr "Descarga fracasó"
+
+#: src/main/java/systemio/webdown.java:171
+msgid "Loading in progress"
+msgstr ""
+
+#: src/main/java/liveUpdate/checkUpdate.java:74
+#, java-format
+msgid "A new version {0}. {1} is available"
+msgstr "Hay disponible una nueva versión  {0}. {1}"
+
+#: src/main/java/liveUpdate/checkUpdate.java:75
+#: src/main/java/liveUpdate/checkUpdate.java:92
+msgid "Do you want to install it"
+msgstr ""
+
+#: src/main/java/liveUpdate/checkUpdate.java:91
+#, java-format
+msgid "A major update is available [version {0}]"
+msgstr "Hay disponible una actualización importante [versión  {0}]"
+
+#: src/main/java/liveUpdate/checkUpdate.java:96
+#: src/main/java/liveUpdate/checkUpdate.java:154
+msgid "You need to restart the program"
+msgstr ""
+
+#: src/main/java/liveUpdate/checkUpdate.java:129
+msgid "Update info could not be loaded"
+msgstr ""
+
+#: src/main/java/liveUpdate/checkUpdate.java:153
+msgid "Logfly has been updated"
+msgstr ""

@@ -6,44 +6,60 @@ const fs = require('fs')
 const path = require('path');
 const log = require('electron-log');
 const Store = require('electron-store')
-let store = new Store()
-let menuFill = require('../../views/tpl/sidebar.js')
-let btnMenu = document.getElementById('toggleMenu')
+const store = new Store()
+const menuFill = require('../../views/tpl/sidebar.js')
+const btnMenu = document.getElementById('toggleMenu')
 // status messages
-let statusContent = document.getElementById("status")
+const statusContent = document.getElementById("status")
 // waiting template 
-let waitTpl = document.getElementById('wait-template').innerHTML
+const waitTpl = document.getElementById('wait-template').innerHTML
 // buttons definition
-let btnDisk = document.getElementById('imp-disk')
-let btnFlymSD = document.getElementById('imp-gps-flysd')
-let btnFlymOld = document.getElementById('imp-gps-flyold')
-let btnFlytec20 = document.getElementById('imp-gps-fly20')
-let btnFlytec15 = document.getElementById('imp-gps-fly15')
-let btnSyride = document.getElementById('imp-gps-syr')
-let btnSyrUsb = document.getElementById('imp-gps-syrusb')
-let btnXctracer = document.getElementById('imp-gps-xct')
-let btnRever = document.getElementById('imp-gps-rever')
-let btnSkytrax2 = document.getElementById('imp-gps-sky2')
-let btnSkytrax3 = document.getElementById('imp-gps-sky3')
-let btnOudie = document.getElementById('imp-gps-oud')
-let btnCPilot = document.getElementById('imp-gps-cpil')
-let btnElement = document.getElementById('imp-gps-elem')
-let btnConnect = document.getElementById('imp-gps-conn')
-let btnSkydrop = document.getElementById('imp-gps-skydrop')
-let btnVarduino = document.getElementById('imp-gps-vardui')
-let btnFlynet = document.getElementById('imp-gps-flynet')
-let btnSensbox = document.getElementById('imp-gps-sens')    
-let btnManu = document.getElementById('imp-manu')
+const btnDisk = document.getElementById('imp-disk')
+const btnFlymSD = document.getElementById('imp-gps-flysd')
+const btnFlymOld = document.getElementById('imp-gps-flyold')
+const btnFlytec20 = document.getElementById('imp-gps-fly20')
+const btnFlytec15 = document.getElementById('imp-gps-fly15')
+const btnSyride = document.getElementById('imp-gps-syr')
+const btnSyrUsb = document.getElementById('imp-gps-syrusb')
+const btnXctracer = document.getElementById('imp-gps-xct')
+const btnRever = document.getElementById('imp-gps-rever')
+const btnSkytrax2 = document.getElementById('imp-gps-sky2')
+const btnSkytrax3 = document.getElementById('imp-gps-sky3')
+const btnOudie = document.getElementById('imp-gps-oud')
+const btnCPilot = document.getElementById('imp-gps-cpil')
+const btnElement = document.getElementById('imp-gps-elem')
+const btnConnect = document.getElementById('imp-gps-conn')
+const btnSkydrop = document.getElementById('imp-gps-skydrop')
+const btnVarduino = document.getElementById('imp-gps-vardui')
+const btnFlynet = document.getElementById('imp-gps-flynet')
+const btnSensbox = document.getElementById('imp-gps-sens')    
+const btnManu = document.getElementById('imp-manu')
+// const msgImport = i18n.gettext("Retrieving the list of flights in progress") 
+// const mustImport = Mustache.render(waitTpl, { typeimport : msgImport });
 
 ipcRenderer.on('translation', (event, langJson) => {
-    let currLang = store.get('lang')
+    const currLang = store.get('lang')
     i18n.setMessages('messages', currLang, langJson)
     i18n.setLocale(currLang);
     iniForm()
   })
 
+ipcRenderer.on('gpsdump-fone', (event, result) => {
+  // if (igcString != null) {
+  //   console.log(igcString)
+  // }
+  console.log('retour gpsdump-fone '+result)
+  if (result != null) {
+    hideWaiting()        
+    alert(result)      
+  } else {
+    hideWaiting() 
+    $('#table-content').addClass('d-block')   
+  }
+})  
+
 function iniForm() {
-    let menuOptions = menuFill.fillMenuOptions(i18n)
+    const menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         var template = $(templates).filter('#temp-menu').html();  
         var rendered = Mustache.render(template, menuOptions)
@@ -145,15 +161,15 @@ function callUsbGps(typeGPS) {
 }
 
 function callSyride() {
-  let syrideSetting = store.get('pathSyride')
+  const syrideSetting = store.get('pathSyride')
   log.info('[Import Syride] from '+syrideSetting)
   var syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
   if (syridePath.parapentepath != null) {
-    let gpsStatus = '<strong>Syride : </strong>'  
+    const gpsStatus = '<strong>Syride : </strong>'  
     callDiskImport(syridePath.parapentepath,gpsStatus)  
   } else {
     clearPage()
-    let errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
+    const errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
     displayStatus(errorMsg,false)
   }
 }
@@ -177,7 +193,7 @@ function callDiskImport(selectedPath, statusContent) {
     try {    
       clearPage()
       displayWaiting()
-      let searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
+      const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
       if (searchDisk.igcForImport.length > 0) {
           var nbInsert = 0
           searchDisk.igcForImport.forEach(element => {
@@ -206,6 +222,7 @@ function serialGpsCall(gpsModel) {
   let gpsCom = []
   let msg
   clearPage()
+  displayWaiting()
 
   ipcRenderer.invoke('ports-list').then((result) => {
     if (result instanceof Array) { 
@@ -256,15 +273,15 @@ function serialGpsCall(gpsModel) {
     } else {
       log.error(ms+' No serial port found')
     }
-    if (gpsCom.length > 0) {
-      callFlightList(gpsCom)  
+    if (gpsCom.length > 0) {      
+      callFlightList(gpsCom, gpsModel)  
     } else {
       displayStatus(i18n.gettext('No usable serial port detected',false))
     }
   })
 }
 
-function callFlightList(gpsCom) {
+function callFlightList(gpsCom, gpsModel) {
   // GpsDump is called in gpsdump-list.js 
   var flightList = ipcRenderer.send('flightlist', gpsCom)
   ipcRenderer.on('gpsdump-flist', (event, flightList) => {
@@ -280,27 +297,61 @@ function callFlightList(gpsCom) {
       } else {
         log.error('['+flightList.model+' callFlihtList did not return a flightList.flights array')
         let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;callFlihtList did not return a flightList.flights array'
-        displayStatus(statusContent,true)  
+        displayStatus(statusContent,false)  
       }
     } else {
-      log.error('['+flightList.model+' callFlihtList returned undefined flightList')
-      let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;callFlihtList returned undefined flightList'
-      displayStatus(statusContent,true)        
+      log.error('['+gpsModel+' callFlihtList returned undefined flightList')
+      let statusContent = '<strong>'+gpsModel+'  : </strong>&nbsp;&nbsp;&nbsp;callFlihtList returned undefined flightList'
+      displayStatus(statusContent,false)      
+    }
+  })
+}
+
+function callFlightListNew(gpsCom, gpsModel) {
+  ipcRenderer.invoke('flightlist', gpsCom).then((flighList) => {
+    if (typeof flightList !== 'undefined') { 
+      if (Array.isArray(flightList.flights)) {
+        if (flightList.flights.length > 0) {
+          tableFromGpsDump(flightList.flights, flightList.model)
+        } else {
+          log.error('['+flightList.model+' callFlihtList] returned an empty flightList.flights array')
+          let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;flightList.flights array is empty'
+          displayStatus(statusContent,true)  
+        }
+      } else {
+        log.error('['+flightList.model+' callFlihtList did not return a flightList.flights array')
+        let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;callFlihtList did not return a flightList.flights array'
+        displayStatus(statusContent,false)  
+      }
+    } else {
+      log.error('['+gpsModel+' callFlihtList returned undefined flightList')
+      let statusContent = '<strong>'+gpsModel+'  : </strong>&nbsp;&nbsp;&nbsp;callFlihtList returned undefined flightList'
+      displayStatus(statusContent,false)        
     }
   })
 }
 
 function getOneFlight(gpsParam, flightIndex) {
   console.log('gpsParam '+gpsParam)
-  var igcFile = ipcRenderer.send('getflight', gpsParam, flightIndex)  
-  ipcRenderer.on('gpsdump-fone', (event, igcString) => {
-    if (igcString != null) {
-      console.log(igcString)
-    }
-  })  
+  displayWaiting()
+  $('#table-content').addClass('d-none')
+  var igcFile = ipcRenderer.send('getflighformap', gpsParam, flightIndex)  
+  // ipcRenderer.on('gpsdump-fone', (event, result) => {
+  //   // if (igcString != null) {
+  //   //   console.log(igcString)
+  //   // }
+  //   console.log('retour gpsdump-fone '+result)
+  //   if (result) {
+  //     hideWaiting()
+  //   } else {
+  //     hideWaiting()
+  //     alert(i18n.gettext('An error occurred during the map generation'))      
+  //   }
+  // })  
 }
 
 function tableFromGpsDump(flighList,gpsModel) {
+  hideWaiting()
   if ($.fn.DataTable.isDataTable('#tableimp_id')) {
     $('#tableimp_id').DataTable().clear().destroy()
   }   
@@ -321,7 +372,7 @@ function tableFromGpsDump(flighList,gpsModel) {
             return '<input type="checkbox" class="editor-active" checked >';
           } else {
          //   return '<input type="checkbox" class="editor-active">';
-              return '<img src="./assets/img/check-white.png" alt=""></img>';
+              return '<img src="../../assets/img/in_logbook.png" alt=""></img>';
           }
           return data;
         },
@@ -389,7 +440,7 @@ function tableFromGpsDump(flighList,gpsModel) {
   $('#tableimp_id').on( 'click', 'button', function () {
     var dtRow = table.row( $(this).parents('tr') ).data();
     let rowIndex = table.row( $(this).parents('tr') ).index()
-    alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['gpsdump']);
+   // alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['gpsdump']);
     $('#img_waiting').addClass('d-none')
     getOneFlight(dtRow['gpsdump'],rowIndex)
   } );  
@@ -513,9 +564,10 @@ function displayStatus(content,updateDisplay) {
 }
 
 function displayWaiting() {
-    let msg = i18n.gettext("Retrieving the list of flights in progress") 
-    let rendered = Mustache.render(waitTpl, { typeimport : msg });
-    document.getElementById('div_waiting').innerHTML = rendered;
+    const msg = i18n.gettext("Retrieving the list of flights in progress") 
+    const rendered = Mustache.render(waitTpl, { typeimport : msg });
+    console.log('rendered '+rendered)
+    document.getElementById('div_waiting').innerHTML = rendered
     $('#div_waiting').addClass('m-5 pb-5 d-block')
 }
 
