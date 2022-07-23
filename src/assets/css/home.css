@@ -261,6 +261,17 @@ a.article:hover {
     border-radius: 8px;  
 }
 
+.map-full {
+    position: relative;
+    /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
+       https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
+    */
+    height: 90vh;  
+    padding-left: 10px;
+    border: 1px solid black;
+    border-radius: 8px;  
+}
+
 .map-info {
     padding: 6px 8px;
     font: 10px/12px Arial, Helvetica, sans-serif;
