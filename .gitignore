@@ -95,7 +95,7 @@ doc/
 db/
 
 #i18n folder
-i18/
+i18n/
 
 # lock files
 package-lock.json
