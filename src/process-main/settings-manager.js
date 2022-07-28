@@ -4,44 +4,52 @@ const Store = require('electron-store')
 const process = require('process')
 //const propertiesReader = require('../../node_modules/properties-reader')
 const propertiesReader = require('properties-reader')
+const log = require('electron-log');
 
 
-function checkSettings (electronPack, progVersion) {          
-    // pour debugging
-    var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
-    if (propertiesPath != null) 
-    {
-        let forcheck = path.resolve(propertiesPath, "logfly.properties")
-        console.log(forcheck)
-        checkPropWindows(forcheck)
-    } 
+
+function checkSettings (electronPack, appPath, progVersion) {          
+    // A decommenter c'était pour du debugging Windows
+    // var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
+    // if (propertiesPath != null) 
+    // {
+    //     let forcheck = path.resolve(propertiesPath, "logfly.properties")
+    //     console.log(forcheck)
+    //     checkPropWindows(forcheck)
+    // } 
     if (electronPack) { 
         prodSettings(progVersion)
     } else {
-        devSettings()
+        devSettings(appPath)
     }
-    testDb()
+    return testDb()
 }
 
+/* A vérifier la procédure de vérification dans L5 était plus sophistiquée */
 function testDb() {
     const store = new Store(); 
     let dbFullPath = (store.get('dbFullPath'))
-    if (fs.existsSync(dbFullPath)) {
-        const db = require('better-sqlite3')(dbFullPath)
-        // how many tables in database
-        const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
-        let countTables = stmt.get()
-        console.log('Test '+dbFullPath+' '+countTables['COUNT(*)']+' tables')
-        // countTables is an object, the value is recovered with a notation between brackets 
-        countTables['COUNT(*)'] >= 2 ? store.set('checkDb',true) : store.set('checkDb',false)     
-        const stmtSites = db.prepare('SELECT COUNT(*) FROM Site')
-        let countSites = stmtSites.get()
-        console.log(`Connected : ${countSites['COUNT(*)']} sites`);
-    } else {
-        store.set('checkDb',false)
-        console.log('db checked file not exist '+store.get('checkDb'))  
+    try {
+        if (fs.existsSync(dbFullPath)) {
+            const db = require('better-sqlite3')(dbFullPath)
+            // how many tables in database
+            const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
+            let countTables = stmt.get()
+            //console.log('Test '+dbFullPath+' '+countTables['COUNT(*)']+' tables')
+            // countTables is an object, the value is recovered with a notation between brackets 
+           // countTables['COUNT(*)'] >= 2 ? store.set('checkDb',true) : store.set('checkDb',false)     
+            const stmtSites = db.prepare('SELECT COUNT(*) FROM Site')
+            let countSites = stmtSites.get()
+            console.log(`Connected on ${dbFullPath} with ${countSites['COUNT(*)']} sites`);
+            return true
+        } else {
+            log.error('db checked file not exist '+dbFullPath)  
+            return false
+        }        
+    } catch (error) {
+        log.error('Error occured during db checking  '+error)
+        return false  
     }
-    console.log(store.get('checkDb'))
 }
 
 function prodSettings(progVersion) {
@@ -55,17 +63,16 @@ function prodSettings(progVersion) {
     } else {
         store.set('progVersion',progVersion)
     }
-    console.log('mode prod sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion')+' sur '+store.get('fullPathDb'))
+    console.log('mode prod sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion')+' sur '+store.get('f'))
 }
 
 
-function devSettings() {
+function devSettings(appPath) {
     const store = new Store(); 
-    console.log(store.path)  // Linux -> /home/thinklinux/.config/Logfly
     getEnv()
     let currOS = store.get('currOS')
     switch(currOS) {
-        case 'darwin': 
+        case 'mac': 
             store.set('dbFullPath','./db/test6.db')
             store.set('dbName','test6.db')
             store.set('pathdb','./db')
@@ -73,6 +80,7 @@ function devSettings() {
             store.set('pathSyride','/Users/gil/syride')  
             store.set('pathWork','/Users/gil/Documents/Logfly')
             store.set('lang','fr')
+            console.log('langue = fr')
             break;
         case 'linux': 
         store.set('dbFullPath','./db/test6.db')
@@ -97,10 +105,26 @@ function devSettings() {
         default: 
             currOS = 'ns'  // non supported  
     }
-
-
-  //  console.log('mode developpement sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion'))
-  console.log('devSettings Ok')
+    // Bien qu'inutile on charge à chaque fois pour vérification si des modifications ont été faites dans le json
+    let currLang = store.get('lang')
+    let currLangFile = currLang+'.json'
+    // src uniquement en dev. A supprimer pour le chemin en prod
+    let langPath = path.resolve(appPath, 'src/lang', currLangFile)
+    console.log(currLangFile)
+    try {
+        if (fs.existsSync(langPath)) {
+            let content = fs.readFileSync(langPath);
+            langjson = JSON.parse(content);
+            store.set('langmsg',langjson)
+        } else {
+            log.error('language file not found : '+langPath)
+            store.set('lang','en')
+        }        
+    } catch (error) {
+        log.error('Error reading language file : '+error)
+        store.set('lang','en')
+    }
+    console.log('Mode dev sur ['+store.get('currOS')+'] Settings on : '+store.path+'   Logfly db in '+store.get('dbFullPath'))
 }
 
 function getEnv() {    
@@ -124,6 +148,7 @@ function getEnv() {
     store.set('chromeVersion',process.versions.chrome)
     store.set('electronVersion',process.versions.electron)
     store.set('nodeVersion',process.versions.node)
+    console.log('currOs : '+currOS)
 }
 
 /**

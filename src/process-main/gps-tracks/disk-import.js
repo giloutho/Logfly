@@ -85,7 +85,11 @@ function validIGC(path, flightData) {
     this.date = flightData.date   // date formatted as YYYY-MM-DD
     this.offsetUTC = offset.computeOffsetUTC(flightData.fixes[0].latitude, flightData.fixes[0].longitude,flightData.fixes[1].timestamp)   
     // offsetUTC is in minutes, original timestamp in milliseconds
-    this.startLocalTime = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
+    //this.startLocalTime = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
+    // à priori pas besoin d'ajouter UTC (Vu sr Sky3) ??? A vérifier
+    //let tsLocal = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
+    const dateLocal = new Date(flightData.fixes[1].timestamp)
+    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');     
     this.errors = [] 
     // is this track present in the logbook
     let inLogbook = dblog.flightByTakeOff(this.firstLat, this.firstLong, this.startLocalTime) 

@@ -456,7 +456,8 @@ function fillSidebarInfo() {
 
   let flightDate
   const dateTkoff = new Date(mainTrack.fixes[0].timestamp)
-  const dTkOff = String(dateTkoff.getDay()).padStart(2, '0')+'/'+String(dateTkoff.getMonth()).padStart(2, '0')+'/'+dateTkoff.getFullYear()      
+  // getMonth returns integer from 0(January) to 11(December)
+  const dTkOff = String(dateTkoff.getDate()).padStart(2, '0')+'/'+String((dateTkoff.getMonth()+1)).padStart(2, '0')+'/'+dateTkoff.getFullYear()     
   const hTkoff = String(dateTkoff.getHours()).padStart(2, '0')+':'+String(dateTkoff.getMinutes()).padStart(2, '0')
   const dateLand = new Date(mainTrack.fixes[mainTrack.fixes.length - 1].timestamp);
   const hLand = String(dateLand.getHours()).padStart(2, '0')+':'+String(dateLand.getMinutes()).padStart(2, '0')+':'+String(dateLand.getSeconds()).padStart(2, '0');     

@@ -1,12 +1,22 @@
-const IGCDecoder = require('../../utils/igc-decoder.js')
+const IGCDecoder = require('../igc/igc-decoder.js')
 const i18n = require('../../lang/gettext.js')()
+const Store = require('electron-store')
+const store = new Store()
+const currLang = store.get('lang')
+i18n.setMessages('messages', currLang, store.get('langmsg'))
+i18n.setLocale(currLang);
 
 
 function buildElements(track) {
-
     const dateTkoff = new Date(track.fixes[0].timestamp)
-    const dTkOff = String(dateTkoff.getDay()).padStart(2, '0')+'/'+String(dateTkoff.getMonth()).padStart(2, '0')+'/'+dateTkoff.getFullYear()      
+    // getMonth returns integer from 0(January) to 11(December)
+    const dTkOff = String(dateTkoff.getDate()).padStart(2, '0')+'/'+String((dateTkoff.getMonth()+1)).padStart(2, '0')+'/'+dateTkoff.getFullYear()   
     const hTkoff = String(dateTkoff.getHours()).padStart(2, '0')+':'+String(dateTkoff.getMinutes()).padStart(2, '0')
+    let totalSeconds = track.stat.duration
+    let hours = Math.floor(totalSeconds / 3600)
+    totalSeconds %= 3600;
+    let minutes = Math.floor(totalSeconds / 60);
+    const sDuration = String(hours).padStart(2, "0")+':'+String(minutes).padStart(2, "0")
     let trackOptions = {
         color: 'red',
         weight: 2,
@@ -36,19 +46,22 @@ function buildElements(track) {
             popupAnchor: [1, -34],
             shadowSize: [25, 25]
         },    
-        startLatlng : { 
-            lat : track.fixes[0].latitude, 
-            long : track.fixes[0].longitude 
-        },
-        endLatlng : {
-            lat : track.fixes[track.fixes.length - 1].latitude, 
-            long : track.fixes[track.fixes.length - 1].longitude
-        },
-        flDate : dTkOff,
+        startLatlng : { // (Math.round(track.fixes[0].latitude * 10000) / 10000).toFixed(4).toString()+','+(Math.round(track.fixes[0].longitude * 10000) / 10000).toFixed(4).toString(),
+            lat : (Math.round(track.fixes[0].latitude * 10000) / 10000).toFixed(4),
+            long : (Math.round(track.fixes[0].longitude * 10000) / 10000).toFixed(4)
+            },
+        endLatlng : { //(Math.round(track.fixes[track.fixes.length - 1].latitude * 10000) / 10000).toFixed(4).toString()+','+(Math.round(track.fixes[track.fixes.length - 1].longitude * 10000) / 10000).toFixed(4).toString(),
+            lat : (Math.round(track.fixes[track.fixes.length - 1].latitude * 10000) / 10000).toFixed(4),
+            long : (Math.round(track.fixes[track.fixes.length - 1].longitude * 10000) / 10000).toFixed(4)
+        },        
+        flDate : track.info.date,
         flToffTime : hTkoff,
-        glider : i18n.gettext('Glider')+' : '+track.info.gliderType+'<br>',
-        maxAlti : i18n.gettext('Max GPS Alt')+' : '+track.stat.maxalt.gps+'m<br>',
-        maxVario : i18n.gettext('Max climb')+' : '+track.stat.maxclimb+'m/s<br>'
+        flDuration : sDuration,
+        pilot : track.info.pilot,
+        lbGlider : i18n.gettext('Glider')+' : '+track.info.gliderType,   // without <br>
+        infoGlider : i18n.gettext('Glider')+' : '+track.info.gliderType+'<br>',
+        maxAlti : i18n.gettext('Max GPS alt')+' : '+track.stat.maxalt.gps+'m<br>',
+        maxVario : i18n.gettext('Max climb')+' : '+track.stat.maxclimb+'m/s<br>',
       }   
 
       return mapElements
@@ -56,13 +69,13 @@ function buildElements(track) {
 
 function buildMapElements(strIgc) {    
 	const track = new IGCDecoder(strIgc)
-	track.parse(true, true)     
+	track.parse(true, true)     	
     if (track.fixes.length> 0) {
         return buildElements(track)  
       } else {
         let mapElements = {ready : false}
         return mapElements
-      }        
+      }      
 }
 
 module.exports.buildMapElements = buildMapElements

@@ -1,12 +1,12 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const Store = require('electron-store')
 const glob = require('glob')
 const settings = require(path.join(__dirname, './process-main/settings-manager.js'))
 
 let mainWindow = null;
-let langjson;
+let currLang 
+let currLangMsg
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -30,12 +30,7 @@ const createWindow = () => {
     }      
   });
 
-  loadLanguage()
-//  openWindow('logbook')
- //mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
-
-  // Open the DevTools.
- // mainWindow.webContents.openDevTools();
+  loadSettings()
 }
 
 // This method will be called when Electron has finished
@@ -60,27 +55,11 @@ app.on('activate', () => {
   }
 });
 
-function loadLanguage() {
-  // load language
-  console.log(app.getPath('userData'));
+function loadSettings() {
   try {
-    settings.checkSettings(app.isPackaged, '6.0.0')
-    const store = new Store(); 
-    let currLang = store.get('lang')
-    let currLangFile = currLang+'.json'
-    let langPath = path.join(__dirname, './lang/',currLangFile)
-    if (fs.existsSync(langPath)) {
-      let content = fs.readFileSync(path.join(__dirname, './lang/',currLangFile));
-      langjson = JSON.parse(content);
-    } else {
-      // flag for bad language download
-    }
-    // Each time a new page is loaded, the json language file will be sent
-    mainWindow.webContents.on('did-finish-load', function () {
-      mainWindow.send('translation', langjson ) 
-    })    
-    if (store.get('checkDb')) {
-      openWindow('overview')
+    const startOk = settings.checkSettings(app.isPackaged, app.getAppPath(), '6.0.0')
+    if (startOk) {
+      openWindow('import')
     } else {
       openWindow('problem')
     }
@@ -98,6 +77,7 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
   console.log('hide waiting reçu')
   mainWindow.webContents.send('remove-waiting-gif')
 });
+
 
 function openWindow(pageName) {
   switch (pageName) {

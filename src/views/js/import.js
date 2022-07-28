@@ -37,37 +37,32 @@ const btnManu = document.getElementById('imp-manu')
 // const msgImport = i18n.gettext("Retrieving the list of flights in progress") 
 // const mustImport = Mustache.render(waitTpl, { typeimport : msgImport });
 
-ipcRenderer.on('translation', (event, langJson) => {
-    const currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, langJson)
-    i18n.setLocale(currLang);
-    iniForm()
-  })
+iniForm()
 
 ipcRenderer.on('gpsdump-fone', (event, result) => {
-  // if (igcString != null) {
-  //   console.log(igcString)
-  // }
-  console.log('retour gpsdump-fone '+result)
-  if (result != null) {
-    hideWaiting()        
-    alert(result)      
-  } else {
-    hideWaiting() 
-    $('#table-content').addClass('d-block')   
-  }
+  hideWaiting() 
+  $('#table-content').addClass('d-block')  
+  if (result != null) alert(result)      
 })  
 
 function iniForm() {
+    let start = performance.now();
+    const currLang = store.get('lang')
+    i18n.setMessages('messages', currLang, store.get('langmsg'))
+    i18n.setLocale(currLang)
     const menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         var template = $(templates).filter('#temp-menu').html();  
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
+    console.log('i18n.gettext(GPS import) : '+i18n.gettext('GPS import'))
+    document.getElementById('imp-gps').innerHTML = i18n.gettext('GPS import')
+    document.getElementById('imp-disk').innerHTML = i18n.gettext('Disk import')
+    document.getElementById('imp-manu').innerHTML = i18n.gettext('Manual import')
     btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
     btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
-    btnFlytec20.addEventListener('click',(event) => {callFlytec20()})
+    btnFlytec20.addEventListener('click',(event) => {serialGpsCall('Flytec20')})
     btnOudie.addEventListener('click',(event) => {callUsbGps('oudie')})
     btnSkytrax2.addEventListener('click',(event) => {callUsbGps('sky2')})
     btnSkytrax3.addEventListener('click',(event) => {callUsbGps('sky3')})
@@ -84,6 +79,8 @@ function iniForm() {
     btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
     btnDisk.addEventListener('click', (event) => {callDisk()})
     btnManu.addEventListener('click', (event) => {callManu()})
+    let timeTaken = performance.now()-start;
+    console.log(`Operation took ${timeTaken} milliseconds`);
 }
 
 // Calls up the relevant page 
@@ -125,10 +122,10 @@ function callUsbGps(typeGPS) {
       gpsStatus = '<strong>GPS Skytraax 3/4 : </strong>'     
       break;     
     case 'cpilot' : 
-      gpsStatus = '<strong>GPS C-Pilot: </strong>'     
+      gpsStatus = '<strong>GPS C-Pilot : </strong>'     
       break; 
     case 'xctracer' :
-      gpsStatus = '<strong>GPS C-Pilot: </strong>'     
+      gpsStatus = '<strong>GPS XC Tracer : </strong>'     
       break;
     case 'varduino' :
       gpsStatus = '<strong>GPS Varduino: </strong>'     
@@ -143,7 +140,7 @@ function callUsbGps(typeGPS) {
       gpsStatus = '<strong>GPS Syride via Usb : </strong>'     
       break;          
   }
-  displayWaiting()
+  displayWaiting('many')
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
       if (logResult != null) {     
           callDiskImport(logResult,gpsStatus)  
@@ -176,23 +173,23 @@ function callSyride() {
 
 
 function callDisk() {
-  console.log(store.get('pathImport'))
   const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
   if (selectedPath != null) {
-    log.info('[Import disk] for '+selectedPath)
     var importStatus = selectedPath+' : '
     callDiskImport(selectedPath,importStatus)
   }
 }
 
 function callManu() {
-    displayStatus('C est mon statut...',false)
+  clearPage()
+  displayStatus('Not implemented in this release',false)
 }
 
 function callDiskImport(selectedPath, statusContent) {
     try {    
       clearPage()
-      displayWaiting()
+      displayWaiting('many')
+      log.info('[Import disk] for '+selectedPath)
       const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
       if (searchDisk.igcForImport.length > 0) {
           var nbInsert = 0
@@ -222,7 +219,7 @@ function serialGpsCall(gpsModel) {
   let gpsCom = []
   let msg
   clearPage()
-  displayWaiting()
+  displayWaiting('many')
 
   ipcRenderer.invoke('ports-list').then((result) => {
     if (result instanceof Array) { 
@@ -331,23 +328,15 @@ function callFlightListNew(gpsCom, gpsModel) {
   })
 }
 
-function getOneFlight(gpsParam, flightIndex) {
-  console.log('gpsParam '+gpsParam)
-  displayWaiting()
+function displayOneFlight(flightPath, flightIndex) {
+  // We wat the same function for Gpsdump and usb gps. 
+  // we only need flightindex for gpsdump, for usb, we send 9999
+  $('#table-content').removeClass('d-block')
   $('#table-content').addClass('d-none')
-  var igcFile = ipcRenderer.send('getflighformap', gpsParam, flightIndex)  
-  // ipcRenderer.on('gpsdump-fone', (event, result) => {
-  //   // if (igcString != null) {
-  //   //   console.log(igcString)
-  //   // }
-  //   console.log('retour gpsdump-fone '+result)
-  //   if (result) {
-  //     hideWaiting()
-  //   } else {
-  //     hideWaiting()
-  //     alert(i18n.gettext('An error occurred during the map generation'))      
-  //   }
-  // })  
+
+  console.log(flightPath)
+  displayWaiting('one')
+  let igcFile = ipcRenderer.send('displayoneflight', flightPath, flightIndex)    
 }
 
 function tableFromGpsDump(flighList,gpsModel) {
@@ -442,7 +431,8 @@ function tableFromGpsDump(flighList,gpsModel) {
     let rowIndex = table.row( $(this).parents('tr') ).index()
    // alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['gpsdump']);
     $('#img_waiting').addClass('d-none')
-    getOneFlight(dtRow['gpsdump'],rowIndex)
+    displayOneFlight(dtRow['gpsdump'],rowIndex)
+   // getOneFlight(dtRow['gpsdump'],rowIndex)
   } );  
   $('#tableimp_id').removeClass('d-none')
   $('#img_waiting').addClass('d-none')
@@ -466,6 +456,8 @@ function tableStandard(igcForImport) {
       $('#tableimp_id').DataTable().clear().destroy()
     }   
     var dataTableOption = {
+      // width format see this http://live.datatables.net/zurecuzi/1/edit
+      autoWidth: false,
       data: igcForImport, 
       // // the select plugin is used -> https://datatables.net/extensions/select/
       // pas nécessaire ici
@@ -475,24 +467,35 @@ function tableStandard(igcForImport) {
       columns: [  
         {
           // display boolean as checkbox -> http://live.datatables.net/kovegexo/1/edit
-          title : 'Logbook',
+          title : i18n.gettext('Logbook'),
           data: 'forImport',
+          width: '5%',
           render: function(data, type, row) {
             if (data === true) {
               return '<input type="checkbox" class="editor-active" checked >';
             } else {
            //   return '<input type="checkbox" class="editor-active">';
-                return '<img src="../../assets/img/check-white.png" alt=""></img>';
+                return '<img src="../../assets/img/in_logbook.png" alt=""></img>';
             }
             return data;
           },
          className: "dt-body-center text-center"
         },      
-        { title : 'Date', data: 'date'},
-        { title : 'Time', data: 'startLocalTime'},
-        { title : 'File name' , data: 'filename'},
-        { title : 'Pilot name' , data: 'pilotName'},        
-        { title : 'Path' , data: 'path'},
+        { title : i18n.gettext('Date'), data: 'date', width: '10%'},
+        { title : i18n.gettext('Time'), data: 'startLocalTime', width: '8%'},
+        { title : i18n.gettext('File name') , data: 'filename'},
+        { title : i18n.gettext('Pilot name') , data: 'pilotName'},        
+        { title : i18n.gettext('Path') , data: 'path'},
+        {
+          title : '',
+          data: 'forImport',
+          width: '8%',
+          render: function(data, type, row) {
+            // action on the click is described below
+            return '<button type="button" class="btn btn-outline-secondary btn-sm">'+i18n.gettext('Map')+'</button>';
+          },
+         className: "dt-body-center text-center"
+        },         
       ],       
       columnDefs : [
         {
@@ -534,7 +537,14 @@ function tableStandard(igcForImport) {
       var dtRow = table.rows($(this).closest("tr"));
       dtRow.data()[0].forImport = isChecked;
     })
-    $('#tableimp_id').removeClass('d-none')
+  // example from https://datatables.net/examples/ajax/null_data_source.html
+  $('#tableimp_id').on( 'click', 'button', function () {
+    var dtRow = table.row( $(this).parents('tr') ).data();
+    let rowIndex = table.row( $(this).parents('tr') ).index()
+  //  alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['path']);
+    displayOneFlight(dtRow['path'], 9999)
+  } );      
+  $('#tableimp_id').removeClass('d-none')
 }
   
 function clearPage() {
@@ -563,10 +573,17 @@ function displayStatus(content,updateDisplay) {
     $('#status').show();
 }
 
-function displayWaiting() {
-    const msg = i18n.gettext("Retrieving the list of flights in progress") 
+function displayWaiting(typeMsg) {
+    let msg
+    switch (typeMsg) {
+      case 'one':
+        msg = 'Loading the selected flight'
+        break;
+      case 'many':
+        msg = i18n.gettext("Retrieving the list of flights in progress") 
+        break;
+    }    
     const rendered = Mustache.render(waitTpl, { typeimport : msg });
-    console.log('rendered '+rendered)
     document.getElementById('div_waiting').innerHTML = rendered
     $('#div_waiting').addClass('m-5 pb-5 d-block')
 }

@@ -1,7 +1,7 @@
 const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-parser
 const smooth = require('array-smooth')
-const trigo = require('./geo/trigo.js')
-const offset = require('./geo/offset-utc.js')
+const trigo = require('../../utils/geo/trigo.js')
+const offset = require('../../utils/geo/offset-utc.js')
 
 class IGCDecoder {
 
@@ -80,7 +80,7 @@ class IGCDecoder {
     let result = IGCParser.parse(this.igcData, { lenient: true });
     try {
 	  // on passe de YYYY-MM-DD à DD/MM/YYYY
-      this.info.date =  result.date.split("-").reverse().join("/");
+      this.info.date =  result.date.split("-").reverse().join("/")
       this.info.numFlight = result.numFlight
       this.info.pilot = result.pilot
       this.info.gliderType = result.gliderType

@@ -14,6 +14,8 @@ html {
 body {
     font-family: Verdana, Helvetica, sans-serif;
     background: #fafafa;
+    /* IMPORTANT  Disable vertical scroll bar */
+    overflow-y:hidden;
 }
 
 p {
@@ -266,7 +268,7 @@ a.article:hover {
     /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
        https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
     */
-    height: 90vh;  
+    height: 85vh;  
     padding-left: 10px;
     border: 1px solid black;
     border-radius: 8px;  

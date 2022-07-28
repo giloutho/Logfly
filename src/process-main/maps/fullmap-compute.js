@@ -2,7 +2,7 @@ const {ipcMain, BrowserWindow} = require('electron')
 const fs = require('fs')
 const path = require('path')
 const log = require('electron-log')
-const IGCAnalyzer = require('../../utils/igc-analyzer.js')
+const IGCAnalyzer = require('../igc/igc-analyzer.js')
 const anaTrack = new IGCAnalyzer()
 const dblog = require('../../utils/db/db-search.js')
 
