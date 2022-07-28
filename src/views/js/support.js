@@ -1,36 +1,28 @@
-var {ipcRenderer} = require('electron')
-var fs = require('fs')
-var path = require('path');
-var log = require('electron-log');
-var i18n = require('../../lang/gettext.js')()
-var Mustache = require('mustache')
-var Store = require('electron-store')
-var store = new Store()
+const {ipcRenderer} = require('electron')
+const fs = require('fs')
+const path = require('path');
+const log = require('electron-log');
+const i18n = require('../../lang/gettext.js')()
+const Mustache = require('mustache')
+const Store = require('electron-store')
+const store = new Store()
 
-var currOS = store.get('currOS')
-var homedir = require('os').homedir()
-let menuFill = require('../../views/tpl/sidebar.js')
-let btnMenu = document.getElementById('toggleMenu')
-var logmainpath = null
-var logrendererpath = null
-var currDisplay = null
-var renderDisplay = 'render'
-var mainDisplay = 'main'
-var btnMainDisplay
-var btnRenderDisplay
-var btnClearLog
-var btnSystem
-var btnMail
-var btnLogbook
+const currOS = store.get('currOS')
+const homedir = require('os').homedir()
+const menuFill = require('../../views/tpl/sidebar.js')
+const btnMenu = document.getElementById('toggleMenu')
+let logmainpath = null
+let logrendererpath = null
+let currDisplay = null
+let renderDisplay = 'render'
+let mainDisplay = 'main'
 
-ipcRenderer.on('translation', (event, langJson) => {
-    let currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, langJson)
-    i18n.setLocale(currLang);
-    iniForm()         
-  })
+iniForm()         
 
 function iniForm() {
+    const currLang = store.get('lang')
+    i18n.setMessages('messages', currLang, store.get('langmsg'))
+    i18n.setLocale(currLang)
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         var template = $(templates).filter('#temp-menu').html();  
@@ -51,7 +43,7 @@ function iniForm() {
     let templateNav = document.getElementById('navtemplate').innerHTML;
     let navRendered = Mustache.render(templateNav, navOptions)
     document.getElementById('navbarSupportedContent').innerHTML = navRendered;
-    btnMainDisplay = document.getElementById('main-display')
+    const btnMainDisplay = document.getElementById('main-display')
     btnMainDisplay.addEventListener('click',(event) => {
       fnMainDisplay()
     })
@@ -59,21 +51,21 @@ function iniForm() {
     btnClearLog.addEventListener('click',(event) => {
       fnClearLog()
     })
-    btnRenderDisplay = document.getElementById('render-display')
+    const btnRenderDisplay = document.getElementById('render-display')
     btnRenderDisplay.addEventListener('click',(event) => {
       fnRenderDisplay()
     })
-    btnRenderClear = document.getElementById('render-clear')
+    const btnRenderClear = document.getElementById('render-clear')
     statusContent = document.getElementById("status")  
-    btnSystem =   document.getElementById('system')
+    const btnSystem = document.getElementById('system')
     btnSystem.addEventListener('click',(event) => {
       fnSystemDisplay()
     }) 
-    btnMail = document.getElementById('email')
+    const btnMail = document.getElementById('email')
     btnMail.addEventListener('click',(event) => {
       fnMailDisplay()
     })     
-    btnLogbook = document.getElementById('logbook')
+    const btnLogbook = document.getElementById('logbook')
     btnLogbook.addEventListener('click',(event) => {
       fnLogbookDisplay()
     })         
