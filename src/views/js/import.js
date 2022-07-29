@@ -34,8 +34,8 @@ const btnVarduino = document.getElementById('imp-gps-vardui')
 const btnFlynet = document.getElementById('imp-gps-flynet')
 const btnSensbox = document.getElementById('imp-gps-sens')    
 const btnManu = document.getElementById('imp-manu')
-// const msgImport = i18n.gettext("Retrieving the list of flights in progress") 
-// const mustImport = Mustache.render(waitTpl, { typeimport : msgImport });
+
+let currStatusContent
 
 iniForm()
 
@@ -190,6 +190,7 @@ function callDiskImport(selectedPath, statusContent) {
       clearPage()
       displayWaiting('many')
       log.info('[Import disk] for '+selectedPath)
+      // main/gps-tracks/disk-import.js
       const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
       if (searchDisk.igcForImport.length > 0) {
           var nbInsert = 0
@@ -198,10 +199,18 @@ function callDiskImport(selectedPath, statusContent) {
               nbInsert++
             }
           });
+          // 
+          searchDisk.igcForImport.sort((a, b) => {
+            let da = a.dateObject,
+                db = b.dateObject;
+            return db - da;
+          });
           // result display
           statusContent += searchDisk.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
           statusContent += searchDisk.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
-          statusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+          statusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
+          currStatusContent = statusContent
+          statusContent += nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
           displayStatus(statusContent,true)
           tableStandard(searchDisk.igcForImport)          
       } else {
@@ -450,7 +459,36 @@ function tableFromGpsDump(flighList,gpsModel) {
 }
 
 
-// TODO  Il manque le tri par date de la liste et eventuellement la visu sur un contextuel ou une icone. On a la place
+function uncheckTable() {
+  console.log('uncheckTable')
+  let table = $('#tableimp_id').DataTable();
+
+  $('input[type="checkbox"]', table.cells().nodes()).prop('checked',false);
+  let nbInsert = 0
+  let newStatusContent = currStatusContent+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+  displayStatus(newStatusContent,false) 
+}
+
+$('#tableimp_id').on('click', 'tbody td:first-child', function () {  
+  let data = table.rows( function ( idx, data, node ) {
+    return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
+  }).data().toArray();
+  let nbInsert = data.length
+  let newStatusContent = currStatusContent+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+  displayStatus(newStatusContent,true)
+});
+
+// a enlever si ok
+function updateStatus() {
+  console.log(currStatusContent)
+  let data = table.rows( function ( idx, data, node ) {
+    return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
+  }).data().toArray();
+  let nbInsert = data.length
+  let newStatusContent = currStatusContent+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+  displayStatus(newStatusContent,true)
+}
+
 function tableStandard(igcForImport) {
     if ( $.fn.dataTable.isDataTable( '#tableimp_id' ) ) {
       $('#tableimp_id').DataTable().clear().destroy()
@@ -472,7 +510,7 @@ function tableStandard(igcForImport) {
           width: '5%',
           render: function(data, type, row) {
             if (data === true) {
-              return '<input type="checkbox" class="editor-active" checked >';
+              return '<input type="checkbox" name="chkbx" class="editor-active" checked >';
             } else {
            //   return '<input type="checkbox" class="editor-active">';
                 return '<img src="../../assets/img/in_logbook.png" alt=""></img>';
@@ -557,21 +595,36 @@ function clearPage() {
 
 function displayStatus(content,updateDisplay) {
     hideWaiting()
-    statusContent.innerHTML = content
-    if (updateDisplay) {
-      var statusAlert = document.getElementById('status');
-      var btnUpdate = document.createElement("input");
+    let htmlButton = '<button type="button" class="btn btn-outline-info mr-4" id="bt-selection" onclick="uncheckTable()">'+i18n.gettext('Unselect')+'</button>'
+    statusContent.innerHTML = htmlButton+content
+    if (updateDisplay) {      
+      let statusAlert = document.getElementById('status');
+      let btnUpdate = document.createElement("input");
       btnUpdate.type = "button";
       btnUpdate.name = "add";
       btnUpdate.value=i18n.gettext("Logbook update");
-      btnUpdate.className="btn btn-danger btn-xs";
+      btnUpdate.className="btn btn-danger btn-xs mr-2";
       btnUpdate.onclick = function () {
         logbookUpdate()
       };
       statusAlert.appendChild(btnUpdate);
+      // var btnUnselect = document.createElement("input");
+      // btnUnselect.type = "button";
+      // btnUnselect.name = "unselect";
+      // btnUnselect.value=i18n.gettext("Unselect");
+      // btnUnselect.className="btn btn-info btn-xs flex-end";
+      // btnUnselect.onclick = function () {
+      //  // logbookUpdate()
+      // };
+      // statusAlert.appendChild(btnUnselect)
     }
     $('#status').show();
 }
+
+function myFunction() {
+  alert('coucou')
+}
+
 
 function displayWaiting(typeMsg) {
     let msg
