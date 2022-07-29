@@ -10,47 +10,23 @@ const { event } = require('jquery');
 const homedir = require('os').homedir()
 
 ipcMain.on('disk-import', (event, importPath) => {
-  openWindow(event,importPath)
+  //openWindow(event,importPath)
+  runSearchIgc(importPath,function(searchResult) {
+    event.returnValue = searchResult
+  })
 })
 
-
-function openWindow(event,importPath) {
-  // const modalPath = path.join('file://', __dirname, '../../views/html/waiting-or.html')
-  // let win = new BrowserWindow({ 
-  //   width: 350,
-  //   height: 300,
-  //   frame: false 
-  // })
-  // win.on('close', () => { win = null })
-  // win.loadURL(modalPath)
-  // win.webContents.on('did-finish-load', function() {
-  //   win.show();
-  //   runSearchIgc(importPath,function(searchResult) {
-  //     event.returnValue = searchResult
-  //     console.log('on ferme...')
-  //     win.close()
-  //   })
-  // });
-
-
-  runSearchIgc(importPath,function(searchResult) {
-        event.returnValue = searchResult
-  })
-
-}
-
 function runSearchIgc(importPath,_callback) {
-  var searchResult = {
+  let searchResult = {
     errReport: '',
     totalIGC : 0,
     igcBad: [],
     igcForImport : []
    };
    console.log('run getDirectories for '+importPath)
-  getDirectories(importPath, function (err, arrayIGC) {
+    getDirectories(importPath, function (err, arrayIGC) {
     if (err) {
-      let errormsg = '[disk-import] getDirectories -> '+err
-      log.error(errormsg)
+      log.error('[disk-import] getDirectories -> '+err)
       searchResult.errReport = errormsg 
     } else {
       if (arrayIGC != null && arrayIGC instanceof Array) {
@@ -89,6 +65,7 @@ function validIGC(path, flightData) {
     // à priori pas besoin d'ajouter UTC (Vu sr Sky3) ??? A vérifier
     //let tsLocal = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
     const dateLocal = new Date(flightData.fixes[1].timestamp)
+    this.dateObject = dateLocal
     this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');     
     this.errors = [] 
     // is this track present in the logbook
@@ -103,7 +80,7 @@ function validIGC(path, flightData) {
   }
 }
 
-var getDirectories = function (src, callback) {
+let getDirectories = function (src, callback) {
   // igc or IGC ??? In Reversale, it was IGC
   // glob function did not seem to work
   // We've been looking for this option [nocase : true] for a long time !!!
