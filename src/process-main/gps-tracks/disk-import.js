@@ -29,7 +29,7 @@ function runSearchIgc(importPath,_callback) {
       searchResult.errReport = errormsg 
     } else {
       if (arrayIGC != null && arrayIGC instanceof Array) {
-        log.info('[disk-gps] getDirectories returns '+arrayIGC.length+' files')
+        log.info('[runSearchIgc] getDirectories returns '+arrayIGC.length+' files')
         searchResult.totalIGC = arrayIGC.length
         for (let index = 0; index < arrayIGC.length; index++) {   
           let igcData = fs.readFileSync(arrayIGC[index], 'utf8');      
@@ -54,9 +54,16 @@ function validIGC(path, flightData) {
   this.filename = path.replace(/^.*[\\\/]/, '')
   if (flightData.fixes.length > 2) {
     this.pointsNumber = flightData.fixes.length  
+    this.startGpsAlt = flightData.fixes[0].gpsAltitude
     this.firstLat = flightData.fixes[0].latitude
     this.firstLong = flightData.fixes[0].longitude
     this.pilotName = flightData.pilot
+
+    // On va ajouter 
+    // premier timestamp flightData.fixes[1].timestamp
+    // alti GPS premier point flightData.fixes[0].gpsAltitude
+    // est ce que l'on garde l'IGC  our est ce que l'on le relira ?
+
     this.date = flightData.date   // date formatted as YYYY-MM-DD
     this.offsetUTC = offset.computeOffsetUTC(flightData.fixes[0].latitude, flightData.fixes[0].longitude,flightData.fixes[1].timestamp)   
     // offsetUTC is in minutes, original timestamp in milliseconds
@@ -64,11 +71,13 @@ function validIGC(path, flightData) {
     // à priori pas besoin d'ajouter UTC (Vu sr Sky3) ??? A vérifier
     //let tsLocal = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
     const dateLocal = new Date(flightData.fixes[1].timestamp)
-    this.dateObject = dateLocal
+    this.dateStart = dateLocal
     this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');     
+    this.dateEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp)
     this.errors = [] 
     // is this track present in the logbook
     let inLogbook = dblog.flightByTakeOff(this.firstLat, this.firstLong, this.startLocalTime) 
+    // ne peut pas être coché donc ne sera pas dans l'import inutile de refaire la vérif
     // Opposite boolean value : if present in the logbook, it's not for import
     this.forImport = !inLogbook
     this.validtrack = true
