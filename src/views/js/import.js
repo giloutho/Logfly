@@ -56,7 +56,6 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    console.log('i18n.gettext(GPS import) : '+i18n.gettext('GPS import'))
     document.getElementById('imp-gps').innerHTML = i18n.gettext('GPS import')
     document.getElementById('imp-disk').innerHTML = i18n.gettext('Disk import')
     document.getElementById('imp-manu').innerHTML = i18n.gettext('Manual import')
@@ -201,8 +200,8 @@ function callDiskImport(selectedPath, statusContent) {
           });
           // 
           searchDisk.igcForImport.sort((a, b) => {
-            let da = a.dateObject,
-                db = b.dateObject;
+            let da = a.dateStart,
+                db = b.dateStart;
             return db - da;
           });
           // result display
@@ -460,7 +459,6 @@ function tableFromGpsDump(flighList,gpsModel) {
 
 
 function uncheckTable() {
-  console.log('uncheckTable')
   let table = $('#tableimp_id').DataTable();
 
   $('input[type="checkbox"]', table.cells().nodes()).prop('checked',false);
@@ -584,6 +582,15 @@ function tableStandard(igcForImport) {
   } );      
   $('#tableimp_id').removeClass('d-none')
 }
+
+function updateLogbook() {
+  let data = table.rows( function ( idx, data, node ) {
+    return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
+  }).data().toArray();
+  let nbInsert = data.length
+  data.forEach(element => console.log(element.path));
+
+}
   
 function clearPage() {
     if ($.fn.DataTable.isDataTable('#tableimp_id')) {
@@ -605,26 +612,12 @@ function displayStatus(content,updateDisplay) {
       btnUpdate.value=i18n.gettext("Logbook update");
       btnUpdate.className="btn btn-danger btn-xs mr-2";
       btnUpdate.onclick = function () {
-        logbookUpdate()
+        updateLogbook() 
       };
       statusAlert.appendChild(btnUpdate);
-      // var btnUnselect = document.createElement("input");
-      // btnUnselect.type = "button";
-      // btnUnselect.name = "unselect";
-      // btnUnselect.value=i18n.gettext("Unselect");
-      // btnUnselect.className="btn btn-info btn-xs flex-end";
-      // btnUnselect.onclick = function () {
-      //  // logbookUpdate()
-      // };
-      // statusAlert.appendChild(btnUnselect)
     }
     $('#status').show();
 }
-
-function myFunction() {
-  alert('coucou')
-}
-
 
 function displayWaiting(typeMsg) {
     let msg
