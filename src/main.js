@@ -59,7 +59,7 @@ function loadSettings() {
   try {
     const startOk = settings.checkSettings(app.isPackaged, app.getAppPath(), '6.0.0')
     if (startOk) {
-      openWindow('import')
+      openWindow('photos')
     } else {
       openWindow('problem')
     }
@@ -95,6 +95,9 @@ function openWindow(pageName) {
     case "sites":
         mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
         break;
+    case "photos":
+      mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
+      break;                
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
           break;        
