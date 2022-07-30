@@ -97,6 +97,7 @@ function openWindow(pageName) {
         break;
     case "photos":
       mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
+      mainWindow.webContents.openDevTools();  
       break;                
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
