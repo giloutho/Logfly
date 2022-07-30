@@ -23,7 +23,6 @@ function runSearchIgc(importPath,_callback) {
     igcBad: [],
     igcForImport : []
    };
-   console.log('run getDirectories for '+importPath)
     getDirectories(importPath, function (err, arrayIGC) {
     if (err) {
       log.error('[disk-import] getDirectories -> '+err)
