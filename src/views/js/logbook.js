@@ -1,7 +1,7 @@
-var {ipcRenderer} = require('electron')
-var L = require('leaflet');
-var Mustache = require('mustache')
-var i18n = require('../../lang/gettext.js')()
+const {ipcRenderer} = require('electron')
+const L = require('leaflet');
+const Mustache = require('mustache')
+const i18n = require('../../lang/gettext.js')()
 
 const path = require('path');
 const fs = require('fs');
@@ -12,12 +12,12 @@ let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js')
 let btnMenu = document.getElementById('toggleMenu')
 
-var mapPm
-var table
+let mapPm
+let table
 let currIdFlight
 let currIgcText
-var track
-var btnFullmap = document.getElementById('fullmap')
+let track
+const btnFullmap = document.getElementById('fullmap')
 let btnScoring = document.getElementById('scoring')
 let btnFlyxc = document.getElementById('flyxc')
 
@@ -29,8 +29,8 @@ function iniForm() {
   i18n.setLocale(currLang)
   let menuOptions = menuFill.fillMenuOptions(i18n)
   $.get('../../views/tpl/sidebar.html', function(templates) { 
-      var template = $(templates).filter('#temp-menu').html();  
-      var rendered = Mustache.render(template, menuOptions)
+      const template = $(templates).filter('#temp-menu').html();  
+      const rendered = Mustache.render(template, menuOptions)
     //  console.log(template)
       document.getElementById('target-sidebar').innerHTML = rendered
   })
@@ -49,7 +49,7 @@ function iniForm() {
         callback: function(key, options) {
             switch (key) {
               case "Comment" : 
-                var m = "clicked: " + key + " on " + $(this).text();
+                const m = "clicked: " + key + " on " + $(this).text();
                 alert(m); 
                 break                
               case "Change": 
@@ -120,22 +120,24 @@ btnFlyxc.addEventListener('click', (event) => {
 
 
 btnFullmap.addEventListener('click', (event) => {  
-  displayWait()
-  if (track.fixes.length> 0) {    
-    // functionnal code
-    let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
-    // try wit fullmap-compute
-    //let disp_map = ipcRenderer.send('compute-map', track)   // process-main/maps/fullmap-compute.js
-  } else {
-    log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
-    let err_title = i18n.gettext("Program error")
-    let err_content = i18n.gettext("Decoding problem in track file")
-    ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
-  }      
+  if (track !== undefined)  {
+    if (track.fixes.length> 0) {    
+      // functionnal code
+      displayWait()
+      let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
+      // try wit fullmap-compute
+      //let disp_map = ipcRenderer.send('compute-map', track)   // process-main/maps/fullmap-compute.js
+    } else {
+      log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
+      let err_title = i18n.gettext("Program error")
+      let err_content = i18n.gettext("Decoding problem in track file")
+      ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
+    } 
+  }     
 })  
 
 function displayFlyxc() {
-  if (track.fixes.length> 0) {  
+  if (track !== undefined && track.fixes.length> 0) {  
     console.log('demande transfert')
     let resUpload = ipcRenderer.sendSync('upload-igc', currIgcText)  // process-main/igc/igc-read.js.js
     if (resUpload == null) {
@@ -170,7 +172,7 @@ if (db.open) {
     // on récupére la valeur avec counFlights['COUNT(*)']
     msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`);
     const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin FROM Vol ORDER BY V_Date DESC').all()    
-    var dataTableOption = {
+    const dataTableOption = {
     data: flstmt, 
     autoWidth : false,
     columns: [
@@ -231,12 +233,13 @@ console.log(`Operation took ${timeTaken} milliseconds`);
 function readIgc(igcID) {
     hideStatus()
     if (db.open) {
-      let req ='SELECT V_IGC FROM Vol WHERE V_ID = ?'
+      let req ='SELECT V_IGC, V_LatDeco, V_LongDeco, V_AltDeco, V_Site FROM Vol WHERE V_ID = ?'
       try {
         const stmt = db.prepare(req)
         const selIgc = stmt.get(igcID)
-        if (selIgc.V_IGC === undefined) {
-          displayStatus('Not found') 
+        console.log('IGC = *'+selIgc.V_IGC+'*'+selIgc.V_Site)
+        if (selIgc.V_IGC === undefined || selIgc.V_IGC == "" ) {
+          mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
         } else {
           currIgcText = selIgc.V_IGC
           igcDisplay(currIgcText)
@@ -263,6 +266,57 @@ function readIgc(igcID) {
       displayStatus('Error '+' : '+error)      
     }      
   }
+
+  /**
+   * 
+   * @param {*} latDeco 
+   * @param {*} longDeco 
+   * @param {*} altDeco 
+   * @param {*} deco 
+   * 
+   * In Logfly 5 I don't know why I was creating a traceGPS instance with a null IGC file
+   * CarnetViewController line 675. Map built in map_markers class
+   */
+  function mapWithoutIgc(latDeco, longDeco, altDeco, deco){
+    if (mapPm != null) {
+      mapPm.off();
+      mapPm.remove();
+    }
+    mapPm = L.map('mapid').setView([latDeco,longDeco], 12)
+    const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    let mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    let fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    const baseMaps = {
+      "OSM": osmlayer,
+      "OpenTopo" : OpenTopoMap,
+      "MTK" : mtklayer,
+      "4UMaps" : fouryoulayer,
+    };
+
+    // default layer map
+    osmlayer.addTo(mapPm)
+
+    L.control.layers(baseMaps).addTo(mapPm)
+
+    const takeOffPopUp = deco+'<br>'+altDeco+'m'
+    let StartIcon = new L.Icon({
+      iconUrl: '../../leaflet/images/windsock22.png',
+      shadowUrl: '../../leaflet/images/marker-shadow.png',
+      iconSize: [22, 22],
+      iconAnchor: [0, 22],
+      popupAnchor: [1, -34],
+      shadowSize: [25, 25]
+    });
+  
+    const startLatlng = L.latLng(latDeco, longDeco)
+    L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm).bindPopup(takeOffPopUp).openPopup()
+  }
   
   function buildMap(track) {
       console.log('buildMap')
@@ -272,20 +326,20 @@ function readIgc(igcID) {
     }
     mapPm = L.map('mapid').setView([0, 0], 5);
   
-    var tile_layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tile_layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             });
     tile_layer.addTo(mapPm); 
-    var trackOptions = {
+    const trackOptions = {
       color: 'red',
       weight: 2,
       opacity: 0.85
     };
     mapPm.removeLayer(L.geoJson);
-    var geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(mapPm)
+    const geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(mapPm)
     mapPm.fitBounds(geojsonLayer.getBounds());
     
-    var StartIcon = new L.Icon({
+    const StartIcon = new L.Icon({
       iconUrl: '../../leaflet/images/windsock22.png',
       shadowUrl: '../../leaflet/images/marker-shadow.png',
       iconSize: [18, 18],
@@ -294,10 +348,10 @@ function readIgc(igcID) {
       shadowSize: [25, 25]
     });
   
-    var startLatlng = L.latLng(track.fixes[0].latitude, track.fixes[0].longitude)
+    const startLatlng = L.latLng(track.fixes[0].latitude, track.fixes[0].longitude)
     L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm);
   
-    var EndIcon = new L.Icon({
+    const EndIcon = new L.Icon({
       iconUrl: '../../leaflet/images/Arrivee22.png',
       shadowUrl: '../../leaflet/images/marker-shadow.png',
       iconSize: [18, 18],
@@ -306,10 +360,10 @@ function readIgc(igcID) {
       shadowSize: [25, 25]
     });
   
-    var endLatlng = L.latLng(track.fixes[track.fixes.length - 1].latitude, track.fixes[track.fixes.length - 1].longitude)
+    const endLatlng = L.latLng(track.fixes[track.fixes.length - 1].latitude, track.fixes[track.fixes.length - 1].longitude)
     L.marker(endLatlng,{icon: EndIcon}).addTo(mapPm);
   
-    var info = L.control({position: 'bottomright'});
+    const info = L.control({position: 'bottomright'});
   
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'map-info'); // create a div with a class "map-info"
@@ -351,7 +405,6 @@ function readIgc(igcID) {
   })
 
   function initmapBasic(viewlat,viewlon,viewzoom) {
-    var L = require('leaflet');
     mapBasic = L.map('mapid').setView([viewlat,viewlon], viewzoom);
   
     const tile_layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
