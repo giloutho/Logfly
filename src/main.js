@@ -59,7 +59,7 @@ function loadSettings() {
   try {
     const startOk = settings.checkSettings(app.isPackaged, app.getAppPath(), '6.0.0')
     if (startOk) {
-      openWindow('photos')
+      openWindow('logbook')
     } else {
       openWindow('problem')
     }
