@@ -7,14 +7,12 @@ var store = new Store()
 let menuFill = require('../../views/tpl/sidebar.js')
 let btnMenu = document.getElementById('toggleMenu')
 
-ipcRenderer.on('translation', (event, langJson) => {
-    let currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, langJson)
-    i18n.setLocale(currLang);
-    iniForm()
-  })
+iniForm()
 
 function iniForm() {
+    const currLang = store.get('lang')
+    i18n.setMessages('messages', currLang, store.get('langmsg'))
+    i18n.setLocale(currLang)    
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         var template = $(templates).filter('#temp-menu').html();  
