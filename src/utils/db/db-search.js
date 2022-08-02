@@ -1,13 +1,14 @@
 const Store = require('electron-store');
 const store = new Store();
 const trigo = require('../geo/trigo.js')
+const db = require('better-sqlite3')(store.get('dbFullPath'))
 
 function flightByTakeOff(flLat, flLng, dayDate) {
 
   let maxDist = 300
   let maxDelay = 120
   let flFound = false
-  const db = require('better-sqlite3')(store.get('dbFullPath'))
+//  const db = require('better-sqlite3')(store.get('dbFullPath'))
   if (db.open) {
     // Convert timestamp to milliseconds
     let date = new Date(dayDate);
@@ -53,7 +54,7 @@ function flightByTakeOff(flLat, flLng, dayDate) {
  */
 function checkFlightList(flightList) {
   let regexMinSec = /:([0-5][0-9]):([0-5][0-9])/
-  const db = require('better-sqlite3')(store.get('dbFullPath'))
+ // const db = require('better-sqlite3')(store.get('dbFullPath'))
   if (db.open) {
     flightList.flights.forEach(flight => {
       let arrDate = flight['date'].split('.')
@@ -123,7 +124,7 @@ function checkFlightList(flightList) {
  */
 
  function searchSiteInDb(pLat, pLong, landingType) {
-    const db = require('better-sqlite3')(store.get('dbFullPath'))
+ //   const db = require('better-sqlite3')(store.get('dbFullPath'))
 
     // in Logfly 5, distance mini is stored in settings but we never changed the value of 300 m
     let distMini = 300;            
