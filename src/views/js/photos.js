@@ -8,6 +8,7 @@ const log = require('electron-log');
 const Store = require('electron-store')
 const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
+const dbadd = require('../../utils/db/db-add.js')
 const btnMenu = document.getElementById('toggleMenu')
 const btnOption1 = document.getElementById('option1')
 const btnOption2 = document.getElementById('option2')
@@ -87,6 +88,11 @@ function callDiskImport() {
                 totalSeconds %= 3600
                 let minutes = Math.floor(totalSeconds / 60);
                 const sDuration = String(hours).padStart(2, "0")+'h'+String(minutes).padStart(2, "0")+'mn'
+
+                let newFlight = dbadd.addFlight(element, i18n.gettext('To rename'))
+                //let siteInLog = dblog.searchSiteInDb(element.firstLat, element.firstLong, false)
+               // let countBlanks = dblog.addBlankSite(element.firstLat, element.firstLong, element.startGpsAlt, i18n.gettext('To rename'))
+
                 let dbElements = 'V_Date :  [2008-10-07 15:05:00] : '+sqlDate+'<br>'  //TimeStamp   ** 2008-10-07 15:05:00  A ajouter puis à calculer
                 dbElements += 'V_Duree : [5800s] : '+duration+'<br>'  //integer    calc durée en secondes
                 dbElements += 'V_sDuree [0h27mn] : '+sDuration+'<br>'  //
@@ -95,6 +101,9 @@ function callDiskImport() {
                 dbElements += 'V_AltDeco [1240] : '+element.startGpsAlt+'<br>'
                 dbElements += 'V_IGC Long Text'+'<br>'
                 dbElements += 'UTC [120] : '+element.offsetUTC+'<br>'
+                dbElements += 'regarder main console<br>'
+                // dbElements += 'Site : '+siteInLog+'<br>'
+                // dbElements += 'Blanks count : '+countBlanks+'<br>'
                 document.getElementById("results").innerHTML = dbElements
                 // dateObject: Thu Jul 14 2022 12:42:33 GMT+0200 (heure d’été d’Europe centrale) {}
                 // errors: []
