@@ -1,12 +1,14 @@
 const Store = require('electron-store');
 const store = new Store();
 const trigo = require('../geo/trigo.js')
-//Do not put this instruction at this level as it is loaded at start-up -> main.js/loadMainProcesses()
-// If the database is not found  an exception will be thrown
-// const db = require('better-sqlite3')(store.get('dbFullPath'))
+/**
+ * /Do not put this instruction at this level as it is loaded at start-up -> main.js/loadMainProcesses()
+ * If the database is not found  an exception will be thrown
+ * 
+ * If the database is not found  an exception will be thrown
+ */
 
 function flightByTakeOff(flLat, flLng, dayDate) {
-
   let maxDist = 300
   let maxDelay = 120
   let flFound = false
@@ -14,26 +16,29 @@ function flightByTakeOff(flLat, flLng, dayDate) {
   if (db.open) {
     // Convert timestamp to milliseconds
     let date = new Date(dayDate);
-    let strDate =  date.getFullYear()+'-'+('0' + (date.getMonth()+1)).slice(-2) + '-'+('0' + date.getDate()).slice(-2)
-    let debugDate = ('0'+date.getHours()).substr(-2)+':'+('0'+date.getMinutes()).substr(-2)+':'+('0'+date.getSeconds()).substr(-2)
+    let strDate =  date.getFullYear()+'-'+('0' + (date.getMonth()+1)).slice(-2) + '-'+('0' + date.getDate()).slice(-2)      
     let dateStart = strDate+' 00:00:00'
     let dateEnd = strDate+' 23:59:59'
     // Javascript unixtimestamp is in milliseconds, conversion needed
     dayDate = dayDate /+ 1000
     // Are there any flights on that day ?
     // With strftime('%s', V_Date)  result is directly a timestamp in seconds
+//    console.log('flightByTakeOff avec dayDayte : '+dayDate+'acec strDate : '+strDate+' donne de '+dateStart+' à '+dateEnd)
     const flightsOfDay = db.prepare(`SELECT strftime('%s', V_Date) AS tsDate,V_Duree,V_LatDeco,V_LongDeco FROM Vol WHERE V_Date >= '${dateStart}' and V_Date <= '${dateEnd}'`)
     for (const fl of flightsOfDay.iterate()) {
+
       let logLat = fl.V_LatDeco
       let logLng = fl.V_LongDeco
       let logDate = fl.tsDate
-    //  console.log('logLat : '+logLat+' logLng : '+logLng+' flLat : '+flLat+' flLng : '+flLng)
+      console.log('Time stamp gps : '+dayDate+' Date carnet : '+fl.tsDate+' logLat : '+logLat+' logLng : '+logLng+' flLat : '+flLat+' flLng : '+flLng)
       let distLogToFl = Math.abs(trigo.distance(logLat, logLng, flLat, flLng, "K") * 1000)     
       // We start by examining whether take-offs are confined to a 500m radius
       if (distLogToFl < maxDist) {
         // Compute difference between the respective take-off times
         let diffSeconds = Math.abs(logDate - dayDate);       
-       // console.log(debugDate+' dist : '+distLogToFl+'logDate : '+logDate+' dayDate : '+dayDate+' diff : '+diffSeconds)   
+        console.log(debugDate+' dist : '+distLogToFl+'logDate : '+logDate+' dayDate : '+dayDate+' diff : '+diffSeconds)   
+        debugtime = Date.now()
+        console.log('debugtime : '+debugtime+' seconds : '+Math.floor(debugtime/1000))
         if (diffSeconds < maxDelay) {
           flFound = true;
           break;  // exit possible https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#iteratebindparameters---iterator
