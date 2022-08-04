@@ -237,7 +237,6 @@ function readIgc(igcID) {
       try {
         const stmt = db.prepare(req)
         const selIgc = stmt.get(igcID)
-        console.log('IGC = *'+selIgc.V_IGC+'*'+selIgc.V_Site)
         if (selIgc.V_IGC === undefined || selIgc.V_IGC == "" ) {
           mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
         } else {
