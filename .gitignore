@@ -92,7 +92,7 @@ out/
 doc/
 
 # Db folder
-db/
+dbtest/
 
 #i18n folder
 i18n/
