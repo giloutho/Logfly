@@ -35,7 +35,7 @@ function runSearchIgc(importPath,_callback) {
           let igcData = fs.readFileSync(arrayIGC[index], 'utf8');      
           try {
             let flightData = IGCParser.parse(igcData, { lenient: true });  
-            checkedIgc = new validIGC(arrayIGC[index],flightData)
+            checkedIgc = new validIGC(arrayIGC[index],flightData, igcData)
             if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
           } catch (error) {
             log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error);
@@ -48,35 +48,36 @@ function runSearchIgc(importPath,_callback) {
   })
 }
 
-function validIGC(path, flightData) {
+function validIGC(path, flightData, igcData) {
   this.path = path
   // from https://stackoverflow.com/questions/423376/how-to-get-the-file-name-from-a-full-path-using-javascript
   this.filename = path.replace(/^.*[\\\/]/, '')
   if (flightData.fixes.length > 2) {
+    this.igcFile = igcData
     this.pointsNumber = flightData.fixes.length  
     this.startGpsAlt = flightData.fixes[0].gpsAltitude
     this.firstLat = flightData.fixes[0].latitude
     this.firstLong = flightData.fixes[0].longitude
     this.pilotName = flightData.pilot
-
-    // On va ajouter 
-    // premier timestamp flightData.fixes[1].timestamp
-    // alti GPS premier point flightData.fixes[0].gpsAltitude
-    // est ce que l'on garde l'IGC  our est ce que l'on le relira ?
-
+    this.glider = flightData.gliderType
     this.date = flightData.date   // date formatted as YYYY-MM-DD
     this.offsetUTC = offset.computeOffsetUTC(flightData.fixes[0].latitude, flightData.fixes[0].longitude,flightData.fixes[1].timestamp)   
+    /**
+     * IMPORTANT : when a date oject is requested from the timestamp, 
+     * the time difference is returned with the local configuration of the computer. 
+     * So if I take a flight from Argentina in January it will return UTC+1, in July UTC+2.
+     * it's necessary to request an UTC date object 
+     */
     // offsetUTC is in minutes, original timestamp in milliseconds
-    //this.startLocalTime = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
-    // à priori pas besoin d'ajouter UTC (Vu sr Sky3) ??? A vérifier
-    //let tsLocal = flightData.fixes[1].timestamp + (this.offsetUTC*60000)
-    const dateLocal = new Date(flightData.fixes[1].timestamp)
+    this.startLocalTimestamp = flightData.fixes[0].timestamp + (this.offsetUTC*60000)
+    //const dateLocal = (new Date(flightData.fixes[0].timestamp)).toUTCString()   // toUTCString() to avoid the time zone computer
+    const dateLocal = new Date(flightData.fixes[0].timestamp)
     this.dateStart = dateLocal
-    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');     
+    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');  
     this.dateEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp)
     this.errors = [] 
-    // is this track present in the logbook
-    let inLogbook = dblog.flightByTakeOff(this.firstLat, this.firstLong, this.startLocalTime) 
+    // check if track is present in the logbook     
+    let inLogbook = dblog.flightByTakeOff(this.firstLat, this.firstLong, this.startLocalTimestamp) 
     // ne peut pas être coché donc ne sera pas dans l'import inutile de refaire la vérif
     // Opposite boolean value : if present in the logbook, it's not for import
     this.forImport = !inLogbook
