@@ -73,7 +73,8 @@ function devSettings(appPath) {
     let currOS = store.get('currOS')
     switch(currOS) {
         case 'mac': 
-            store.set('dbFullPath','./db/test6.db')
+            store.set('dbFullPath','./dbtest/test6.db')
+            console.log('settings '+store.get('dbFullPath'))
             store.set('dbName','test6.db')
             store.set('pathdb','./db')
             store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
@@ -83,7 +84,7 @@ function devSettings(appPath) {
             console.log('langue = fr')
             break;
         case 'linux': 
-        store.set('dbFullPath','./db/test6.db')
+        store.set('dbFullPath','./dbtest/test6.db')
             store.set('dbName','test6.db')
             store.set('pathdb','./db')
             store.set('pathImport', '/home/thinklinux/Documents/Logfly/import')
@@ -94,7 +95,7 @@ function devSettings(appPath) {
             store.set('urllogflyigc','http://logfly.org/Visu/')
             break;
         case 'win':
-            store.set('dbFullPath','./db/test6.db')
+            store.set('dbFullPath','./dbtest/test6.db')
             store.set('dbName','test6.db')
             store.set('pathdb','./db')
             store.set('pathImport',process.env.USERPROFILE+'\\Documents\\import')
