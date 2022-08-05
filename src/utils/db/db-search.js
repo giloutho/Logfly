@@ -30,15 +30,12 @@ function flightByTakeOff(flLat, flLng, dayDate) {
       let logLat = fl.V_LatDeco
       let logLng = fl.V_LongDeco
       let logDate = fl.tsDate
-      console.log('Time stamp gps : '+dayDate+' Date carnet : '+fl.tsDate+' logLat : '+logLat+' logLng : '+logLng+' flLat : '+flLat+' flLng : '+flLng)
       let distLogToFl = Math.abs(trigo.distance(logLat, logLng, flLat, flLng, "K") * 1000)     
       // We start by examining whether take-offs are confined to a 500m radius
       if (distLogToFl < maxDist) {
         // Compute difference between the respective take-off times
         let diffSeconds = Math.abs(logDate - dayDate);       
-        console.log(debugDate+' dist : '+distLogToFl+'logDate : '+logDate+' dayDate : '+dayDate+' diff : '+diffSeconds)   
         debugtime = Date.now()
-        console.log('debugtime : '+debugtime+' seconds : '+Math.floor(debugtime/1000))
         if (diffSeconds < maxDelay) {
           flFound = true;
           break;  // exit possible https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#iteratebindparameters---iterator
