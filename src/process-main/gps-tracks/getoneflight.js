@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 var log = require('electron-log');
 const elemMap = require('../maps/littlemap-compute.js')
+const gpsdumpOne = require('../gps-tracks/gpsdump-flight.js')
 
 const Store = require('electron-store');
 const store = new Store();
@@ -32,7 +33,7 @@ ipcMain.on('displayoneflight', (event, gpsParam, flightIndex) => {
     if (flightIndex == 9999) {
         flightFilePath = gpsParam
     } else {
-        flightFilePath = getGpsdumpFlight(gpsParam, flightIndex)
+        flightFilePath = gpsdumpOne.getGpsdumpFlight(gpsParam, flightIndex)
     }
     try {
         if (flightFilePath.includes('Error')) {  
@@ -77,43 +78,4 @@ function openWindow(event, igcString) {
     } else {
         event.sender.send('gpsdump-fone', 'An error occurred during the map generation') 
     }
-}
-
-function getGpsdumpFlight(gpsParam, flightIndex) {
-  // gpsParam contains parameters for GpsDump
-  // something like -giq,-cu.usbserial-14140
-  // First one is gps type, second serial port
-  let paramGPS
-  let paramPort
-  let paramFile
-  let paramFlightIndex
-  const execFileSync = require('child_process').execFileSync;
-  const tempFileName  = path.join(app.getPath('temp'), 'gpsdump.igc')
-  if (fs.existsSync(tempFileName)) {
-    try {
-      fs.unlinkSync(tempFileName)
-    } catch(err) {
-      log.error('The gpsDump temporary file was not deleted : '+err)
-    }
-  }
-  let res = null
-
-  try {
-    const gpsParamArray = gpsParam.split(",")
-    paramGPS = gpsParamArray[0]
-    paramPort = gpsParamArray[1]
-    paramFile = '-l'+tempFileName  
-    flightIndex +=1
-    paramFlightIndex = '-f'+flightIndex.toString()
-    log.info('[GpsDump called one flight] with '+paramGPS+','+paramPort+','+paramFile,','+paramFlightIndex)
-    data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,paramFlightIndex])   
-    if (data) {
-        res = tempFileName
-    }     
-  } catch (error) {
-    res = 'Error on calling GpsDump ['+paramGPS+','+paramPort+','+paramFile+','+paramFlightIndex+']'
-    log.error(res+' : '+error)
-  }
-
-  return res    
 }
