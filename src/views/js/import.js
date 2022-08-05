@@ -8,6 +8,8 @@ const log = require('electron-log');
 const Store = require('electron-store')
 const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
+const dbadd = require('../../utils/db/db-add.js')
+
 const btnMenu = document.getElementById('toggleMenu')
 // status messages
 const statusContent = document.getElementById("status")
@@ -36,6 +38,7 @@ const btnSensbox = document.getElementById('imp-gps-sens')
 const btnManu = document.getElementById('imp-manu')
 
 let currStatusContent
+let currTypeGps = null
 
 iniForm()
 
@@ -46,14 +49,13 @@ ipcRenderer.on('gpsdump-fone', (event, result) => {
 })  
 
 function iniForm() {
-    let start = performance.now();
     const currLang = store.get('lang')
     i18n.setMessages('messages', currLang, store.get('langmsg'))
     i18n.setLocale(currLang)
     const menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
-        var template = $(templates).filter('#temp-menu').html();  
-        var rendered = Mustache.render(template, menuOptions)
+        const template = $(templates).filter('#temp-menu').html();  
+        const rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     document.getElementById('imp-gps').innerHTML = i18n.gettext('GPS import')
@@ -78,8 +80,6 @@ function iniForm() {
     btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
     btnDisk.addEventListener('click', (event) => {callDisk()})
     btnManu.addEventListener('click', (event) => {callManu()})
-    let timeTaken = performance.now()-start;
-    console.log(`Operation took ${timeTaken} milliseconds`);
 }
 
 // Calls up the relevant page 
@@ -159,7 +159,7 @@ function callUsbGps(typeGPS) {
 function callSyride() {
   const syrideSetting = store.get('pathSyride')
   log.info('[Import Syride] from '+syrideSetting)
-  var syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
+  const syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
   if (syridePath.parapentepath != null) {
     const gpsStatus = '<strong>Syride : </strong>'  
     callDiskImport(syridePath.parapentepath,gpsStatus)  
@@ -174,7 +174,7 @@ function callSyride() {
 function callDisk() {
   const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
   if (selectedPath != null) {
-    var importStatus = selectedPath+' : '
+    const importStatus = selectedPath+' : '
     callDiskImport(selectedPath,importStatus)
   }
 }
@@ -192,7 +192,7 @@ function callDiskImport(selectedPath, statusContent) {
       // main/gps-tracks/disk-import.js
       const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
       if (searchDisk.igcForImport.length > 0) {
-          var nbInsert = 0
+          let nbInsert = 0
           searchDisk.igcForImport.forEach(element => {
             if (element.forImport === true ) {
               nbInsert++
@@ -248,8 +248,8 @@ function serialGpsCall(gpsModel) {
       log.info(msg+result.length+' ports detected')
       for (let i = 0; i < result.length; i++) {        
         if (typeof result[i].manufacturer != 'undefined') {
-          var regexProlif = /prolific/i
-          var regexFlym = /flymas/i
+          const regexProlif = /prolific/i
+          const regexFlym = /flymas/i
           if (result[i].manufacturer.search(regexProlif) >= 0) {
             // Dès Logfly5, on avait un problème avec Flytec
             // deux ports dev/cu.usbserial et dev/cu.usbserial-1440 apparaissent
@@ -288,16 +288,16 @@ function serialGpsCall(gpsModel) {
 
 function callFlightList(gpsCom, gpsModel) {
   // GpsDump is called in gpsdump-list.js 
-  var flightList = ipcRenderer.send('flightlist', gpsCom)
+  const flightList = ipcRenderer.send('flightlist', gpsCom)
   ipcRenderer.on('gpsdump-flist', (event, flightList) => {
     if (typeof flightList !== 'undefined') { 
-      if (Array.isArray(flightList.flights)) {
-        if (flightList.flights.length > 0) {
+      if (Array.isArray(flightList.flights)) {        
+        if (flightList.flights.length > 0) {          
           tableFromGpsDump(flightList.flights, flightList.model)
         } else {
           log.error('['+flightList.model+' callFlihtList] returned an empty flightList.flights array')
           let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;flightList.flights array is empty'
-          displayStatus(statusContent,true)  
+          displayStatus(statusContent,false)  
         }
       } else {
         log.error('['+flightList.model+' callFlihtList did not return a flightList.flights array')
@@ -308,30 +308,6 @@ function callFlightList(gpsCom, gpsModel) {
       log.error('['+gpsModel+' callFlihtList returned undefined flightList')
       let statusContent = '<strong>'+gpsModel+'  : </strong>&nbsp;&nbsp;&nbsp;callFlihtList returned undefined flightList'
       displayStatus(statusContent,false)      
-    }
-  })
-}
-
-function callFlightListNew(gpsCom, gpsModel) {
-  ipcRenderer.invoke('flightlist', gpsCom).then((flighList) => {
-    if (typeof flightList !== 'undefined') { 
-      if (Array.isArray(flightList.flights)) {
-        if (flightList.flights.length > 0) {
-          tableFromGpsDump(flightList.flights, flightList.model)
-        } else {
-          log.error('['+flightList.model+' callFlihtList] returned an empty flightList.flights array')
-          let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;flightList.flights array is empty'
-          displayStatus(statusContent,true)  
-        }
-      } else {
-        log.error('['+flightList.model+' callFlihtList did not return a flightList.flights array')
-        let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;callFlihtList did not return a flightList.flights array'
-        displayStatus(statusContent,false)  
-      }
-    } else {
-      log.error('['+gpsModel+' callFlihtList returned undefined flightList')
-      let statusContent = '<strong>'+gpsModel+'  : </strong>&nbsp;&nbsp;&nbsp;callFlihtList returned undefined flightList'
-      displayStatus(statusContent,false)        
     }
   })
 }
@@ -347,13 +323,14 @@ function displayOneFlight(flightPath, flightIndex) {
   let igcFile = ipcRenderer.send('displayoneflight', flightPath, flightIndex)    
 }
 
-function tableFromGpsDump(flighList,gpsModel) {
+function tableFromGpsDump(flightList,gpsModel) {
   hideWaiting()
+  currTypeGps = 'serial'
   if ($.fn.DataTable.isDataTable('#tableimp_id')) {
     $('#tableimp_id').DataTable().clear().destroy()
   }   
-  var dataTableOption = {
-    data: flighList, 
+  let dataTableOption = {
+    data: flightList, 
     // // the select plugin is used -> https://datatables.net/extensions/select/
     // pas nécessaire ici
     // select: {
@@ -366,7 +343,7 @@ function tableFromGpsDump(flighList,gpsModel) {
         data: 'new',
         render: function(data, type, row) {
           if (data === true) {
-            return '<input type="checkbox" class="editor-active" checked >';
+            return '<input type="checkbox" name="chkbx" class="editor-active" checked >';
           } else {
          //   return '<input type="checkbox" class="editor-active">';
               return '<img src="../../assets/img/in_logbook.png" alt=""></img>';
@@ -384,7 +361,7 @@ function tableFromGpsDump(flighList,gpsModel) {
         data: 'forImport',
         render: function(data, type, row) {
           // action on the click is described below
-          return '<button type="button" class="btn btn-outline-secondary btn-sm">Display</button>';
+          return '<button type="button" class="btn btn-outline-secondary btn-sm">'+i18n.gettext('Map')+'</button>'
         },
        className: "dt-body-center text-center"
       },          
@@ -428,14 +405,14 @@ function tableFromGpsDump(flighList,gpsModel) {
   }
   table = $('#tableimp_id').DataTable(dataTableOption )
   $("#tableimp_id").on("click", "td input[type=checkbox]", function () {
-    var isChecked = this.checked;
+    let isChecked = this.checked;
     // set the data item associated with the row to match the checkbox
-    var dtRow = table.rows($(this).closest("tr"));
+    let dtRow = table.rows($(this).closest("tr"));
     dtRow.data()[0].forImport = isChecked;
   })
   // example from https://datatables.net/examples/ajax/null_data_source.html
   $('#tableimp_id').on( 'click', 'button', function () {
-    var dtRow = table.row( $(this).parents('tr') ).data();
+    let dtRow = table.row( $(this).parents('tr') ).data();
     let rowIndex = table.row( $(this).parents('tr') ).index()
    // alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['gpsdump']);
     $('#img_waiting').addClass('d-none')
@@ -444,17 +421,19 @@ function tableFromGpsDump(flighList,gpsModel) {
   } );  
   $('#tableimp_id').removeClass('d-none')
   $('#img_waiting').addClass('d-none')
-
-  let statusContent = '<strong>'+gpsModel+' : </strong>'+flighList.length+' igc files found'+'&nbsp;&nbsp;&nbsp;'
-  var nbInsert = 0
-  flighList.forEach(element => {
+     
+  let nbInsert = 0
+  flightList.forEach(element => {
     if (element.new === true ) {
       nbInsert++
     }
-  });
-  // affichage du resultat
-  statusContent += '<strong>[&nbsp;'+'Tracks to be added : '+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-  displayStatus(statusContent,true)  
+  });  
+  let newStatusContent = '<strong>'+gpsModel+' : </strong>'  
+  newStatusContent += flightList.length+'&nbsp;'+i18n.gettext('tracks in GPS')+'&nbsp;&nbsp;&nbsp;'
+  newStatusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
+  currStatusContent = newStatusContent
+  newStatusContent += nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'  
+  displayStatus(newStatusContent,true)  
 }
 
 
@@ -491,7 +470,8 @@ function tableStandard(igcForImport) {
     if ( $.fn.dataTable.isDataTable( '#tableimp_id' ) ) {
       $('#tableimp_id').DataTable().clear().destroy()
     }   
-    var dataTableOption = {
+    currTypeGps = 'disk'
+    let dataTableOption = {
       // width format see this http://live.datatables.net/zurecuzi/1/edit
       autoWidth: false,
       data: igcForImport, 
@@ -568,14 +548,14 @@ function tableStandard(igcForImport) {
   
     table = $('#tableimp_id').DataTable(dataTableOption )
     $("#tableimp_id").on("click", "td input[type=checkbox]", function () {
-      var isChecked = this.checked;
+      let isChecked = this.checked;
       // set the data item associated with the row to match the checkbox
-      var dtRow = table.rows($(this).closest("tr"));
+      let dtRow = table.rows($(this).closest("tr"));
       dtRow.data()[0].forImport = isChecked;
     })
   // example from https://datatables.net/examples/ajax/null_data_source.html
   $('#tableimp_id').on( 'click', 'button', function () {
-    var dtRow = table.row( $(this).parents('tr') ).data();
+    let dtRow = table.row( $(this).parents('tr') ).data();
     let rowIndex = table.row( $(this).parents('tr') ).index()
   //  alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['path']);
     displayOneFlight(dtRow['path'], 9999)
@@ -584,12 +564,55 @@ function tableStandard(igcForImport) {
 }
 
 function updateLogbook() {
-  let data = table.rows( function ( idx, data, node ) {
-    return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
-  }).data().toArray();
-  let nbInsert = data.length
-  data.forEach(element => console.log(element.path));
-
+  if(currTypeGps == 'disk'){
+    // No need to display the waiting screen everything is in memory
+    let data = table.rows( function ( idx, data, node ) {
+      return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
+    }).data().toArray();
+    let nbToInsert = data.length
+    statusContent.innerHTML = currStatusContent+nbToInsert+'&nbsp;]</strong>' 
+    let nbInserted = 0      
+    data.forEach((element) => {
+      nbInserted += dbadd.addFlight(element, i18n.gettext('To rename'))
+    });
+    alert(nbInserted+' / '+nbToInsert+' '+i18n.gettext('flights inserted'))
+    callPage('logbook')
+  } else if (currTypeGps == 'serial') {
+      $('#table-content').removeClass('d-block')
+      $('#table-content').addClass('d-none')
+      displayWaiting('gpsdump')
+      let reqImport = []
+      let data = table.rows( function ( idx, data, node ) {
+        if ($(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')) {
+          let reqline = {}
+          reqline['gpsparam'] = data['gpsdump']
+          reqline['flightIndex'] = idx
+          reqImport.push(reqline)
+        }
+      })
+      let nbToInsert = reqImport.length
+      statusContent.innerHTML = currStatusContent+nbToInsert+'&nbsp;]</strong>' 
+      let nbInserted = 0   
+      const flightsFromGps = ipcRenderer.send('gpsdump-import', reqImport)
+      ipcRenderer.on('gpsdump-result', (event, result) => {
+        if (result.igcForImport.length > 0) {
+          result.igcForImport.forEach(element => {
+            nbInserted += dbadd.addFlight(element, i18n.gettext('To rename'))
+          });
+          hideWaiting()
+          $('#table-content').removeClass('d-none')
+          $('#table-content').addClass('d-block')
+          alert(nbInserted+' / '+nbToInsert+' '+i18n.gettext('flights inserted'))
+          callPage('logbook')
+        }
+      })
+  } else {
+    hideWaiting()
+    $('#table-content').removeClass('d-none')
+    $('#table-content').addClass('d-block')
+    let newStatusContent = '<strong>ERROR : </strong>Unknown type gps selected'
+    displayStatus(newStatusContent,false) 
+  }
 }
   
 function clearPage() {
@@ -623,10 +646,13 @@ function displayWaiting(typeMsg) {
     let msg
     switch (typeMsg) {
       case 'one':
-        msg = 'Loading the selected flight'
+        msg = i18n.gettext('Loading the selected flight')
+        break;
+      case 'gpsdump' :
+        msg = i18n.gettext('Tracks waiting to be received from GPS')
         break;
       case 'many':
-        msg = i18n.gettext("Retrieving the list of flights in progress") 
+        msg = i18n.gettext('Retrieving the list of flights in progress') 
         break;
     }    
     const rendered = Mustache.render(waitTpl, { typeimport : msg });
