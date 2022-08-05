@@ -60,7 +60,6 @@ function validIGC(path, flightData, igcData) {
     this.firstLong = flightData.fixes[0].longitude
     this.pilotName = flightData.pilot
     this.glider = flightData.gliderType
-    this.date = flightData.date   // date formatted as YYYY-MM-DD
     this.offsetUTC = offset.computeOffsetUTC(flightData.fixes[0].latitude, flightData.fixes[0].longitude,flightData.fixes[1].timestamp)   
     /**
      * IMPORTANT : when a date oject is requested from the timestamp, 
@@ -73,6 +72,8 @@ function validIGC(path, flightData, igcData) {
     //const dateLocal = (new Date(flightData.fixes[0].timestamp)).toUTCString()   // toUTCString() to avoid the time zone computer
     const dateLocal = new Date(flightData.fixes[0].timestamp)
     this.dateStart = dateLocal
+    // format of flightData.date is not good -> YYYY-MM-DD
+    this.date = String(dateLocal.getDate()).padStart(2, '0')+'-'+String((dateLocal.getMonth()+1)).padStart(2, '0')+'-'+dateLocal.getFullYear()
     this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');  
     this.dateEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp)
     this.errors = [] 
