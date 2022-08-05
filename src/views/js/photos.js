@@ -72,7 +72,7 @@ function clearStatus() {
 function callDiskImport() {
     try {    
         console.log('Exploration du dossier ./db')
-        let selectedPath = '/Users/gil/Documents/El_Logfly/Logfly/db'
+        let selectedPath = '/Users/gil/Documents/El_Logfly/Logfly/dbtest'
         console.log(selectedPath)
         const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
         if (searchDisk.igcForImport.length > 0) {
@@ -87,12 +87,7 @@ function callDiskImport() {
                 let hours = Math.floor(totalSeconds / 3600)
                 totalSeconds %= 3600
                 let minutes = Math.floor(totalSeconds / 60);
-                const sDuration = String(hours).padStart(2, "0")+'h'+String(minutes).padStart(2, "0")+'mn'
-
-                let newFlight = dbadd.addFlight(element, i18n.gettext('To rename'))
-                //let siteInLog = dblog.searchSiteInDb(element.firstLat, element.firstLong, false)
-               // let countBlanks = dblog.addBlankSite(element.firstLat, element.firstLong, element.startGpsAlt, i18n.gettext('To rename'))
-
+                const sDuration = String(hours).padStart(2, "0")+'h'+String(minutes).padStart(2, "0")+'mn'                                
                 let dbElements = 'V_Date :  [2008-10-07 15:05:00] : '+sqlDate+'<br>'  //TimeStamp   ** 2008-10-07 15:05:00  A ajouter puis à calculer
                 dbElements += 'V_Duree : [5800s] : '+duration+'<br>'  //integer    calc durée en secondes
                 dbElements += 'V_sDuree [0h27mn] : '+sDuration+'<br>'  //
@@ -100,23 +95,10 @@ function callDiskImport() {
                 dbElements += 'V_LongDeco : '+element.firstLong+'<br>'
                 dbElements += 'V_AltDeco [1240] : '+element.startGpsAlt+'<br>'
                 dbElements += 'V_IGC Long Text'+'<br>'
-                dbElements += 'UTC [120] : '+element.offsetUTC+'<br>'
-                dbElements += 'regarder main console<br>'
-                // dbElements += 'Site : '+siteInLog+'<br>'
-                // dbElements += 'Blanks count : '+countBlanks+'<br>'
+                dbElements += 'UTC [120] : '+element.offsetUTC+'<br><br>'
+               let newFlight = dbadd.addFlight(element, i18n.gettext('To rename'))
+               dbElements += newFlight + ' flight added<br>'
                 document.getElementById("results").innerHTML = dbElements
-                // dateObject: Thu Jul 14 2022 12:42:33 GMT+0200 (heure d’été d’Europe centrale) {}
-                // errors: []
-                // filename: "220714.IGC"
-                // firstLat: 45.9588
-                // firstLong: 6.4762
-                // forImport: true
-                // offsetUTC: 120
-                // path: "/Users/gil/Documents/El_Logfly/Logfly/db/220714.IGC"
-                // pilotName: "GIL THOMAS"
-                // pointsNumber: 6852
-                // startLocalTime: "12:42:33"
-                // validtrack: true
             }
           });  
       } else {
