@@ -18,6 +18,7 @@ if (require('electron-squirrel-startup')) {
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 const createWindow = () => {
+
   loadMainProcesses() 
 
   // Create the browser window.
@@ -59,7 +60,7 @@ function loadSettings() {
   try {
     const startOk = settings.checkSettings(app.isPackaged, app.getAppPath(), '6.0.0')
     if (startOk) {
-      openWindow('photos')
+      openWindow('logbook')
     } else {
       openWindow('problem')
     }
