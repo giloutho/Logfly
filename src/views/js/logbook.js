@@ -11,6 +11,7 @@ let store = new Store();
 let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js')
 let btnMenu = document.getElementById('toggleMenu')
+let inputArea = document.getElementById('inputdata')
 
 let mapPm
 let table
@@ -49,16 +50,21 @@ function iniForm() {
         callback: function(key, options) {
             switch (key) {
               case "Comment" : 
-                const m = "clicked: " + key + " on " + $(this).text();
+                //const m = "clicked: " + key + " on " + $(this).text();
+                const m = table.cell(this, 1).data()
                 alert(m); 
                 break                
               case "Change": 
+                let flightDef = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+']</strong>'
+                changeGlider(table.cell(this, 0).data(),table.row( this ).index(),flightDef)
                 break
               case "Glider" :
+                testSelected()
                 break
               case "Day" :
                 break
               case "Delete" : 
+                deleteFlights()
                 break
               case "Export" : 
                 break
@@ -171,7 +177,7 @@ if (db.open) {
     let countFlights = stmt.get()
     // on récupére la valeur avec counFlights['COUNT(*)']
     msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`);
-    const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin FROM Vol ORDER BY V_Date DESC').all()    
+    const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire FROM Vol ORDER BY V_Date DESC').all()    
     const dataTableOption = {
     data: flstmt, 
     autoWidth : false,
@@ -181,7 +187,8 @@ if (db.open) {
         { title : i18n.gettext('Time'), data: 'Hour' },
         { title : 'Duration', data: 'V_sDuree' },
         { title : 'Site', data: 'V_Site' },
-        { title : i18n.gettext('Glider'), data: 'V_Engin' }        
+        { title : i18n.gettext('Glider'), data: 'V_Engin' },     
+        { title : 'Comment', data: 'V_Commentaire' }      
     ],      
     columnDefs : [
         { "targets": 0, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
@@ -190,6 +197,7 @@ if (db.open) {
         { "width": "10%", "targets": 3 },
         { "width": "30%", className: "text-nowrap", "targets": 4 },
         { "width": "30%", "targets": 5 },
+        { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
     ],      
     bInfo : false,          // hide "Showing 1 to ...  row selected"
     lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -213,7 +221,15 @@ if (db.open) {
         //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
         // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
         currIdFlight = dt.row({selected: true}).data().V_ID
-            readIgc(currIdFlight)
+        currComment = dt.row({selected: true}).data().V_Commentaire
+        if (currComment != null && currComment !='') {
+          alert(currComment)
+        } else {
+          $('#inputdata').hide()
+        }
+        currIdFlight = dt.row({selected: true}).data().V_ID
+        currGlider = dt.row({selected: true}).data().V_Engin
+            readIgc(currIdFlight, currGlider)
         }
     } );
     table.row(':eq(0)').select();    // Sélectionne la première lmigne
@@ -224,13 +240,132 @@ if (db.open) {
 } else {
     msgdbstate = 'db connection error'
 }
-
-
 let timeTaken = performance.now()-start;
 console.log(`Operation took ${timeTaken} milliseconds`);   
 }
 
-function readIgc(igcID) {
+function deleteFlights() {
+  let rows = table.rows('.selected');
+  if(rows.data().length > 0 && db.open) {
+    table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
+      //alert(table.cell(this, 0).data())
+      let flightId = table.cell(this, 0).data()
+      let smt = 'DELETE FROM Vol WHERE V_ID = ?'            
+      const stmt = db.prepare(smt)
+      const delFlight = stmt.run(flightId)    
+    });
+    tableStandard()
+  }
+  
+}
+
+function tableSelection(idFlight) {  
+  table.rows().every (function (rowIdx, tableLoop, rowLoop) {
+    if (this.data().V_ID === idFlight) {    
+      // https://datatables.net/forums/discussion/38802/how-do-i-show-a-row-as-selected-programmatically
+      // where `this` is the `row()` - for example in `rows().every(...)`
+      const displayIndex = table.rows( { order: 'applied', search: 'applied' } ).indexes().indexOf( this.index() )
+      const pageSize = table.page.len()               
+      table.page( parseInt( displayIndex / pageSize, 10 ) ).draw( false )        
+      this.select ()
+      readIgc(idFlight)
+      currIdFlight = idFlight
+    }
+  });  
+}
+
+function testSelected() {
+    tableSelection(520)
+}
+
+/**
+ * 
+ * @param {*} flightId 
+ * @param {*} flightDef 
+ * 
+ * A combobox will be added dynmamically
+ * https://stackoverflow.com/questions/1918923/adding-combo-box-dynamically
+ */
+function changeGlider(flightId, rowNum, flightDef) {
+ if (db.open) {
+  let inputContent = flightDef+'&nbsp;&nbsp;&nbsp;&nbsp;'+i18n.gettext('Choose an existant glider')+' : '
+  inputArea.innerHTML = inputContent
+  // select came from https://github.com/snapappointments/bootstrap-select
+  let selectGlider = document.createElement("select");
+  // We want the most recent used in first
+  const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
+  let nbGliders = 0
+  for (const gl of GliderSet.iterate()) {
+    nbGliders++
+    let newOption = document.createElement("option")
+    newOption.value= nbGliders.toString()
+    newOption.innerHTML= (gl.V_Engin)
+    selectGlider.appendChild(newOption);
+  } 
+  selectGlider.id = "selglider"
+  selectGlider.style.marginRight = "25px";
+  inputArea.appendChild(selectGlider)
+  const newText= document.createTextNode(i18n.gettext('Or new glider')+' : ')
+  inputArea.appendChild(newText)
+  let newGlider = document.createElement("input");
+  newGlider.type = "text"
+ // newGlider.className = "form-control col-xs-2"
+  newGlider.placeholder= "New glider name"
+  newGlider.id = 'newglider'
+  newGlider.style.marginRight = "25px"
+  //newGlider.style.textTransform = 'uppercase'
+  newGlider.onkeyup = function(){this.value=this.value.toUpperCase()}
+  inputArea.appendChild(newGlider)
+  let btnUpdate = document.createElement("input")   // must be input not button
+  btnUpdate.type = "button"
+  btnUpdate.name = "update"
+  btnUpdate.value=i18n.gettext("Modify")
+  btnUpdate.style.marginRight = "20px";  
+  btnUpdate.className="btn btn-danger"
+  btnUpdate.onclick = function () {
+    let selectedName
+    let enew = document.getElementById("newglider")
+    let newGliderName = document.getElementById("newglider").value
+    let elist = document.getElementById("selglider")
+    let listGliderName = elist.options[elist.selectedIndex].text
+    if (newGliderName != null && newGliderName != '') {
+      selectedName = newGliderName
+    } else {
+      selectedName = listGliderName
+    }
+    if (db.open) {
+      try {
+        const stmt = db.prepare('UPDATE Vol SET V_Engin= ? WHERE V_ID = ?')
+        const updateGlider = stmt.run(selectedName,flightId)
+        console.log(' in db : '+updateGlider.changes) // newFlight.changes must return 1 for one row added   
+        table.cell({row:rowNum, column:5}).data(selectedName)
+      //  tableSelection(flightId)              
+      } catch (error) {
+        console.log('Error during flight update '+error)
+      //  log.error('Error during flight update '+error)
+      }
+    }
+    $('#inputdata').hide()
+  }
+  inputArea.appendChild(btnUpdate)
+  let btnCancel = document.createElement("input")   // must be input not button
+  btnCancel.type = "button"
+  btnCancel.name = "cancel"
+  btnCancel.value=i18n.gettext("Cancel");
+  btnCancel.className="btn btn-secondary"
+  btnCancel.onclick = function () {
+    $('#inputdata').hide()
+  };
+  inputArea.appendChild(btnCancel)
+ }
+ $('#inputdata').show()
+}
+
+function manageComment() {
+  
+}
+
+function readIgc(igcID, dbGlider) {
     hideStatus()
     if (db.open) {
       let req ='SELECT V_IGC, V_LatDeco, V_LongDeco, V_AltDeco, V_Site FROM Vol WHERE V_ID = ?'
@@ -241,7 +376,7 @@ function readIgc(igcID) {
           mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
         } else {
           currIgcText = selIgc.V_IGC
-          igcDisplay(currIgcText)
+          igcDisplay(currIgcText, dbGlider)
         }
       } catch (err) {
         displayStatus('Database error')        
@@ -249,14 +384,12 @@ function readIgc(igcID) {
     }
   }
   
-  function igcDisplay(stringIgc) {
+  function igcDisplay(stringIgc, dbGlider) {
     try {
       track = ipcRenderer.sendSync('read-igc', stringIgc)  // process-main/igc/igc-read.js.js
-      console.log('JSON.stringify(track.GeoJSON)')
-      console.log(JSON.stringify(track.stat.thermals))
       if (track.fixes.length> 0) {
-        console.log('Track points : '+track.fixes.length)
-        console.log('Offset UTC : '+track.info.offsetUTC)
+        // If the glider name has been changed, it no longer corresponds to the name stored in the IGC file
+        track.info.gliderType = dbGlider
         buildMap(track)  
       } else {
         displayStatus(track.info.parsingError)
@@ -318,7 +451,6 @@ function readIgc(igcID) {
   }
   
   function buildMap(track) {
-      console.log('buildMap')
     if (mapPm != null) {
       mapPm.off();
       mapPm.remove();
