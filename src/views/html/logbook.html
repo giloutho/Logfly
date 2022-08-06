@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../../../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
   <link rel="stylesheet" href="../../../node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.css">
   <link rel="stylesheet" href="../../../node_modules/leaflet/dist/leaflet.css" />  
+  <link rel="stylesheet" href="../../../node_modules/bootstrap-select/dist/css/bootstrap-select.css" />  
   <link rel="stylesheet" href="../../assets/css/home.css">
 </head>
 
@@ -23,7 +24,8 @@
       const conmenu = require('jquery-contextmenu')
     </script>
     <script>require('popper.js');</script>
-    <script>require('bootstrap');</script>      
+    <script>require('bootstrap');</script>
+    <script>require('bootstrap-select');</script>      
     <div class="wrapper">
         <!-- Sidebar  -->
         <div id="target-sidebar"></div>
@@ -51,6 +53,8 @@
         more simple : https://www.w3schools.com/howto/howto_css_split_screen.asp
         but not really responsive      -->
         <div class="alert alert-info collapse" role="alert" id="status"></div>   
+        <div class="alert alert-primary collapse" role="alert" id="inputdata"></div>          
+        <div class="alert alert-secondary collapse" role="alert" id="inputcomment"></div>  
         <div class="d-md-flex h-md-100 align-items-center top-buffer">
           <div class="col-md-7 ">
               <div id="div_waiting" class="d-none">
