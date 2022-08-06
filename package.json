@@ -56,6 +56,7 @@
     "array-smooth": "^1.0.0",
     "better-sqlite3": "^7.5.0",
     "bootstrap": "^4.6.1",
+    "bootstrap-select": "^1.13.18",
     "datatables.net-bs4": "^1.11.5",
     "datatables.net-select-bs4": "^1.3.4",
     "drivelist": "^9.2.4",
