@@ -304,3 +304,8 @@ table{
     table-layout: fixed;  /* ***********add this */
    /* word-wrap:normal;  ***********and this */
 }
+
+.tableredline {
+background-color: #E0A95C !important;
+}
+  
