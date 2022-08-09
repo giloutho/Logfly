@@ -26,6 +26,8 @@ var startLatlng
 
 iniForm()
 
+var locMeasure = new myMeasure()
+
 var btnClose = document.getElementById('bt-close')
 btnClose.addEventListener('click',(event) => {
     ipcRenderer.send('hide-waiting-gif',null)
@@ -39,7 +41,8 @@ btnInfos.addEventListener('click',(event) => {
 
 var btnMail  = document.getElementById('bt-mail')
 btnMail.addEventListener('click',(event) => {
-  testdb();
+  //testdb();
+   locMeasure._toggleMeasure()
 })
 
 ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
@@ -114,8 +117,6 @@ function buildMap() {
 
 
   var mousemarker = null;
-
-  var locMeasure = new myMeasure()
 
   locMeasure.addTo(map);
 
