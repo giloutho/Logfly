@@ -37,9 +37,9 @@ const measure = L.Control.extend({
   onAdd: function (map) {
     var className = 'leaflet-control-zoom leaflet-bar leaflet-control'
     var container = L.DomUtil.create('div', className)
-    this._createButton('&#8674;', 'Measure',
-    'leaflet-control-measure leaflet-bar-part leaflet-bar-part-top-and-bottom',
-    container, this._toggleMeasure, this)
+    // this._createButton('&#8674;', 'Measure',
+    // 'leaflet-control-measure leaflet-bar-part leaflet-bar-part-top-and-bottom',
+    // container, this._toggleMeasure, this)
 
     if (this.options.keyboard) {
       L.DomEvent.on(document, 'keydown', this._onKeyDown, this)
