@@ -306,6 +306,17 @@ table{
 }
 
 .tableredline {
-background-color: #E0A95C !important;
+    color: #E0A95C !important;
 }
+
+.modal-dialog {
+    display: inline-block;
+    vertical-align: middle;
+    padding-top: 10px;
+    padding-left: 80px;
+}
+
+.modal-img {
+    width:100%;
+  }
   
