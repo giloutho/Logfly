@@ -2,14 +2,15 @@ const {ipcRenderer} = require('electron')
 const L = require('leaflet');
 const Mustache = require('mustache')
 const i18n = require('../../lang/gettext.js')()
-
-const path = require('path');
-const fs = require('fs');
+const path = require('path')
+const fs = require('fs')
 const Store = require('electron-store')
-let webOk = require("internet-available");
+const sharp = require('sharp')
+let webOk = require('internet-available')
 let store = new Store(); 
 let db = require('better-sqlite3')(store.get('dbFullPath'))
-let menuFill = require('../../views/tpl/sidebar.js')
+let menuFill = require('../../views/tpl/sidebar.js');
+const { Alert } = require('bootstrap');
 let btnMenu = document.getElementById('toggleMenu')
 let inputArea = document.getElementById('inputdata')
 
@@ -50,24 +51,33 @@ function iniForm() {
         callback: function(key, options) {
             switch (key) {
               case "Comment" : 
-                //const m = "clicked: " + key + " on " + $(this).text();
-                const m = table.cell(this, 1).data()
-                alert(m); 
+                const comment = table.cell(this, 6).data()
+                if (comment == null || comment == '') {
+                  let flDate = table.cell(this, 1).data()
+                  let flTime = table.cell(this, 2).data()
+                  let rowIndex = table.row( this ).index()           
+                  updateComment(currIdFlight, '',flDate, flTime,rowIndex)                  
+                }
                 break                
               case "Change": 
                 let flightDef = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+']</strong>'
-                changeGlider(table.cell(this, 0).data(),table.row( this ).index(),flightDef)
+                changeGlider(table.cell(this, 7).data(),table.row( this ).index(),flightDef)
                 break
               case "Glider" :
                 testSelected()
                 break
               case "Day" :
+                let flPhoto = table.cell(this, 0).data()
+                let rowIndex = table.row( this ).index()  
+                photoManager(currIdFlight, rowIndex,flPhoto)
                 break
               case "Delete" : 
                 deleteFlights()
                 break
               case "Export" : 
                 break
+              case "Merge" : 
+                break                
             }
         },
         items: {
@@ -77,6 +87,7 @@ function iniForm() {
             "Day": {name: i18n.gettext("Photo of the day")},
             "Delete": {name: i18n.gettext("Delete")},
             "Export": {name: i18n.gettext("Export")},
+            "Merge": {name: i18n.gettext("Merge flights")}
         }
     });
 });
@@ -177,27 +188,44 @@ if (db.open) {
     let countFlights = stmt.get()
     // on récupére la valeur avec counFlights['COUNT(*)']
     msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`);
-    const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire FROM Vol ORDER BY V_Date DESC').all()    
+    //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
+    let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire,'
+    reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
+    reqSQL += 'FROM Vol ORDER BY V_Date DESC'
+    console.log(reqSQL)
+    const flstmt = db.prepare(reqSQL).all()    
     const dataTableOption = {
     data: flstmt, 
     autoWidth : false,
     columns: [
-        { title : 'Id', data: 'V_ID' },
+        {
+          title : '',
+          data: 'Photo',
+          render: function(data, type, row) {
+            if (data == 'Yes') {
+              return '<img src="../../assets/img/camera.png" alt=""></img>';
+            } 
+            return data;
+          },          
+          className: "dt-body-center text-center"
+        },       
         { title : i18n.gettext('Date'), data: 'Day' },
         { title : i18n.gettext('Time'), data: 'Hour' },
         { title : 'Duration', data: 'V_sDuree' },
         { title : 'Site', data: 'V_Site' },
         { title : i18n.gettext('Glider'), data: 'V_Engin' },     
-        { title : 'Comment', data: 'V_Commentaire' }      
+        { title : 'Comment', data: 'V_Commentaire' },  
+        { title : 'Id', data: 'V_ID' }    
     ],      
     columnDefs : [
-        { "targets": 0, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
-        { "width": "13%", "targets": 1 },
-        { "width": "7%", "targets": 2 },
-        { "width": "10%", "targets": 3 },
+        { "width": "3%", "targets": 0 },
+        { "width": "12%", "targets": 1 },
+        { "width": "6%", "targets": 2 },
+        { "width": "8%", "targets": 3 },
         { "width": "30%", className: "text-nowrap", "targets": 4 },
         { "width": "30%", "targets": 5 },
         { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
+        { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
     ],      
     bInfo : false,          // hide "Showing 1 to ...  row selected"
     lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -213,24 +241,35 @@ if (db.open) {
         previous: '<' // or '←' 
         }
     },     
-    select: true             // Activation du plugin select
+    select: true,            // Activation du plugin select
+    // Line coloring if there is a comment. 
+    // Finally, I don't really like
+    'createdRow': function( row, data, dataIndex ) {
+      if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
+        $(row).addClass('tableredline');
+      }
+    },      
     }
     table = $('#table_id').DataTable(dataTableOption )
     table.on( 'select', function ( e, dt, type, indexes ) {
         if ( type === 'row' ) {
-        //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
-        // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
-        currIdFlight = dt.row({selected: true}).data().V_ID
-        currComment = dt.row({selected: true}).data().V_Commentaire
-        if (currComment != null && currComment !='') {
-          alert(currComment)
-        } else {
+          //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
+          // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
+          currIdFlight = dt.row({selected: true}).data().V_ID
+          let currComment = dt.row({selected: true}).data().V_Commentaire
+          if (currComment != null && currComment !='') {
+            currIdFlight = dt.row({selected: true}).data().V_ID
+            flDate = dt.row({selected: true}).data().Day
+            flTime = dt.row({selected: true}).data().Hour         
+            manageComment(currIdFlight,currComment, flDate, flTime,indexes)
+          } else {
+            $('#inputcomment').hide()
+          }
           $('#inputdata').hide()
-        }
-        currIdFlight = dt.row({selected: true}).data().V_ID
-        currGlider = dt.row({selected: true}).data().V_Engin
-            readIgc(currIdFlight, currGlider)
-        }
+          currIdFlight = dt.row({selected: true}).data().V_ID
+          currGlider = dt.row({selected: true}).data().V_Engin
+          readIgc(currIdFlight, currGlider)
+        }        
     } );
     table.row(':eq(0)').select();    // Sélectionne la première lmigne
     $('#table_id').removeClass('d-none')
@@ -242,14 +281,223 @@ if (db.open) {
 }
 let timeTaken = performance.now()-start;
 console.log(`Operation took ${timeTaken} milliseconds`);   
+}    // End of tableStandard
+
+// Click on the first column dedicated to the management of the photo of the day
+$('#table_id').on('click', 'tbody td:first-child', function () {  
+  let data = table.row( $(this).parents('tr') ).data();
+  let rowIndex = $(this).parents('tr').index()
+  if (data['Photo']=== 'Yes') photoDecoding(data['V_ID'], rowIndex)
+});
+
+function photoDecoding(flightId, rowIndex) {
+  if (db.open) {
+    const stmt = db.prepare('SELECT V_Photos FROM Vol WHERE V_ID = ?');
+    const dbImage = stmt.get(flightId);
+    const strImage = dbImage.V_Photos
+
+    let src = 'data:image/png;base64,'+strImage
+    // We want to get image width and height from the base64 string
+    let i = new Image(); 
+    i.onload = function(){
+      let winWidth = i.width
+      let winHeight = i.height+30
+      // Using a string variable eg  winSize = '"width:'+winWidth+'px;height: '+winHeight+'px;"' does not work
+      // templte litteral is working https://stackoverflow.com/questions/52112894/pass-a-variable-into-setattribute-method
+      document.getElementById('modalwin').setAttribute("style",`width:${winWidth}px;height: ${winHeight}px;`);
+    };                                                         
+    i.src = src 
+    // https://stackoverflow.com/questions/49536873/display-image-on-single-bootstrap-modal
+    $(".modal-img").prop("src",src)
+    $('#Modal').modal('show')
+  }
+}
+
+
+function photoManager(flightId, rowNum, flPhoto) {
+  let displayInput = document.getElementById('inputdata')
+  displayInput.innerHTML = '<strong>'+i18n.gettext("Photo of the day")+'</strong>'
+  if (flPhoto === 'Yes') {
+    let btnDelete = document.createElement("input")   // must be input not button
+    btnDelete.type = "button"
+    btnDelete.name = "delete"
+    btnDelete.style.marginLeft = "20px";  
+    btnDelete.value=i18n.gettext("Delete");
+    btnDelete.className="btn btn-danger btn-sm"
+    btnDelete.onclick = function () {      
+      if (db.open) {
+        try {
+          let emptyPhoto = null
+          const stmt = db.prepare('UPDATE Vol SET V_Photos = ? WHERE V_ID = ?')
+          const updatePhoto = stmt.run(emptyPhoto,flightId)
+          console.log(' in db : '+updatePhoto.changes) // newFlight.changes must return 1 for one row added     
+          table.cell({row:rowNum, column:0}).data('')
+          $('#inputdata').hide()             
+        } catch (error) {
+          console.log('Error during flight update '+error)
+          displayStatus('Error during flight update')
+        //  log.error('Error during flight update '+error)
+        }
+      }
+    }
+    displayInput.appendChild(btnDelete)
+  } else {
+    let btnAdd = document.createElement("input")   // must be input not button
+    btnAdd.type = "button"
+    btnAdd.name = "add"
+    btnAdd.value=i18n.gettext("Add")
+    btnAdd.style.marginLeft = "20px";  
+    btnAdd.className="btn btn-success btn-sm"
+    btnAdd.onclick = function () {
+      // $('#inputcomment').hide(); 
+      // updateComment(flightId, currComment,flDate, flTime, rowIndex)
+      photoUpload(flightId, rowNum)
+      //uploadPhoto(flightId, rowNum)
+    }
+    displayInput.appendChild(btnAdd)
+  }    
+  let btnCancel = document.createElement("input")   // must be input not button
+  btnCancel.type = "button"
+  btnCancel.name = "cancel" 
+  btnCancel.style.marginLeft = "10px";  
+  btnCancel.value=i18n.gettext("Cancel");
+  btnCancel.className="btn btn-secondary btn-sm"
+  btnCancel.onclick = function () {
+    $('#inputdata').hide()    
+  };
+  inputArea.appendChild(btnCancel)  
+  $('#inputdata').show();   
+}
+
+
+async function getMetadata(imgPath) {
+  const metadata = await sharp(imgPath).metadata();
+  console.log(metadata);
+}
+
+function photoUpload(flightId, rowNum) {  
+  const imgPath = ipcRenderer.sendSync('choose-img',store.get('pathw'))
+  console.log('on a le path *'+imgPath+'*')
+  if (imgPath !== undefined && imgPath != null) {
+        // https://github.com/lovell/sharp/issues/1395
+        // the same Using a variable does not work 
+        // we try template litteral with success !!
+        sharp(`${imgPath}`)
+        .resize(960, 600, {    // 75% of the original browserwindow size
+          fit: sharp.fit.inside,
+          withoutEnlargement: true
+        })
+        .toFormat('jpeg')
+        .toBuffer()
+        .then(function(outputBuffer) {
+          let rawSrc = outputBuffer.toString('base64')
+          let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
+          document.getElementById('modalwin').setAttribute("style","width:960px;min-height: 500px;");
+          $(".modal-img").prop("src",src)
+          $('#Modal').modal('show')
+          if (db.open) {
+            try {
+              const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
+              const updloadImg = stmt.run(rawSrc,flightId)
+              console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
+              table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
+              $('#inputdata').hide()             
+            } catch (error) {
+              console.log('Error during flight update '+error)
+              displayStatus('Error during flight update')
+            //  log.error('Error during flight update '+error)
+            }
+          }          
+        })
+        .catch(function(err){
+          console.log("Got Error during sharp process");
+        });                   
+  }
+}
+
+function uploadPhoto(flightId, rowNum) {  
+  //let imgPath = './dbtest/Tournette.jpg'
+  let imgPath = './dbtest/Deco_Lachat.jpg'
+  if (imgPath !== undefined && imgPath != null) {
+        sharp(imgPath)
+        .resize(960, 600, {    // 75% of the original browserwindow size
+          fit: sharp.fit.inside,
+          withoutEnlargement: true
+        })
+        .toFormat('jpeg')
+        .toBuffer()
+        .then(function(outputBuffer) {
+          let rawSrc = outputBuffer.toString('base64')
+          let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
+          document.getElementById('modalwin').setAttribute("style","width:960px;min-height: 500px;");
+          $(".modal-img").prop("src",src)
+          $('#Modal').modal('show')
+          if (db.open) {
+            const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
+            const updloadImg = stmt.run(rawSrc,flightId)
+            console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
+            table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
+          }        
+        })
+        .catch(function(err){
+          console.log("Got Error");
+        });           
+        
+  }
+}
+
+// Il faut envisager un callback ou du async await voir 
+function uploadPhoto_V1() {
+
+  console.log('coucou : '+document.getElementsByClassName("modalcustom"))
+  // const imgPath = ipcRenderer.sendSync('choose-img',store.get('pathw'))
+  let imgPath = './dbtest/Tournette.jpg'
+  if (imgPath !== undefined && imgPath != null) {
+    try {        
+      let imgBase64 = fs.readFileSync(imgPath, { encoding: 'base64' });      
+      let img = new Image()
+      img.src = 'data:image/jpeg;base64,'+imgBase64
+      img.onload = () => {
+      // console.log(img.src)
+      // let _width = 640
+      // let _height = 360
+      // const canvas = document.createElement("canvas")
+      // let ctx = canvas.getContext("2d");  
+      // canvas.width = _width
+      // canvas.height = _height
+      // ctx.drawImage(img, 0, 0, _width, _height);
+      // let littleImg = canvas.toDataURL();
+      // console.log(littleImg)
+      // let image = new Image()
+      // let src = littleImg
+      // Un source qui montre comment limiter width and height https://github.com/Gimyk/resize_base64_image/blob/main/main.js
+      // https://stackoverflow.com/questions/49536873/display-image-on-single-bootstrap-modal
+    //  document.getElementById('modalwin').setAttribute("style","width:700px;min-height: 400px;");
+      //https://www.delftstack.com/howto/javascript/change-css-property-using-javascript/
+      const element = document.querySelector('.modalcustom');
+      element.style.width = '1000px';
+      element.style.minHeight = '400px';
+     // console.log(document.getElementsByClassName("modalcustom"))
+      $(".modal-img").prop("src",img.src)
+      $('#Modal').modal('show')
+      }
+      const c = document.createElement('canvas');
+      const ctx = c.getContext("2d");
+      const newImg = document.getElementById("modalimg");
+      ctx.drawImage(newImg, 0, 0);
+      alert(c.toDataURL("image/png"))
+      
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
 
 function deleteFlights() {
   let rows = table.rows('.selected');
   if(rows.data().length > 0 && db.open) {
     table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
-      //alert(table.cell(this, 0).data())
-      let flightId = table.cell(this, 0).data()
+      let flightId = table.cell(this, 7).data()
       let smt = 'DELETE FROM Vol WHERE V_ID = ?'            
       const stmt = db.prepare(smt)
       const delFlight = stmt.run(flightId)    
@@ -342,7 +590,8 @@ function changeGlider(flightId, rowNum, flightDef) {
       //  tableSelection(flightId)              
       } catch (error) {
         console.log('Error during flight update '+error)
-      //  log.error('Error during flight update '+error)
+        //  log.error('Error during flight update '+error)
+        displayStatus('Error during flight update')
       }
     }
     $('#inputdata').hide()
@@ -361,8 +610,103 @@ function changeGlider(flightId, rowNum, flightDef) {
  $('#inputdata').show()
 }
 
-function manageComment() {
-  
+function updateComment(flightId, currComment,flDate, flTime,rowIndex){
+  // A clear of input zone
+  inputArea.innerHTML = '';
+  let commentArea = document.createElement("textarea")   // must be input not button
+  commentArea.name = "commenttext"
+  commentArea.id = 'commenttext'
+  commentArea.className="form-control"
+  commentArea.rows = "2"
+  commentArea.value = currComment
+  inputArea.appendChild(commentArea)
+  let btnUpdate = document.createElement("input")   // must be input not button
+  btnUpdate.type = "button"
+  btnUpdate.name = "update"
+  btnUpdate.value=i18n.gettext("OK")
+  btnUpdate.style.marginTop = "10px";  
+  btnUpdate.style.marginLeft = "20px";  
+  btnUpdate.className="btn btn-success btn-sm"
+  btnUpdate.onclick = function () {
+    let newComment = commentArea.value
+    if (db.open) {
+      try {
+        const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
+        const updateComment = stmt.run(newComment,flightId)
+        console.log(' in db : '+updateComment.changes) // newFlight.changes must return 1 for one row added          
+        table.cell(rowIndex,6).data(newComment);        
+        table.$('tr.selected').addClass('tableredline');
+        $('#inputdata').hide()      
+     //   manageComment(flightId, newComment, flDate, flTime, rowIndex)
+      } catch (error) {
+        console.log('Error during flight update '+error)
+        displayStatus('Error during flight update')
+      //  log.error('Error during flight update '+error)
+      }
+    }
+
+  }
+  inputArea.appendChild(btnUpdate)    
+  let btnCancel = document.createElement("input")   // must be input not button
+  btnCancel.type = "button"
+  btnCancel.name = "cancel"
+  btnCancel.style.marginTop = "10px";  
+  btnCancel.style.marginLeft = "10px";  
+  btnCancel.value=i18n.gettext("Cancel");
+  btnCancel.className="btn btn-secondary btn-sm"
+  btnCancel.onclick = function () {
+    let displayComment = document.getElementById('inputcomment')
+    displayComment.innerHTML = currComment
+    $('#inputdata').hide()
+    manageComment(flightId, currComment, flDate, flTime)
+  };
+  inputArea.appendChild(btnCancel)  
+  $('#inputdata').show()
+  document.getElementById("commenttext").focus();
+}
+
+function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
+  if (currComment != null && currComment !='') {
+    let displayComment = document.getElementById('inputcomment')
+    displayComment.innerHTML = '<strong>'+flDate+' '+flTime+' : '+currComment+'</strong>'
+    let btnUpdate = document.createElement("input")   // must be input not button
+    btnUpdate.type = "button"
+    btnUpdate.name = "update"
+    btnUpdate.value=i18n.gettext("Modify")
+    btnUpdate.style.marginLeft = "20px";  
+    btnUpdate.className="btn btn-success btn-sm"
+    btnUpdate.onclick = function () {
+      $('#inputcomment').hide(); 
+      updateComment(flightId, currComment,flDate, flTime, rowIndex)
+    }
+    displayComment.appendChild(btnUpdate)
+    let btnDelete = document.createElement("input")   // must be input not button
+    btnDelete.type = "button"
+    btnDelete.name = "cancel"
+    btnDelete.style.marginLeft = "10px";  
+    btnDelete.value=i18n.gettext("Delete");
+    btnDelete.className="btn btn-danger btn-sm"
+    btnDelete.onclick = function () {      
+      if (db.open) {
+        try {
+          let newComment = ''
+          const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
+          const updateComment = stmt.run(newComment,flightId)
+          console.log(' in db : '+updateComment.changes) // newFlight.changes must return 1 for one row added     
+          table.cell(rowIndex,6).data(newComment);
+          table.$('tr.selected').removeClass('tableredline');
+          $('#inputdata').hide()     
+          $('#inputcomment').hide()           
+        } catch (error) {
+          console.log('Error during flight update '+error)
+          displayStatus('Error during flight update')
+        //  log.error('Error during flight update '+error)
+        }
+      }
+    };
+    displayComment.appendChild(btnDelete)    
+    $('#inputcomment').show(); 
+  }
 }
 
 function readIgc(igcID, dbGlider) {
@@ -513,6 +857,26 @@ function readIgc(igcID, dbGlider) {
     };
   
     info.addTo(mapPm);  
+    // L.easyButton(
+    //   { id: 'bt_comment',
+    //     position: 'topleft',      // inherited from L.Control -- the corner it goes in")
+    //     type: 'replace',          // set to animate when you're comfy with css")
+    //     leafletClasses: true,     // use leaflet classes to style the button?")
+    //     states:[
+    //             { stateName: 'get-comment', // specify different icons and responses for your button")
+    //               title: 'show me the middle',
+    //               icon: 'fa-comment-o fa-lg'}
+    //             ]
+    //   }).addTo(map)
+
+                // btnComment.append("        $('#bt_comment').click(function(){").append(RC);  
+                // btnComment.append("            $('#comment_to_pop_up').bPopup(").append(RC);  
+                // btnComment.append("                {closeClass:'b-close-c',").append(RC);  
+                // btnComment.append("                 opacity: 0.1,").append(RC);  
+                // btnComment.append("                 position:[20,20]}").append(RC);  
+                // btnComment.append("            );").append(RC);  
+                // btnComment.append("        });").append(RC).append(RC);  
+                // btnComment.append("        $('#bt_comment').trigger( \"click\" );").append(RC);   
   
   }
   
