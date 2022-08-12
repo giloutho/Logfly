@@ -70,6 +70,8 @@ function iniForm() {
                 let flPhoto = table.cell(this, 0).data()
                 let rowIndex = table.row( this ).index()  
                 photoManager(currIdFlight, rowIndex,flPhoto)
+                // we keep this debug function
+                //uploadPhoto(currIdFlight, rowIndex)
                 break
               case "Delete" : 
                 deleteFlights()
@@ -369,21 +371,90 @@ function photoManager(flightId, rowNum, flPhoto) {
   $('#inputdata').show();   
 }
 
-
-async function getMetadata(imgPath) {
-  const metadata = await sharp(imgPath).metadata();
-  console.log(metadata);
-}
-
 function photoUpload(flightId, rowNum) {  
   const imgPath = ipcRenderer.sendSync('choose-img',store.get('pathw'))
-  console.log('on a le path *'+imgPath+'*')
   if (imgPath !== undefined && imgPath != null) {
+        let wantedWidth = 960
+        let wantedHeight = 600
         // https://github.com/lovell/sharp/issues/1395
         // the same Using a variable does not work 
         // we try template litteral with success !!
-        sharp(`${imgPath}`)
-        .resize(960, 600, {    // 75% of the original browserwindow size
+        let imgDay = sharp(`${imgPath}`)
+        imgDay.metadata()
+          .then(function (metadata) {
+            // By default the picture is horizontal
+            // it's necessarary to check the metadata orientation 
+            // orientation >=5 it's vertical
+            if (metadata.orientation !== undefined && metadata.orientation != null && metadata.orientation >=5 )
+            {
+              wantedWidth = 500
+              wantedHeight = 720
+            }
+            imgDay.rotate()  // calling before resize will auto-orient the image based on the EXIF data.
+            .resize(wantedWidth, wantedHeight, {    // 75% of the original browserwindow size
+                fit: sharp.fit.inside,
+                withoutEnlargement: true
+              })
+            .toFormat('jpeg')
+            .toBuffer()
+            .then(function(outputBuffer) {
+              let rawSrc = outputBuffer.toString('base64')
+              let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
+              document.getElementById('modalwin').setAttribute("style",`width:${wantedWidth}px;height: ${wantedHeight}px;`);                        
+              $(".modal-img").prop("src",src)
+              $('#Modal').modal('show')
+              if (db.open) {
+                try {
+                  const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
+                  const updloadImg = stmt.run(rawSrc,flightId)
+                  console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
+                  //table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
+                  table.cell({row:rowNum, column:0}).data('Yes')                  
+                  $('#inputdata').hide()             
+                } catch (error) {
+                  console.log('Error during flight update '+error)
+                  displayStatus('Error during flight update')
+                //  log.error('Error during flight update '+error)
+                }
+              }          
+            })
+            .catch(function(err){
+              console.log("Got Error during sharp process");
+            });            
+          })                 
+  }
+}
+
+
+/**
+ * Kept for debugging purposes if needed
+ * @param {*} flightId 
+ * @param {*} rowNum 
+ */
+function uploadPhoto(flightId, rowNum) {  
+  //let imgPath = './dbtest/Tournette.jpg'
+  let imgPath = './dbtest/Verticale.jpeg'
+  let wantedWidth = 960
+  let wantedHeight = 600  
+  if (imgPath !== undefined && imgPath != null) {
+    let wantedWidth = 960
+    let wantedHeight = 600
+    // https://github.com/lovell/sharp/issues/1395
+    // the same Using a variable does not work 
+    // we try template litteral with success !!
+    let imgDay = sharp(`${imgPath}`)
+    imgDay.metadata()
+      .then(function (metadata) {
+        // By default the picture is horizontal
+        // it's necessarary to check the metadata orientation 
+        // orientation >=5 it's vertical
+        if (metadata.orientation !== undefined && metadata.orientation != null && metadata.orientation >=5 )
+        {
+          wantedWidth = 500
+          wantedHeight = 720
+        }
+        imgDay.rotate()
+        .resize(wantedWidth, wantedHeight, {    // 75% of the original browserwindow size
           fit: sharp.fit.inside,
           withoutEnlargement: true
         })
@@ -392,105 +463,28 @@ function photoUpload(flightId, rowNum) {
         .then(function(outputBuffer) {
           let rawSrc = outputBuffer.toString('base64')
           let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
-          document.getElementById('modalwin').setAttribute("style","width:960px;min-height: 500px;");
+          document.getElementById('modalwin').setAttribute("style",`width:${wantedWidth}px;height: ${wantedHeight}px;`);          
           $(".modal-img").prop("src",src)
           $('#Modal').modal('show')
-          if (db.open) {
-            try {
-              const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
-              const updloadImg = stmt.run(rawSrc,flightId)
-              console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
-              table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
-              $('#inputdata').hide()             
-            } catch (error) {
-              console.log('Error during flight update '+error)
-              displayStatus('Error during flight update')
-            //  log.error('Error during flight update '+error)
-            }
-          }          
+          // if (db.open) {
+          //   try {
+          //     const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
+          //     const updloadImg = stmt.run(rawSrc,flightId)
+          //     console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
+          //     table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
+          //     $('#inputdata').hide()             
+          //   } catch (error) {
+          //     console.log('Error during flight update '+error)
+          //     displayStatus('Error during flight update')
+          //   //  log.error('Error during flight update '+error)
+          //   }
+          // }          
         })
         .catch(function(err){
           console.log("Got Error during sharp process");
-        });                   
-  }
+        });            
+      })                     
 }
-
-function uploadPhoto(flightId, rowNum) {  
-  //let imgPath = './dbtest/Tournette.jpg'
-  let imgPath = './dbtest/Deco_Lachat.jpg'
-  if (imgPath !== undefined && imgPath != null) {
-        sharp(imgPath)
-        .resize(960, 600, {    // 75% of the original browserwindow size
-          fit: sharp.fit.inside,
-          withoutEnlargement: true
-        })
-        .toFormat('jpeg')
-        .toBuffer()
-        .then(function(outputBuffer) {
-          let rawSrc = outputBuffer.toString('base64')
-          let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
-          document.getElementById('modalwin').setAttribute("style","width:960px;min-height: 500px;");
-          $(".modal-img").prop("src",src)
-          $('#Modal').modal('show')
-          if (db.open) {
-            const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
-            const updloadImg = stmt.run(rawSrc,flightId)
-            console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
-            table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
-          }        
-        })
-        .catch(function(err){
-          console.log("Got Error");
-        });           
-        
-  }
-}
-
-// Il faut envisager un callback ou du async await voir 
-function uploadPhoto_V1() {
-
-  console.log('coucou : '+document.getElementsByClassName("modalcustom"))
-  // const imgPath = ipcRenderer.sendSync('choose-img',store.get('pathw'))
-  let imgPath = './dbtest/Tournette.jpg'
-  if (imgPath !== undefined && imgPath != null) {
-    try {        
-      let imgBase64 = fs.readFileSync(imgPath, { encoding: 'base64' });      
-      let img = new Image()
-      img.src = 'data:image/jpeg;base64,'+imgBase64
-      img.onload = () => {
-      // console.log(img.src)
-      // let _width = 640
-      // let _height = 360
-      // const canvas = document.createElement("canvas")
-      // let ctx = canvas.getContext("2d");  
-      // canvas.width = _width
-      // canvas.height = _height
-      // ctx.drawImage(img, 0, 0, _width, _height);
-      // let littleImg = canvas.toDataURL();
-      // console.log(littleImg)
-      // let image = new Image()
-      // let src = littleImg
-      // Un source qui montre comment limiter width and height https://github.com/Gimyk/resize_base64_image/blob/main/main.js
-      // https://stackoverflow.com/questions/49536873/display-image-on-single-bootstrap-modal
-    //  document.getElementById('modalwin').setAttribute("style","width:700px;min-height: 400px;");
-      //https://www.delftstack.com/howto/javascript/change-css-property-using-javascript/
-      const element = document.querySelector('.modalcustom');
-      element.style.width = '1000px';
-      element.style.minHeight = '400px';
-     // console.log(document.getElementsByClassName("modalcustom"))
-      $(".modal-img").prop("src",img.src)
-      $('#Modal').modal('show')
-      }
-      const c = document.createElement('canvas');
-      const ctx = c.getContext("2d");
-      const newImg = document.getElementById("modalimg");
-      ctx.drawImage(newImg, 0, 0);
-      alert(c.toDataURL("image/png"))
-      
-    } catch (error) {
-      console.error(error);
-    }
-  }
 }
 
 function deleteFlights() {
