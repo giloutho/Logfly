@@ -24,7 +24,7 @@ const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1280,
-    height: 800,
+    height: 800,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -84,7 +84,7 @@ function openWindow(pageName) {
   switch (pageName) {
     case "logbook":
         mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
-        mainWindow.webContents.openDevTools(); 
+      //  mainWindow.webContents.openDevTools(); 
         break;
     case "overview":
       mainWindow.loadFile(path.join(__dirname, './views/html/littlemap.html'));
