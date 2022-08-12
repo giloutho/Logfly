@@ -25,7 +25,7 @@
     </script>
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>
-    <script>require('bootstrap-select');</script>      
+    <script>require('bootstrap-select');</script>    
     <div class="wrapper">
         <!-- Sidebar  -->
         <div id="target-sidebar"></div>
@@ -52,10 +52,9 @@
         <!---- from https://www.wowthemes.net/bootstrap-4-split-screen-layout/
         more simple : https://www.w3schools.com/howto/howto_css_split_screen.asp
         but not really responsive      -->
-        <div class="alert alert-info collapse" role="alert" id="status"></div>   
-        <div class="alert alert-primary collapse" role="alert" id="inputdata"></div>          
-        <div class="alert alert-secondary collapse" role="alert" id="inputcomment"></div>  
-        <div class="d-md-flex h-md-100 align-items-center top-buffer">
+        <div class="alert alert-info collapse" role="alert" id="status"></div>           
+       <!--  <div class="alert alert-warning collapse" role="alert" id="inputcomment"></div>  -->
+        <div class="d-md-flex h-md-100 align-items-start top-buffer">
           <div class="col-md-7 ">
               <div id="div_waiting" class="d-none">
                 <img src="../../assets/img/waiting-mauve.gif" class="mx-auto d-block" alt=""></img>
@@ -83,9 +82,21 @@
               </div>
             </div>
           </div>  
-        </div>     
-      </div>
-      <!-- End of page Content  -->  
+        </div>    
+        <div class="alert alert-primary collapse" role="alert" id="inputdata"></div>  
+        <div class="alert alert-warning collapse" role="alert" id="inputcomment"></div>  
+        <!-- Modal content-->
+        <div id="Modal" class="modal fade" role="dialog" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content" id="modalwin">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+              </div>            
+              <img id="modalimg" class="modal-img" />
+            </div> 
+          </div>
+        </div>   <!-- End of modal content-->
+      </div>    <!-- End of page Content  -->  
     </div>
     <script src="../../views/js/logbook.js" type="text/javascript"></script>
 </body>
