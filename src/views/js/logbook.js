@@ -64,7 +64,8 @@ function iniForm() {
                 changeGlider(table.cell(this, 7).data(),table.row( this ).index(),flightDef)
                 break
               case "Glider" :
-                testSelected()
+                let flGlider = table.cell(this, 5).data()
+                gliderHours(flGlider )
                 break
               case "Day" :
                 let flPhoto = table.cell(this, 0).data()
@@ -257,19 +258,19 @@ if (db.open) {
         if ( type === 'row' ) {
           //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
           // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
-          currIdFlight = dt.row({selected: true}).data().V_ID
-          let currComment = dt.row({selected: true}).data().V_Commentaire
+          currIdFlight = dt.row(indexes).data().V_ID
+          let currComment = dt.row(indexes).data().V_Commentaire
           if (currComment != null && currComment !='') {
-            currIdFlight = dt.row({selected: true}).data().V_ID
-            flDate = dt.row({selected: true}).data().Day
-            flTime = dt.row({selected: true}).data().Hour         
+            currIdFlight = dt.row(indexes).data().V_ID
+            flDate = dt.row(indexes).data().Day
+            flTime = dt.row(indexes).data().Hour         
             manageComment(currIdFlight,currComment, flDate, flTime,indexes)
           } else {
             $('#inputcomment').hide()
           }
           $('#inputdata').hide()
-          currIdFlight = dt.row({selected: true}).data().V_ID
-          currGlider = dt.row({selected: true}).data().V_Engin
+          currIdFlight = dt.row(indexes).data().V_ID
+          currGlider = dt.row(indexes).data().V_Engin
           readIgc(currIdFlight, currGlider)
         }        
     } );
@@ -285,12 +286,21 @@ let timeTaken = performance.now()-start;
 console.log(`Operation took ${timeTaken} milliseconds`);   
 }    // End of tableStandard
 
+// To select the first row at each page change
+$('#table_id').on( 'page.dt', function () {
+  //var info = table.page.info();
+  //alert( 'Showing page: '+info.page+' of '+info.pages );
+  table.row(':eq(0)', { page: 'current' }).select();
+});
+
 // Click on the first column dedicated to the management of the photo of the day
 $('#table_id').on('click', 'tbody td:first-child', function () {  
   let data = table.row( $(this).parents('tr') ).data();
   let rowIndex = $(this).parents('tr').index()
   if (data['Photo']=== 'Yes') photoDecoding(data['V_ID'], rowIndex)
 });
+
+
 
 function photoDecoding(flightId, rowIndex) {
   if (db.open) {
@@ -518,6 +528,33 @@ function tableSelection(idFlight) {
 
 function testSelected() {
     tableSelection(520)
+}
+
+function gliderHours(flGlider) {
+  if (db.open) {
+    try {
+      let msgResult = '<strong>'+flGlider+'</strong>'
+      const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
+      const result = stmt.get(flGlider);
+      if (result.seconds != null && result.seconds > 0) {         
+        let nbHours = Math.floor(result.seconds/3600)
+        let nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
+        // msgResult += '<div>'+i18n.gettext('Flights')+'<span class="badge badge-pill badge-primary">'+result.flights+'</span><div></div>'
+        // msgResult += '<div>'+i18n.gettext('Flight hours')+'<span class="badge badge-pill badge-warning">'+nbHours+'h'+nbMin+'mn'+'</span></div>'
+        msgResult += '<span class="badge badge-pill badge-primary" style="margin-left:30px" ;>'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
+        msgResult += '<span class="badge badge-pill badge-warning" style="margin-left:30px" ;>'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+nbMin+'mn'+'</span>'
+      // msgResult += i18n.gettext('Flights')+' : '+result.flights+'<br>'
+      //  msgResult += i18n.gettext('Flight hours')+' : '+ nbHours+'h'+nbMin+'mn'  
+      let displayResult = document.getElementById('inputcomment')
+      displayResult.innerHTML = msgResult
+      $('#inputcomment').show(); 
+      } else {
+        msgResult = i18n.gettext('No flights counted for this glider')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 }
 
 /**
