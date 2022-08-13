@@ -319,4 +319,7 @@ table{
 .modal-img {
     width:100%;
   }
-  
+
+.badge.even-larger-badge {
+    font-size: 1.2em;
+  }
