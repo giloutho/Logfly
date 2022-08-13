@@ -84,7 +84,7 @@ function openWindow(pageName) {
   switch (pageName) {
     case "logbook":
         mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
-      //  mainWindow.webContents.openDevTools(); 
+     //   mainWindow.webContents.openDevTools(); 
         break;
     case "overview":
       mainWindow.loadFile(path.join(__dirname, './views/html/littlemap.html'));
