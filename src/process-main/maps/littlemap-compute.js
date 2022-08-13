@@ -78,4 +78,5 @@ function buildMapElements(strIgc) {
       }      
 }
 
+module.exports.buildElements = buildElements
 module.exports.buildMapElements = buildMapElements
