@@ -24,8 +24,9 @@ switch (currOS) {
         break
 }
 
+// process-main/gps-tracks/getoneflight.js
 ipcMain.on('displayoneflight', (event, gpsParam, flightIndex) => {
-    // We wat the same function for Gpsdump and usb gps. 
+    // We wait the same function for Gpsdump and usb gps. 
     // we only need flightindex for gpsdump
     // for usb, we send 9999, flight file path is in gpsParam
     let flightFilePath
