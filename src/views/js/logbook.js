@@ -5,8 +5,11 @@ const i18n = require('../../lang/gettext.js')()
 const path = require('path')
 const fs = require('fs')
 const Store = require('electron-store')
+const log = require('electron-log');
 const sharp = require('sharp')
 let webOk = require('internet-available')
+const elemMap = require('../../process-main/maps/littlemap-compute.js')
+
 let store = new Store(); 
 let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js');
@@ -33,7 +36,6 @@ function iniForm() {
   $.get('../../views/tpl/sidebar.html', function(templates) { 
       const template = $(templates).filter('#temp-menu').html();  
       const rendered = Mustache.render(template, menuOptions)
-    //  console.log(template)
       document.getElementById('target-sidebar').innerHTML = rendered
   })
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
@@ -71,13 +73,12 @@ function iniForm() {
                 let flPhoto = table.cell(this, 0).data()
                 let rowIndex = table.row( this ).index()  
                 photoManager(currIdFlight, rowIndex,flPhoto)
-                // we keep this debug function
-                //uploadPhoto(currIdFlight, rowIndex)
                 break
               case "Delete" : 
                 deleteFlights()
                 break
-              case "Export" : 
+              case "Igc" : 
+                exportIgc()
                 break
               case "Merge" : 
                 break                
@@ -89,7 +90,7 @@ function iniForm() {
             "Glider": {name: i18n.gettext("Glider flight time")},
             "Day": {name: i18n.gettext("Photo of the day")},
             "Delete": {name: i18n.gettext("Delete")},
-            "Export": {name: i18n.gettext("Export")},
+            "Igc": {name: i18n.gettext("Export IGC")},
             "Merge": {name: i18n.gettext("Merge flights")}
         }
     });
@@ -158,30 +159,25 @@ btnFullmap.addEventListener('click', (event) => {
 
 function displayFlyxc() {
   if (track !== undefined && track.fixes.length> 0) {  
-    console.log('demande transfert')
     let resUpload = ipcRenderer.sendSync('upload-igc', currIgcText)  // process-main/igc/igc-read.js.js
     if (resUpload == null) {
       displayStatus('Download failed')
+      log.error('[displayFlyxc] Download failed')
     } else {
-      console.log('resUpload '+resUpload)
       if (resUpload.includes('OK')) {
         // response is OK:20220711135317_882.igc
         let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
-        console.log('igcUrl : '+igcUrl)
         store.set('igcVisu',igcUrl)
         callPage('flyxc')
-        // displayStatus(igcUrl)
       } else {
-        // response is error = ...
+        log.error('[displayFlyxc] '+resUpload)
         displayStatus(resUpload)
       }
     }
-    console.log('Transfert terminé')
   }
 }
 
 function tableStandard() {
-let start = performance.now();
 let msgdbstate  
 if ($.fn.DataTable.isDataTable('#table_id')) {
     $('#table_id').DataTable().clear().destroy()
@@ -195,7 +191,6 @@ if (db.open) {
     let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire,'
     reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
     reqSQL += 'FROM Vol ORDER BY V_Date DESC'
-    console.log(reqSQL)
     const flstmt = db.prepare(reqSQL).all()    
     const dataTableOption = {
     data: flstmt, 
@@ -276,14 +271,9 @@ if (db.open) {
     } );
     table.row(':eq(0)').select();    // Sélectionne la première lmigne
     $('#table_id').removeClass('d-none')
-
-
-
 } else {
     msgdbstate = 'db connection error'
 }
-let timeTaken = performance.now()-start;
-console.log(`Operation took ${timeTaken} milliseconds`);   
 }    // End of tableStandard
 
 // To select the first row at each page change
@@ -341,14 +331,12 @@ function photoManager(flightId, rowNum, flPhoto) {
         try {
           let emptyPhoto = null
           const stmt = db.prepare('UPDATE Vol SET V_Photos = ? WHERE V_ID = ?')
-          const updatePhoto = stmt.run(emptyPhoto,flightId)
-          console.log(' in db : '+updatePhoto.changes) // newFlight.changes must return 1 for one row added     
+          const updatePhoto = stmt.run(emptyPhoto,flightId)    
           table.cell({row:rowNum, column:0}).data('')
           $('#inputdata').hide()             
         } catch (error) {
-          console.log('Error during flight update '+error)
+          log.error('Error during flight update '+error)
           displayStatus('Error during flight update')
-        //  log.error('Error during flight update '+error)
         }
       }
     }
@@ -361,10 +349,7 @@ function photoManager(flightId, rowNum, flPhoto) {
     btnAdd.style.marginLeft = "20px";  
     btnAdd.className="btn btn-success btn-sm"
     btnAdd.onclick = function () {
-      // $('#inputcomment').hide(); 
-      // updateComment(flightId, currComment,flDate, flTime, rowIndex)
       photoUpload(flightId, rowNum)
-      //uploadPhoto(flightId, rowNum)
     }
     displayInput.appendChild(btnAdd)
   }    
@@ -416,85 +401,22 @@ function photoUpload(flightId, rowNum) {
               if (db.open) {
                 try {
                   const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
-                  const updloadImg = stmt.run(rawSrc,flightId)
-                  console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
+                  const updloadImg = stmt.run(rawSrc,flightId)          
                   //table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
                   table.cell({row:rowNum, column:0}).data('Yes')                  
                   $('#inputdata').hide()             
                 } catch (error) {
-                  console.log('Error during flight update '+error)
+                  log.error('Error during flight update '+error)
                   displayStatus('Error during flight update')
-                //  log.error('Error during flight update '+error)
                 }
               }          
             })
             .catch(function(err){
-              console.log("Got Error during sharp process");
+              log.error('Got Error during sharp process')
+              displayStatus('Got Error during sharp process')
             });            
           })                 
   }
-}
-
-
-/**
- * Kept for debugging purposes if needed
- * @param {*} flightId 
- * @param {*} rowNum 
- */
-function uploadPhoto(flightId, rowNum) {  
-  //let imgPath = './dbtest/Tournette.jpg'
-  let imgPath = './dbtest/Verticale.jpeg'
-  let wantedWidth = 960
-  let wantedHeight = 600  
-  if (imgPath !== undefined && imgPath != null) {
-    let wantedWidth = 960
-    let wantedHeight = 600
-    // https://github.com/lovell/sharp/issues/1395
-    // the same Using a variable does not work 
-    // we try template litteral with success !!
-    let imgDay = sharp(`${imgPath}`)
-    imgDay.metadata()
-      .then(function (metadata) {
-        // By default the picture is horizontal
-        // it's necessarary to check the metadata orientation 
-        // orientation >=5 it's vertical
-        if (metadata.orientation !== undefined && metadata.orientation != null && metadata.orientation >=5 )
-        {
-          wantedWidth = 500
-          wantedHeight = 720
-        }
-        imgDay.rotate()
-        .resize(wantedWidth, wantedHeight, {    // 75% of the original browserwindow size
-          fit: sharp.fit.inside,
-          withoutEnlargement: true
-        })
-        .toFormat('jpeg')
-        .toBuffer()
-        .then(function(outputBuffer) {
-          let rawSrc = outputBuffer.toString('base64')
-          let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
-          document.getElementById('modalwin').setAttribute("style",`width:${wantedWidth}px;height: ${wantedHeight}px;`);          
-          $(".modal-img").prop("src",src)
-          $('#Modal').modal('show')
-          // if (db.open) {
-          //   try {
-          //     const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
-          //     const updloadImg = stmt.run(rawSrc,flightId)
-          //     console.log(' in db : '+updloadImg.changes) // changes must return 1 for one row updated            
-          //     table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
-          //     $('#inputdata').hide()             
-          //   } catch (error) {
-          //     console.log('Error during flight update '+error)
-          //     displayStatus('Error during flight update')
-          //   //  log.error('Error during flight update '+error)
-          //   }
-          // }          
-        })
-        .catch(function(err){
-          console.log("Got Error during sharp process");
-        });            
-      })                     
-}
 }
 
 function deleteFlights() {
@@ -533,18 +455,15 @@ function testSelected() {
 function gliderHours(flGlider) {
   if (db.open) {
     try {
-      let msgResult = '<strong>'+flGlider+'</strong>'
+      let msgResult = '<strong>'+i18n.gettext("Glider flight time")+' '+flGlider+'</strong>'
       const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
       const result = stmt.get(flGlider);
       if (result.seconds != null && result.seconds > 0) {         
-        let nbHours = Math.floor(result.seconds/3600)
-        let nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
-        // msgResult += '<div>'+i18n.gettext('Flights')+'<span class="badge badge-pill badge-primary">'+result.flights+'</span><div></div>'
-        // msgResult += '<div>'+i18n.gettext('Flight hours')+'<span class="badge badge-pill badge-warning">'+nbHours+'h'+nbMin+'mn'+'</span></div>'
-        msgResult += '<span class="badge badge-pill badge-primary" style="margin-left:30px" ;>'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
-        msgResult += '<span class="badge badge-pill badge-warning" style="margin-left:30px" ;>'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+nbMin+'mn'+'</span>'
-      // msgResult += i18n.gettext('Flights')+' : '+result.flights+'<br>'
-      //  msgResult += i18n.gettext('Flight hours')+' : '+ nbHours+'h'+nbMin+'mn'  
+        const nbHours = Math.floor(result.seconds/3600)
+        const nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
+        const minutes = String(nbMin).padStart(2, '0')
+        msgResult += '<span class="badge badge-primary even-larger-badge" style="margin-left:30px" ;>'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
+        msgResult += '<span class="badge badge-warning even-larger-badge" style="margin-left:30px" ;>'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+minutes+'mn'+'</span>'
       let displayResult = document.getElementById('inputcomment')
       displayResult.innerHTML = msgResult
       $('#inputcomment').show(); 
@@ -552,7 +471,7 @@ function gliderHours(flGlider) {
         msgResult = i18n.gettext('No flights counted for this glider')
       }
     } catch (error) {
-      console.log(error)
+      log.error('[gliderHours] '+error)
     }
   }
 }
@@ -616,12 +535,10 @@ function changeGlider(flightId, rowNum, flightDef) {
       try {
         const stmt = db.prepare('UPDATE Vol SET V_Engin= ? WHERE V_ID = ?')
         const updateGlider = stmt.run(selectedName,flightId)
-        console.log(' in db : '+updateGlider.changes) // newFlight.changes must return 1 for one row added   
         table.cell({row:rowNum, column:5}).data(selectedName)
       //  tableSelection(flightId)              
       } catch (error) {
-        console.log('Error during flight update '+error)
-        //  log.error('Error during flight update '+error)
+        log.error('Error during flight update '+error)
         displayStatus('Error during flight update')
       }
     }
@@ -663,14 +580,13 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
     if (db.open) {
       try {
         const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
-        const updateComment = stmt.run(newComment,flightId)
-        console.log(' in db : '+updateComment.changes) // newFlight.changes must return 1 for one row added          
+        const updateComment = stmt.run(newComment,flightId)     
         table.cell(rowIndex,6).data(newComment);        
         table.$('tr.selected').addClass('tableredline');
         $('#inputdata').hide()      
      //   manageComment(flightId, newComment, flDate, flTime, rowIndex)
       } catch (error) {
-        console.log('Error during flight update '+error)
+        log.error('Error during flight update '+error)
         displayStatus('Error during flight update')
       //  log.error('Error during flight update '+error)
       }
@@ -723,20 +639,33 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
           let newComment = ''
           const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
           const updateComment = stmt.run(newComment,flightId)
-          console.log(' in db : '+updateComment.changes) // newFlight.changes must return 1 for one row added     
           table.cell(rowIndex,6).data(newComment);
           table.$('tr.selected').removeClass('tableredline');
           $('#inputdata').hide()     
           $('#inputcomment').hide()           
         } catch (error) {
-          console.log('Error during flight update '+error)
+          log.error('Error during flight update '+error)
           displayStatus('Error during flight update')
-        //  log.error('Error during flight update '+error)
         }
       }
     };
     displayComment.appendChild(btnDelete)    
     $('#inputcomment').show(); 
+  }
+}
+
+function exportIgc() {
+  if (currIgcText === undefined || currIgcText == "" ) {
+    alert(i18n.gettext('No track to display'))
+  } else {
+    const exportResult = ipcRenderer.sendSync('save-igc',currIgcText)
+    if ( exportResult.indexOf('Error') !== -1) {
+      displayStatus(exportResult)      
+    } else {
+      let msg = i18n.gettext('The track is saved in IGC format with the .igc extension')
+      msg += ' -> '+exportResult
+      displayStatus(msg)
+    }
   }
 }
 
@@ -765,7 +694,7 @@ function readIgc(igcID, dbGlider) {
       if (track.fixes.length> 0) {
         // If the glider name has been changed, it no longer corresponds to the name stored in the IGC file
         track.info.gliderType = dbGlider
-        buildMap(track)  
+        mapIgc(track)
       } else {
         displayStatus(track.info.parsingError)
       }        
@@ -825,90 +754,74 @@ function readIgc(igcID, dbGlider) {
     L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm).bindPopup(takeOffPopUp).openPopup()
   }
   
-  function buildMap(track) {
+  function mapIgc(track) {
+    const mapTrack = elemMap.buildElements(track)
     if (mapPm != null) {
       mapPm.off();
       mapPm.remove();
     }
-    mapPm = L.map('mapid').setView([0, 0], 5);
-  
-    const tile_layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            });
-    tile_layer.addTo(mapPm); 
-    const trackOptions = {
-      color: 'red',
-      weight: 2,
-      opacity: 0.85
+    mapPm = L.map('mapid').setView([0, 0], 5)
+    const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
+    '&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
+    '&LAYER={ignLayer}&STYLE={style}&FORMAT={format}'+
+    '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}',
+    {
+      ignApiKey: 'pratique',
+      ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+      style: 'normal',
+      format: 'image/png',
+      service: 'WMTS',
+    });
+    let mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    let fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    const baseMaps = {
+      "OSM": osmlayer,
+      "OpenTopo" : OpenTopoMap,
+      "IGN" : ignlayer,
+      "MTK" : mtklayer,
+      "4UMaps" : fouryoulayer,
     };
-    mapPm.removeLayer(L.geoJson);
-    const geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions}).addTo(mapPm)
-    mapPm.fitBounds(geojsonLayer.getBounds());
     
-    const StartIcon = new L.Icon({
-      iconUrl: '../../leaflet/images/windsock22.png',
-      shadowUrl: '../../leaflet/images/marker-shadow.png',
-      iconSize: [18, 18],
-      iconAnchor: [0, 18],
-      popupAnchor: [1, -34],
-      shadowSize: [25, 25]
-    });
-  
-    const startLatlng = L.latLng(track.fixes[0].latitude, track.fixes[0].longitude)
+    L.control.layers(baseMaps).addTo(mapPm)
+    osmlayer.addTo(mapPm)   // default is osm
+
+    const geojsonLayer = L.geoJson(mapTrack.trackjson,{ style: mapTrack.trackOptions}).addTo(mapPm)
+    mapPm.fitBounds(geojsonLayer.getBounds());
+
+    const StartIcon = new L.Icon(mapTrack.startIcon)
+    const startLatlng = L.latLng(mapTrack.startLatlng.lat,mapTrack.startLatlng.long)
     L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm);
-  
-    const EndIcon = new L.Icon({
-      iconUrl: '../../leaflet/images/Arrivee22.png',
-      shadowUrl: '../../leaflet/images/marker-shadow.png',
-      iconSize: [18, 18],
-      iconAnchor: [4, 18],
-      popupAnchor: [1, -34],
-      shadowSize: [25, 25]
-    });
-  
-    const endLatlng = L.latLng(track.fixes[track.fixes.length - 1].latitude, track.fixes[track.fixes.length - 1].longitude)
+
+    const EndIcon = new L.Icon(mapTrack.endIcon)
+    const endLatlng = L.latLng(mapTrack.endLatlng.lat,mapTrack.endLatlng.long)
     L.marker(endLatlng,{icon: EndIcon}).addTo(mapPm);
-  
+
     const info = L.control({position: 'bottomright'});
-  
+
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'map-info'); // create a div with a class "map-info"
         this.update();
         return this._div;
     };
-  
+
     // method that we will use to update the control based on feature properties passed
     info.update = function () {
         this._div.innerHTML = '';
-        this._div.innerHTML += 'Voile:'+track.info.gliderType+'<br>';
-        this._div.innerHTML += 'Alti Max GPS : '+track.stat.maxalt.gps+'m<br>';
-        this._div.innerHTML += 'Vario max :'+track.stat.maxclimb+'m/s<br>';
-        this._div.innerHTML += 'Gain max : 0m<br>';
-  
+        this._div.innerHTML += mapTrack.flDate+'<br>'
+        this._div.innerHTML += mapTrack.infoGlider
+        this._div.innerHTML += mapTrack.maxAlti
+        this._div.innerHTML += mapTrack.maxVario
     };
-  
-    info.addTo(mapPm);  
-    // L.easyButton(
-    //   { id: 'bt_comment',
-    //     position: 'topleft',      // inherited from L.Control -- the corner it goes in")
-    //     type: 'replace',          // set to animate when you're comfy with css")
-    //     leafletClasses: true,     // use leaflet classes to style the button?")
-    //     states:[
-    //             { stateName: 'get-comment', // specify different icons and responses for your button")
-    //               title: 'show me the middle',
-    //               icon: 'fa-comment-o fa-lg'}
-    //             ]
-    //   }).addTo(map)
 
-                // btnComment.append("        $('#bt_comment').click(function(){").append(RC);  
-                // btnComment.append("            $('#comment_to_pop_up').bPopup(").append(RC);  
-                // btnComment.append("                {closeClass:'b-close-c',").append(RC);  
-                // btnComment.append("                 opacity: 0.1,").append(RC);  
-                // btnComment.append("                 position:[20,20]}").append(RC);  
-                // btnComment.append("            );").append(RC);  
-                // btnComment.append("        });").append(RC).append(RC);  
-                // btnComment.append("        $('#bt_comment').trigger( \"click\" );").append(RC);   
-  
+    info.addTo(mapPm);  
+
   }
   
   function displayWait() {
@@ -917,28 +830,11 @@ function readIgc(igcID, dbGlider) {
     $('#div_waiting').addClass('d-block')
   }
 
-  // function hideWait() {
-  //   $('#div_waiting').removeClass('d-block')
-  //   $('#div_waiting').addClass('d-none')
-  //   $('#div_table').addClass('d-block')
-  // }
-
   ipcRenderer.on('remove-waiting-gif', (event, result) => {
-    console.log('remove-waiting-gif reçu...')
     $('#div_waiting').removeClass('d-block')
     $('#div_waiting').addClass('d-none')
     $('#div_table').addClass('d-block')
   })
-
-  function initmapBasic(viewlat,viewlon,viewzoom) {
-    mapBasic = L.map('mapid').setView([viewlat,viewlon], viewzoom);
-  
-    const tile_layer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            });
-    tile_layer.addTo(mapBasic); 
-    tile_layer.on("load",function() { console.log("Basique -> all visible tiles have been loaded") });
-  }
 
   function displayStatus(content) {
     document.getElementById('status').innerHTML = i18n.gettext(content)
@@ -947,14 +843,5 @@ function readIgc(igcID, dbGlider) {
 
   function hideStatus() {
     if ($('#status').show().is(":visible")) $('#status').hide();  
-  }
-  
-  // inutilisée pour l'instant
-  function convertSQLDate(sqldate) {
-    let a = sqldate.split(" ");
-    let d = a[0].split("-");
-    let t = a[1].split(":");
-  
-    return (new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]))
   }
   
