@@ -136,7 +136,10 @@ btnFlyxc.addEventListener('click', (event) => {
   // });
   // ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
   //displayStatus('Decoding problem in track file')  
+
   displayFlyxc()
+
+//  afficheFlyxc()
 })
 
 
@@ -167,8 +170,8 @@ function displayFlyxc() {
       if (resUpload.includes('OK')) {
         // response is OK:20220711135317_882.igc
         let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
-        store.set('igcVisu',igcUrl)
-        callPage('flyxc')
+   //     store.set('igcVisu',igcUrl)
+        let disp_flyxc = ipcRenderer.send('display-flyxc', igcUrl)   // process-main/maps/flyxc-display.js
       } else {
         log.error('[displayFlyxc] '+resUpload)
         displayStatus(resUpload)
@@ -176,6 +179,12 @@ function displayFlyxc() {
     }
   }
 }
+
+function afficheFlyxc() {
+  let debugUrl = 'logfly6.igc'
+  let disp_flyxc = ipcRenderer.send('display-flyxc', debugUrl)   // process-main/maps/flyxc-display.js
+}
+
 
 function tableStandard() {
 let msgdbstate  
