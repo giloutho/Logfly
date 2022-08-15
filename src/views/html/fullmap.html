@@ -25,24 +25,17 @@
     <script src="../../lang/gettext.js" type="text/javascript"></script>
     <!-- Fixed navbar -->
     <nav class="navbar navbar-expand-sm bg-light">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" style="color:rgb(255, 0, 0);" id="bt-close" href="#">Close</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="bt-infos" href="#">Information</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="bt-mail" href="#">Mesure</a>
-          </li>
-        </ul>
-      </nav>
-      <!-- Begin page content -->
-        <div id="carte"></div>
-        <div id="graphe"></div>
-        <div id="sidebar" class="leaflet-sidebar collapsed">
-          <div class="leaflet-sidebar-content"></div>
-        </div>
+            <button type="button" id="bt-close" class="btn btn-outline-danger btn-sm">Menu On</button>
+            <button type="button" id="bt-infos" class="btn btn-outline-primary btn-sm" style="margin-left:60px">Informations</button>
+            <button type="button" id="bt-mes" class="btn btn-outline-primary btn-sm" style="margin-left:10px">Mesurer</button>
+            <button type="button" id="wintitle" class="btn btn-outline-success btn-sm" style="margin-left:300px">Mesurer 2</button>           
+    </nav>
+    <!-- Begin page content -->
+    <div id="carte"></div>
+    <div id="graphe"></div>
+    <div id="sidebar" class="leaflet-sidebar collapsed">
+      <div class="leaflet-sidebar-content"></div>
+    </div>
 
     <script type="text/javascript">
         var i18n = window.i18n();
