@@ -29,6 +29,8 @@ const { truncate } = require("original-fs");
         this.progressValue = 0.7;   
         this.avgThermalClimb = 0;        
         this.avgThermalEffi = 0;  
+        this.avgTransSpeed = 0
+        this.extractTime = 0
         this.percThermals = 0;
         this.percGlides = 0;
         this.percDives = 0;
@@ -46,7 +48,8 @@ const { truncate } = require("original-fs");
         let _bestGainEnd;
         let _avgThermalClimb = 0;
         let _avgThermalEffi = 0;
-        let _avgTransSpeed = 0;
+        let _avgTransSpeed = 0
+        let _extractTime = 0
         let _percThermals = 0;
         let _percGlides = 0;
         let _percDives = 0;
@@ -352,7 +355,9 @@ const { truncate } = require("original-fs");
         this.bestGainEnd = _bestGainEnd;  
         this.avgThermalClimb = _avgThermalClimb;
         this.avgThermalEffi = _avgThermalEffi;
-        this.percThermals = _percThermals;
+        this.avgTransSpeed = _avgTransSpeed
+        this.extractTime = _extractTime
+        this.percThermals = _percThermals
         this.percGlides = _percGlides;
         this.percDives = _percDives;
         this.bestGlide = _bestGlide;
@@ -503,6 +508,8 @@ const { truncate } = require("original-fs");
                 //(pTimestamp, pTime, pElapsed, pAlt, pData1, pData2, pCoords)  
                 let dateStart = new Date(finalThermals[i].start_time);
                 let hStart = dateStart.getHours()+':'+dateStart.getMinutes()+':'+dateStart.getSeconds();  
+                // extractTime computing
+                const dateTkoff = new Date(fixes[0].timestamp);
                 let dateEnd = new Date(finalThermals[i].finish_time);
                 let hEnd = String(dateEnd.getHours()).padStart(2, '0')+':'+String(dateEnd.getMinutes()).padStart(2, '0')+':'+String(dateEnd.getSeconds()).padStart(2, '0');
                 let elapsedSeconds = (finalThermals[i].finish_time - fixes[0].timestamp)/1000;                   
@@ -580,6 +587,9 @@ const { truncate } = require("original-fs");
                 //(pTimestamp, pTime, pElapsed, pAlt, pData1, pData2, pCoords)  
                 let dateStart = new Date(finalGlides[i].start_time);
                 let hStart = dateStart.getHours()+':'+dateStart.getMinutes()+':'+dateStart.getSeconds();  
+                if (i==0) {
+                    _extractTime = (finalGlides[i].start_time - fixes[0].timestamp)/1000    // seconds
+                }
                 let dateEnd = new Date(finalGlides[i].finish_time);
                 let hEnd = String(dateEnd.getHours()).padStart(2, '0')+':'+String(dateEnd.getMinutes()).padStart(2, '0')+':'+String(dateEnd.getSeconds()).padStart(2, '0');
                 let elapsedSeconds = (finalGlides[i].finish_time - fixes[0].timestamp)/1000;                   
