@@ -5,6 +5,7 @@ const path = require('path');
 const log = require('electron-log');
 const L = require('leaflet');
 const Store = require('electron-store')
+const elemMap = require('../../utils/leaflet/littlemap-build.js')
 
 let mapPm
 const store = new Store()
@@ -17,13 +18,13 @@ btnClose.addEventListener('click',(event) => {
     window.close()
 })
 
-
-// provisoire pour mise au point
-const elemMap = require('../../process-main/maps/littlemap-compute.js')
-
-ipcRenderer.on('little-map-elements', (event, mapTrack) => {
-    console.log('ipcRenderer.on : '+mapTrack.ready+' '+mapTrack.flDate+' '+mapTrack.flToffTime+' '+mapTrack.glider)
-    buildMap(mapTrack)
+ipcRenderer.on('little-map-elements', (event, igcString) => {
+    const mapTrack = elemMap.buildMapElements(igcString)
+    if (mapTrack.ready) {
+        buildMap(mapTrack)
+    } else {
+        Alert(i18n.gettext('An error occurred during the map generation'))
+    }
 })
 
 //  Gardée pur tests éventuels

@@ -8,7 +8,7 @@ const Store = require('electron-store')
 const log = require('electron-log');
 const sharp = require('sharp')
 let webOk = require('internet-available')
-const elemMap = require('../../process-main/maps/littlemap-compute.js')
+const elemMap = require('../../utils/leaflet/littlemap-build.js')
 
 let store = new Store(); 
 let db = require('better-sqlite3')(store.get('dbFullPath'))
