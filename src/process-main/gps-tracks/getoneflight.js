@@ -2,7 +2,6 @@ const {app, ipcMain, BrowserWindow} = require('electron')
 const path = require('path')
 const fs = require('fs')
 var log = require('electron-log');
-const elemMap = require('../maps/littlemap-compute.js')
 const gpsdumpOne = require('../gps-tracks/gpsdump-flight.js')
 
 const Store = require('electron-store');
@@ -57,26 +56,21 @@ ipcMain.on('displayoneflight', (event, gpsParam, flightIndex) => {
 
 function openWindow(event, igcString) {
     const modalPath = path.join('file://', __dirname, '../../views/html/littlemap.html')
-    const mapTrack = elemMap.buildMapElements(igcString)
-    if (mapTrack.ready) {
-        let win = new BrowserWindow({ 
-            width: 1024,
-            height: 768,
-            parent: BrowserWindow.getFocusedWindow(),
-            modal: true,  
-            webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false, 
-            }              
-        })
-   //     win.webContents.openDevTools();
-        win.on('close', () => { win = null, event.sender.send('gpsdump-fone', null) })
-        win.loadURL(modalPath)
-        win.webContents.on('did-finish-load', function() {
-            win.send('little-map-elements', mapTrack)  // This is a simple trick to pass some variables to littlemap.js
-            win.show();
-        })
-    } else {
-        event.sender.send('gpsdump-fone', 'An error occurred during the map generation') 
-    }
+    let win = new BrowserWindow({ 
+        width: 1024,
+        height: 768,
+        parent: BrowserWindow.getFocusedWindow(),
+        modal: true,  
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false, 
+        }              
+    })
+//     win.webContents.openDevTools();
+    win.on('close', () => { win = null, event.sender.send('gpsdump-fone', null) })
+    win.loadURL(modalPath)
+    win.webContents.on('did-finish-load', function() {
+        win.send('little-map-elements', igcString)  // This is a simple trick to pass some variables to littlemap.js
+        win.show();
+    })
 }
