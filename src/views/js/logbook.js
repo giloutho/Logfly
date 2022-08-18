@@ -58,7 +58,7 @@ function iniForm() {
                   let flDate = table.cell(this, 1).data()
                   let flTime = table.cell(this, 2).data()
                   let rowIndex = table.row( this ).index()           
-                  updateComment(currIdFlight, '',flDate, flTime,rowIndex)                  
+                  updateComment(currIdFlight, '',flDate, flTime,rowIndex)                    
                 }
                 break                
               case "Change": 
@@ -210,7 +210,7 @@ if (db.open) {
           data: 'Photo',
           render: function(data, type, row) {
             if (data == 'Yes') {
-              return '<img src="../../assets/img/camera.png" alt=""></img>';
+              return '<img src="../../assets/img/Camera.png" alt=""></img>';
             } 
             return data;
           },          
@@ -494,8 +494,9 @@ function gliderHours(flGlider) {
  * https://stackoverflow.com/questions/1918923/adding-combo-box-dynamically
  */
 function changeGlider(flightId, rowNum, flightDef) {
- if (db.open) {
+ if (db.open) {  
   let inputContent = flightDef+'&nbsp;&nbsp;&nbsp;&nbsp;'+i18n.gettext('Choose an existant glider')+' : '
+  inputArea.style.marginTop = "8px"; 
   inputArea.innerHTML = inputContent
   // select came from https://github.com/snapappointments/bootstrap-select
   let selectGlider = document.createElement("select");
@@ -570,18 +571,27 @@ function changeGlider(flightId, rowNum, flightDef) {
 function updateComment(flightId, currComment,flDate, flTime,rowIndex){
   // A clear of input zone
   inputArea.innerHTML = '';
+  inputArea.style.marginTop = "8px";  
+  let iDiv = document.createElement('div');
+  iDiv.id = 'input-group';
+  iDiv.className = 'input-group';
+  inputArea.appendChild(iDiv)
   let commentArea = document.createElement("textarea")   // must be input not button
   commentArea.name = "commenttext"
   commentArea.id = 'commenttext'
   commentArea.className="form-control"
   commentArea.rows = "2"
   commentArea.value = currComment
-  inputArea.appendChild(commentArea)
+  iDiv.appendChild(commentArea)
+  let btDiv = document.createElement('div');
+  btDiv.id = 'input-group-append'
+  btDiv.className = 'input-group-append'
+  iDiv.appendChild(btDiv)
   let btnUpdate = document.createElement("input")   // must be input not button
   btnUpdate.type = "button"
   btnUpdate.name = "update"
   btnUpdate.value=i18n.gettext("OK")
-  btnUpdate.style.marginTop = "10px";  
+  btnUpdate.style.marginTop = "8px";  
   btnUpdate.style.marginLeft = "20px";  
   btnUpdate.className="btn btn-success btn-sm"
   btnUpdate.onclick = function () {
@@ -593,30 +603,29 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
         table.cell(rowIndex,6).data(newComment);        
         table.$('tr.selected').addClass('tableredline');
         $('#inputdata').hide()      
-     //   manageComment(flightId, newComment, flDate, flTime, rowIndex)
+        manageComment(flightId, newComment, flDate, flTime, rowIndex)
       } catch (error) {
         log.error('Error during flight update '+error)
         displayStatus('Error during flight update')
       //  log.error('Error during flight update '+error)
       }
     }
-
   }
-  inputArea.appendChild(btnUpdate)    
+  btDiv.appendChild(btnUpdate)
   let btnCancel = document.createElement("input")   // must be input not button
   btnCancel.type = "button"
   btnCancel.name = "cancel"
-  btnCancel.style.marginTop = "10px";  
+  btnCancel.style.marginTop = "8px"; 
   btnCancel.style.marginLeft = "10px";  
   btnCancel.value=i18n.gettext("Cancel");
-  btnCancel.className="btn btn-secondary btn-sm"
+  btnCancel.className="btn btn-danger btn-sm"
   btnCancel.onclick = function () {
     let displayComment = document.getElementById('inputcomment')
     displayComment.innerHTML = currComment
     $('#inputdata').hide()
     manageComment(flightId, currComment, flDate, flTime)
   };
-  inputArea.appendChild(btnCancel)  
+  btDiv.appendChild(btnCancel)
   $('#inputdata').show()
   document.getElementById("commenttext").focus();
 }
@@ -624,21 +633,41 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
 function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
   if (currComment != null && currComment !='') {
     let displayComment = document.getElementById('inputcomment')
-    displayComment.innerHTML = '<strong>'+flDate+' '+flTime+' : '+currComment+'</strong>'
+    displayComment.innerHTML = '';
+    displayComment.style.marginTop = "8px";  
+    let iDiv = document.createElement('div');
+    iDiv.id = 'input-group';
+    iDiv.className = 'input-group';
+    displayComment.appendChild(iDiv)    
+    let commentArea = document.createElement("textarea")   // must be input not button
+    commentArea.name = "commenttext"
+    commentArea.id = 'commenttext'
+    commentArea.className="form-control"
+    commentArea.style.backgroundColor = '#fff1c2'
+    commentArea.rows = "2"
+    commentArea.value = flDate+' '+flTime+' : '+currComment
+    commentArea.disabled = true
+    iDiv.appendChild(commentArea)
+    let btDiv = document.createElement('div');
+    btDiv.id = 'input-group-append'
+    btDiv.className = 'input-group-append'
+    iDiv.appendChild(btDiv)
     let btnUpdate = document.createElement("input")   // must be input not button
     btnUpdate.type = "button"
     btnUpdate.name = "update"
     btnUpdate.value=i18n.gettext("Modify")
-    btnUpdate.style.marginLeft = "20px";  
+    btnUpdate.style.marginTop = "5px";  
+    btnUpdate.style.marginLeft = "10px";  
     btnUpdate.className="btn btn-success btn-sm"
     btnUpdate.onclick = function () {
       $('#inputcomment').hide(); 
       updateComment(flightId, currComment,flDate, flTime, rowIndex)
     }
-    displayComment.appendChild(btnUpdate)
+    btDiv.appendChild(btnUpdate)
     let btnDelete = document.createElement("input")   // must be input not button
     btnDelete.type = "button"
     btnDelete.name = "cancel"
+    btnDelete.style.marginTop = "5px";  
     btnDelete.style.marginLeft = "10px";  
     btnDelete.value=i18n.gettext("Delete");
     btnDelete.className="btn btn-danger btn-sm"
@@ -658,10 +687,11 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
         }
       }
     };
-    displayComment.appendChild(btnDelete)    
+    btDiv.appendChild(btnDelete)    
     $('#inputcomment').show(); 
   }
 }
+
 
 function exportIgc() {
   if (currIgcText === undefined || currIgcText == "" ) {
