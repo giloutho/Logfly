@@ -39,6 +39,7 @@ const btnManu = document.getElementById('imp-manu')
 
 let currStatusContent
 let currTypeGps = null
+let currLang
 
 iniForm()
 
@@ -49,9 +50,18 @@ ipcRenderer.on('gpsdump-fone', (event, result) => {
 })  
 
 function iniForm() {
-    const currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, store.get('langmsg'))
-    i18n.setLocale(currLang)
+  try {    
+    currLang = store.get('lang')
+    if (currLang != undefined && currLang != 'en') {
+        currLangFile = currLang+'.json'
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
+        i18n.setMessages('messages', currLang, langjson)
+        i18n.setLocale(currLang);
+    }
+  } catch (error) {
+      log.error('[problem.js] Error while loading the language file')
+  }  
     const menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         const template = $(templates).filter('#temp-menu').html();  

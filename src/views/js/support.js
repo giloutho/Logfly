@@ -16,13 +16,26 @@ let logrendererpath = null
 let currDisplay = null
 let renderDisplay = 'render'
 let mainDisplay = 'main'
+let loadLangTime
+let currLang 
 
 iniForm()         
 
 function iniForm() {
-    const currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, store.get('langmsg'))
-    i18n.setLocale(currLang)
+  let start = performance.now()
+  try {    
+    currLang = store.get('lang')
+    if (currLang != undefined && currLang != 'en') {
+        currLangFile = currLang+'.json'
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
+        i18n.setMessages('messages', currLang, langjson)
+        i18n.setLocale(currLang);
+    }
+  } catch (error) {
+      log.error('[problem.js] Error while loading the language file')
+  }   
+    loadLangTime = performance.now()-start;
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         var template = $(templates).filter('#temp-menu').html();  
@@ -121,7 +134,7 @@ function fnMainDisplay() {
   $('#div_system').hide()   
   $('#div_mail').hide()
   $('#div_logbook').hide()
-  ipcRenderer.send('read-log-main',logmainpath)
+  ipcRenderer.send('read-log-main',logmainpath)    // process-main/files-utils/read-log.js
   // the result is back with ipcRenderer.on('log-lines-array')
 }
 
@@ -135,6 +148,93 @@ function fnRenderDisplay() {
 }
 
 function fnSystemDisplay() {
+  let customReport = []
+  customReport.push(['Logfly version',store.get('version')])
+  customReport.push(['OS',store.get('currOS')])
+  customReport.push(['Version',store.get('osVersion')])
+  customReport.push(['System Locale',store.get('locale')])
+  let currLang = store.get('lang')
+  console.log('currlang '+currLang)
+  if (currLang != undefined && currLang != 'en') {
+    customReport.push(['Language used',store.get('lang')])
+    let loadLang = (Math.round(loadLangTime * 100) / 100).toFixed(2);
+    customReport.push(['Language file loading time',`${loadLang} milliseconds`])
+  } else {
+    customReport.push(['Language used','default (en)'])
+    customReport.push(['Language file loading time',''])
+  }
+  customReport.push(['Electron',store.get('electronVersion')])
+  customReport.push(['Chrome',store.get('chromeVersion')])
+  customReport.push(['Node',store.get('nodeVersion')])
+  // test db
+  let dbFullPath = (store.get('dbFullPath'))
+  customReport.push(['Current db path',store.get('dbFullPath')])
+  let stats = fs.statSync(store.get('dbFullPath'))
+  let dbSize = nFormatter(stats.size, 1)
+  customReport.push(['Db size',`${dbSize}`])
+  try {
+      if (fs.existsSync(dbFullPath)) {
+          const db = require('better-sqlite3')(dbFullPath)   
+          const stmtSites = db.prepare('SELECT COUNT(*) FROM Site')
+          let countSites = stmtSites.get()
+          customReport.push(['Number of items in the file Sites',`${countSites['COUNT(*)']}`])
+          const stmtFlights = db.prepare('SELECT COUNT(*) FROM Vol')
+          let countFlights = stmtFlights.get()
+          customReport.push(['Number of items in the file Vol',`${countFlights['COUNT(*)']}`])
+      } else {
+          customReport.push(['<b>Error</b>','db checked file not exist'])
+      }        
+  } catch (error) {
+      customReport.push(['<b>Error occured during db checking r</b>',error])
+  }
+
+  // Add blank line
+  customReport.push(['',''])
+  customReport.push(['<b>Config file</b>',store.path])
+
+  let rawconfig = fs.readFileSync(store.path)
+  let jsonconfig = JSON.parse(rawconfig);
+  // JSON.parse not enought. Must be transformed in array of array
+  const arrConfig = Object.keys(jsonconfig).map((key) => [key, jsonconfig[key]]);
+  let finalReport = customReport.concat(arrConfig)
+  var dataTableConfig = {
+    data: finalReport,
+    columns: [  
+      { title: 'Key' },
+      { title: 'Value' }
+    ],     
+    destroy: true,
+    bInfo : false,          // hide "Showing 1 to ...  row selected"
+    lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
+    searching : false,      // hide search abilities in table
+    ordering: false,        // Sinon la table est triée et écrase le tri sql
+    pageLength: 14,         // ce sera à calculer avec la hauteur de la fenêtre
+    pagingType : 'full',
+    language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
+      paginate: {
+        first: '<<',
+        last: '>>',
+        next: '>', // or '→'
+        previous: '<' // or '←' 
+      }
+    },          
+  }
+
+  let table = $('#table_config').DataTable(dataTableConfig )
+
+
+ 
+// $(document).ready(function () {
+//     $('#table_config').DataTable({
+//         data: arrConfig,
+//         columns: [
+//             { title: 'Id' },
+//             { title: 'Value' },
+//         ],
+//     });
+// });
+
+
   $('#div_tablelog').hide()
   $('#div_system').show()   
   $('#div_mail').hide()
@@ -238,3 +338,20 @@ ipcRenderer.on('confirmation-dialog', (event, response) => {
     console.log('currdisplay : '+currDisplay)
   }
 })
+
+function nFormatter(num, digits) {
+  const lookup = [
+    { value: 1, symbol: "" },
+    { value: 1e3, symbol: "k" },
+    { value: 1e6, symbol: "M" },
+    { value: 1e9, symbol: "G" },
+    { value: 1e12, symbol: "T" },
+    { value: 1e15, symbol: "P" },
+    { value: 1e18, symbol: "E" }
+  ];
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  var item = lookup.slice().reverse().find(function(item) {
+    return num >= item.value;
+  });
+  return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
+}

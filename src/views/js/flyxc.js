@@ -4,10 +4,21 @@ var i18n = require('../../lang/gettext.js')()
 var Mustache = require('mustache')
 var Store = require('electron-store')
 var store = new Store()
+let currLang 
 
-const currLang = store.get('lang')
-i18n.setMessages('messages', currLang, store.get('langmsg'))
-i18n.setLocale(currLang)    
+try {    
+  currLang = store.get('lang')
+  if (currLang != undefined && currLang != 'en') {
+      currLangFile = currLang+'.json'
+      let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+      let langjson = JSON.parse(content);
+      i18n.setMessages('messages', currLang, langjson)
+      i18n.setLocale(currLang);
+  }
+} catch (error) {
+    log.error('[problem.js] Error while loading the language file')
+}  
+
 const btnClose = document.getElementById('bt-close')
 btnClose.innerHTML = i18n.gettext('Close')
 btnClose.addEventListener('click',(event) => {

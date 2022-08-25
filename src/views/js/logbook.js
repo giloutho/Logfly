@@ -25,13 +25,14 @@ let track
 const btnFullmap = document.getElementById('fullmap')
 let btnScoring = document.getElementById('scoring')
 let btnFlyxc = document.getElementById('flyxc')
+let currLang
 
 iniForm()
 
 function iniForm() {
   console.log('arrivée logbook')
   try {    
-    let currLang = store.get('lang')
+    currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
         let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));

@@ -2,9 +2,16 @@ const IGCDecoder = require('../../process-main/igc/igc-decoder.js')
 const i18n = require('../../lang/gettext.js')()
 const Store = require('electron-store')
 const store = new Store()
-const currLang = store.get('lang')
-i18n.setMessages('messages', currLang, store.get('langmsg'))
-i18n.setLocale(currLang);
+try {    
+    let currLang = store.get('lang')
+    let currLangFile = currLang+'.json'
+    let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+    let langjson = JSON.parse(content);
+    i18n.setMessages('messages', currLang, langjson)
+    i18n.setLocale(currLang);
+  } catch (error) {
+    log.error('[fullmap.js] Error while loading the language file')
+  }
 
 
 function buildElements(track) {

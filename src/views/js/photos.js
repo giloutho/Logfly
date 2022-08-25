@@ -14,13 +14,23 @@ const btnOption1 = document.getElementById('option1')
 const btnOption2 = document.getElementById('option2')
 const btnOption3 = document.getElementById('option3')
 const statusContent = document.getElementById("status")
+let currLang
 
 iniForm()
 
 function iniForm() {
-    const currLang = store.get('lang')
-    i18n.setMessages('messages', currLang, store.get('langmsg'))
-    i18n.setLocale(currLang)    
+    try {    
+        currLang = store.get('lang')
+        if (currLang != undefined && currLang != 'en') {
+            currLangFile = currLang+'.json'
+            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+            let langjson = JSON.parse(content);
+            i18n.setMessages('messages', currLang, langjson)
+            i18n.setLocale(currLang);
+        }
+      } catch (error) {
+          log.error('[problem.js] Error while loading the language file')
+      }  
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
         var template = $(templates).filter('#temp-menu').html();  

@@ -24,6 +24,7 @@ const btnClose = document.getElementById('bt-close')
 const btnInfos  = document.getElementById('bt-infos')
 const btnMeasure  = document.getElementById('bt-mes')
 
+let currlang
 let hgChart
 let sidebar
 let endLatlng 
@@ -367,15 +368,17 @@ function createPopGlide(feature, layer) {
 
 function iniForm() {
   try {    
-    let currLang = store.get('lang')
-    let currLangFile = currLang+'.json'
-    let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-    let langjson = JSON.parse(content);
-    i18n.setMessages('messages', currLang, langjson)
-    i18n.setLocale(currLang);
+    currLang = store.get('lang')
+    if (currLang != undefined && currLang != 'en') {
+        currLangFile = currLang+'.json'
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
+        i18n.setMessages('messages', currLang, langjson)
+        i18n.setLocale(currLang);
+    }
   } catch (error) {
-    log.error('Error while loading the language file')
-  }
+      log.error('[problem.js] Error while loading the language file')
+  }  
   btnClose.innerHTML = i18n.gettext('Close')
   btnClose.addEventListener('click',(event) => {
       ipcRenderer.send('hide-waiting-gif',null)
