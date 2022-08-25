@@ -26,7 +26,7 @@ function openWindow(event) {
   win.loadURL(modalPath)
   win.webContents.on('did-finish-load', function() {
     win.show();
-    for(var i=0; i<2500000000; ++i){}
+    for(var i=0; i<4500000000; ++i){}
     msg = 'coucou'
     console.log('fin des opérations.... coucou sent')
     win.close()
