@@ -2,29 +2,12 @@ const {ipcMain} = require('electron')
 const { dialog } = require('electron')
 const fs = require('fs')
 
-ipcMain.on('open-file', (event, arg) => {
-  let fileChoosed = null
-  /** 
-   * Asynchronous version
-   * 
-      dialog.showOpenDialog('',{
-        properties: ['openFile']
-      }).then(result => {
-        if (!result.canceled) {           
-          fileChoosed = result.filePaths[0]
-          event.sender.send('selected-file', fileChoosed)
-        }
-      })
-  */
-  if (arg != null) {
-    let path = dialog.showOpenDialogSync({
+ipcMain.on('open-file', (event, arg) => { 
+  let filePath = dialog.showOpenDialogSync({
       defaultPath : arg,
       properties: ['openFile']
-     });
-    if (typeof path !== 'undefined') { 
-        folderChoosed = path[0]
-    }    
-  }
+    });
+    event.returnValue = filePath  
 })
 
 ipcMain.on('choose-img', (event, arg) => {
