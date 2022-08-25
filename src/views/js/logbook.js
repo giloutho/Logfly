@@ -29,9 +29,19 @@ let btnFlyxc = document.getElementById('flyxc')
 iniForm()
 
 function iniForm() {
-  const currLang = store.get('lang')
-  i18n.setMessages('messages', currLang, store.get('langmsg'))
-  i18n.setLocale(currLang)
+  console.log('arrivée logbook')
+  try {    
+    let currLang = store.get('lang')
+    if (currLang != undefined && currLang != 'en') {
+        currLangFile = currLang+'.json'
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
+        i18n.setMessages('messages', currLang, langjson)
+        i18n.setLocale(currLang);
+    }
+  } catch (error) {
+      log.error('[problem.js] Error while loading the language file')
+  }   
   let menuOptions = menuFill.fillMenuOptions(i18n)
   $.get('../../views/tpl/sidebar.html', function(templates) { 
       const template = $(templates).filter('#temp-menu').html();  
@@ -376,7 +386,7 @@ function photoManager(flightId, rowNum, flPhoto) {
 }
 
 function photoUpload(flightId, rowNum) {  
-  const imgPath = ipcRenderer.sendSync('choose-img',store.get('pathw'))
+  const imgPath = ipcRenderer.sendSync('choose-img',store.get('pathWork'))
   if (imgPath !== undefined && imgPath != null) {
         let wantedWidth = 960
         let wantedHeight = 600
