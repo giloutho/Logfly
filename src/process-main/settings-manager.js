@@ -1,155 +1,60 @@
+const { app } = require('electron');
 const path = require('path')
 const fs = require('fs') 
 const Store = require('electron-store')
 const process = require('process')
-//const propertiesReader = require('../../node_modules/properties-reader')
 const propertiesReader = require('properties-reader')
-const log = require('electron-log');
+const log = require('electron-log')
 
 
 
-function checkSettings (electronPack, appPath, progVersion) {          
-    // A decommenter c'était pour du debugging Windows
-    // var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
-    // if (propertiesPath != null) 
-    // {
-    //     let forcheck = path.resolve(propertiesPath, "logfly.properties")
-    //     console.log(forcheck)
-    //     checkPropWindows(forcheck)
-    // } 
-    if (electronPack) { 
-        prodSettings(progVersion)
-    } else {
-        devSettings(appPath)
-    }
-    return testDb()
-}
-
-/* A vérifier la procédure de vérification dans L5 était plus sophistiquée */
-function testDb() {
-    const store = new Store(); 
-    let dbFullPath = (store.get('dbFullPath'))
+function checkSettings (appPath, progVersion) {          
+    const store = new Store()
     try {
-        if (fs.existsSync(dbFullPath)) {
-            const db = require('better-sqlite3')(dbFullPath)
-            // how many tables in database
-            const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
-            let countTables = stmt.get()
-            //console.log('Test '+dbFullPath+' '+countTables['COUNT(*)']+' tables')
-            // countTables is an object, the value is recovered with a notation between brackets 
-           // countTables['COUNT(*)'] >= 2 ? store.set('checkDb',true) : store.set('checkDb',false)     
-            const stmtSites = db.prepare('SELECT COUNT(*) FROM Site')
-            let countSites = stmtSites.get()
-            console.log(`Connected on ${dbFullPath} with ${countSites['COUNT(*)']} sites`);
-            return true
+        // If this is the first run, there is no config.json file
+        if (fs.existsSync((store.path))) {
+            // Updating environment variables
+            getEnv()
+            return testDb(store.get('dbFullPath'))
         } else {
-            log.error('db checked file not exist '+dbFullPath)  
-            return false
+            // creation of config file
         }        
     } catch (error) {
-        log.error('Error occured during db checking  '+error)
+        log.error('Error while checking settings  '+error)
         return false  
     }
+
 }
 
-function prodSettings(progVersion) {
-    const store = new Store(); 
-    console.log('ProgVersion '+progVersion)
-   // store.set('progVersion', progVersion)
-    getEnv()
-    let firstRun = store.get('premiere')
-    if(typeof firstRun === 'undefined') {
-        iniSettings()
-    } else {
-        store.set('progVersion',progVersion)
-    }
-    console.log('mode prod sur mon '+store.get('currOS')+' avec Chrome '+store.get('chromeVersion')+' sur '+store.get('f'))
-}
-
-
-function devSettings(appPath) {
-    const store = new Store(); 
-    getEnv()
-    let currOS = store.get('currOS')
-    switch(currOS) {
-        case 'mac': 
-            store.set('dbFullPath','./dbtest/test6.db')
-            console.log('settings '+store.get('dbFullPath'))
-            store.set('dbName','test6.db')
-            store.set('pathdb','./db')
-            store.set('pathImport', '/Users/gil/Documents/Logfly6/import')
-            store.set('pathSyride','/Users/gil/syride')  
-            store.set('pathWork','/Users/gil/Documents/Logfly')
-            store.set('lang','fr')
-            console.log('langue = fr')
-            break;
-        case 'linux': 
-        store.set('dbFullPath','./dbtest/test6.db')
-            store.set('dbName','test6.db')
-            store.set('pathdb','./db')
-            store.set('pathImport', '/home/thinklinux/Documents/Logfly/import')
-            store.set('pathSyride','/home/thinklinux/Documents/Logfly/syride')  
-            store.set('pathWork','/home/thinklinux/Documents/Logfly')
-            store.set('lang','fr') 
-            store.set('urlvisu','https://flyxc.app/?track=')
-            store.set('urllogflyigc','http://logfly.org/Visu/')
-            break;
-        case 'win':
-            store.set('dbFullPath','./dbtest/test6.db')
-            store.set('dbName','test6.db')
-            store.set('pathdb','./db')
-            store.set('pathImport',process.env.USERPROFILE+'\\Documents\\import')
-            store.set('pathSyride', process.env.USERPROFILE+'\\Documents\\Syride')
-            store.set('pathWork', process.env.USERPROFILE+'\\Documents\\Logfly')
-            store.set('lang','fr')
-            break;    
-        default: 
-            currOS = 'ns'  // non supported  
-    }
-    // Bien qu'inutile on charge à chaque fois pour vérification si des modifications ont été faites dans le json
-    let currLang = store.get('lang')
-    let currLangFile = currLang+'.json'
-    // src uniquement en dev. A supprimer pour le chemin en prod
-    let langPath = path.resolve(appPath, 'src/lang', currLangFile)
-    console.log(currLangFile)
-    try {
-        if (fs.existsSync(langPath)) {
-            let content = fs.readFileSync(langPath);
-            langjson = JSON.parse(content);
-            store.set('langmsg',langjson)
-        } else {
-            log.error('language file not found : '+langPath)
-            store.set('lang','en')
-        }        
-    } catch (error) {
-        log.error('Error reading language file : '+error)
-        store.set('lang','en')
-    }
-    console.log('Mode dev sur ['+store.get('currOS')+'] Settings on : '+store.path+'   Logfly db in '+store.get('dbFullPath'))
-}
-
-function getEnv() {    
+function getEnv(modeProd) {    
     const store = new Store(); 
     let currOS
+    let currVersion
     var platform = process.platform;
     switch(platform) {
         case 'darwin': 
             currOS = 'mac'
+            currVersion = process.getSystemVersion()
             break;
         case 'linux': 
             currOS = 'linux'
+            currVersion = process.getSystemVersion()
             break;
         case 'win32':
             currOS = 'win'
+            currVersion = process.getSystemVersion()
             break;    
         default: 
-            currOS = 'ns'  // non supported  
+            currOS = 'ns'  // non supported 
+            currVersion = 'ns'
     }
     store.set('currOS',currOS)
+    store.set('osVersion',currVersion)
     store.set('chromeVersion',process.versions.chrome)
     store.set('electronVersion',process.versions.electron)
     store.set('nodeVersion',process.versions.node)
-    console.log('currOs : '+currOS)
+    store.set('version',app.getVersion())      
+    store.set('locale',app.getLocale())
 }
 
 /**
@@ -164,42 +69,181 @@ function getEnv() {
     var propertiesPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
     if (propertiesPath != null) 
     {
-        var logflyPath = path.resolve(propertiesPath, "logfly.properties");   
+        const logfly5Path = path.resolve(propertiesPath, "logfly.properties");   
         // we check if Logfly5 was installed
-        if (fs.existsSync(logflyPath)) {    
-            var properties = propertiesReader(logflyPath);
-            console.log(`Path db : ${properties.get('pathdb')} dbname : ${properties.get('dbname')}`)
-            store.set('dbname',properties.get('dbname'))
-            store.set('urlvisu',properties.get('urlvisu'))
-            store.set('pathsyride',properties.get('pathsyride'))
-            store.set('debugmode',properties.get('debugmode'))
-            store.set('urllogflyigc',properties.get('urllogflyigc'))
+        if (fs.existsSync(logfly5Path)) {    
+            const properties = propertiesReader(logflyPath);
+            // console.log(`Path db : ${properties.get('pathdb')} dbName : ${properties.get('dbName')}`)
+            store.set('dbName',properties.get('dbname'))           
+            store.set('pathsyride',properties.get('pathsyride'))            
             store.set('pathdb',properties.get('pathdb'))
             store.set('finderlong',properties.get('finderlong'))
             store.set('finderlat',properties.get('finderlat'))
-            store.set('urllogfly',properties.get('urllogfly'))
             store.set('pathWork',properties.get('pathw'))
             store.set('urlicones',properties.get('urlicones'))
             store.set('dbFullPath',properties.get('fullpathdb'))
             store.set('pathimport',properties.get('pathimport'))
-            // une boucle à effectuer pour récupérer la langue
+            const idxLang = properties.get('idxLang')
+            if (idxLang != undefined) {
+                switch (key) {
+                    case 0:
+                        store.set('lang','de')
+                        break;
+                    case 1:
+                        store.set('lang','en')
+                        break;
+                    case 2:
+                        store.set('lang','fr')
+                        break;
+                    case 3:
+                        store.set('lang','it')
+                        break;                                                                
+                    default:    
+                        setLangWithLocale()          
+                        break;
+                }
+            } else {
+                setLangWithLocale()
+            }
+            // default assignments
+            store.set('urlvisu','https://flyxc.app/?track=')
+            store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
+            store.set('urllogfly','http://www.logfly.org')
         } else {
-            // Logfly5 settings not found, default values will be defined
-
+            defaultSettings()
         }
+    } else {
+        defaultSettings()
     }
 }
 
-function checkPropWindows(logflyPath) {
-    if (fs.existsSync(logflyPath)) {   
-        const store = new Store()
-        var properties = propertiesReader(logflyPath);
-        let pathdb = properties.get('pathdb')
-        let pathw = properties.get('pathw')
-        let pathfulldb = properties.get('fullpathdb')
-        store.set('debugFullPath',properties.get('fullpathdb'))
-        console.log(pathdb+'   '+pathw+'   '+properties.get('fullpathdb'))
+function defaultSettings() {
+    // Logfly5 settings not found, default values will be defined            
+    let logflyPath  = path.join(app.getPath('documents'), 'Logfly')  
+    try {
+        if (!fs.existsSync(logflyPath)) {
+            fs.mkdirSync(logflyPath)    
+            let logflyDbPath  = path.join(logflyPath, 'Logfly.db')  
+            if (createDb(logflyDbPath)) {
+                store.set('dbName','Logfly.db')                       
+                store.set('pathWork',logflyPath)
+                store.set('pathdb',logflyPath)
+                store.set('dbFullPath',logflyDbPath)            
+            } else {
+                store.set('dbName','')                       
+                store.set('pathdb','')
+                store.set('pathWork','')
+                store.set('dbFullPath','')        
+            }
+        } else {
+            // a folder Logfly  exixts ... lower version than version 5 ?
+            let dbName = 'Logfly.db'
+            let logflyDbPath = path.join(logflyPath, dbName) 
+            if (fs.existsSync(logflyDbPath)) {
+                if (!testDb(logflyDbPath)) {
+                    dbName = 'Logfly6.db'
+                    logflyDbPath  = path.join(logflyPath, dbName)  
+                    if (createDb(logflyDbPath)) {
+                        store.set('dbName',dbName)    
+                        store.set('pathWork',logflyPath)                   
+                        store.set('pathdb',logflyPath)
+                        store.set('dbFullPath',logflyDbPath)            
+                    } else {
+                        store.set('dbName','')                       
+                        store.set('pathdb','')
+                        store.set('pathWork','')
+                        store.set('dbFullPath','')        
+                    }                    
+                } else {
+                    store.set('dbName',dbName)                       
+                    store.set('pathdb',logflyPath)
+                    store.set('dbFullPath',logflyDbPath)  
+                }
+            } else {
+                if (createDb(logflyDbPath)) {
+                    store.set('dbName',dbName)    
+                    store.set('pathWork',logflyPath)                    
+                    store.set('pathdb',logflyPath)
+                    store.set('dbFullPath',logflyDbPath)            
+                } else {
+                    store.set('dbName','')                       
+                    store.set('pathdb','')
+                    store.set('pathWork',logflyPath)
+                    store.set('dbFullPath','')        
+                }  
+            }
+        }    
+    } catch (error) {
+        log.error('Error occured inside defaultSettings : '+error)
+        store.set('dbName','')                       
+        store.set('pathdb','')
+        store.set('dbFullPath','')    
     }
+}
+
+
+function testDb(dbFullPath) {
+    try {
+        if (fs.existsSync(dbFullPath)) {
+            const db = require('better-sqlite3')(dbFullPath)
+            // how many tables in database -> kept for future use
+            //const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
+            // let countTables = stmt.get()
+            // console.log('Test '+dbFullPath+' '+countTables['COUNT(*)']+' tables')
+            // countTables is an object, the value is recovered with a notation between brackets 
+            // countTables['COUNT(*)'] >= 2 ? store.set('checkDb',true) : store.set('checkDb',false)     
+            const stmtFlights = db.prepare('SELECT COUNT(*) FROM Vol')
+            let countFlights = stmtFlights.get()
+            // console.log(`Connected on ${dbFullPath} with ${countFlights['COUNT(*)']} flights`);
+            return true
+        } else {
+            log.error('db file not exist : '+dbFullPath)  
+            return false
+        }        
+    } catch (error) {
+        log.error('Error occured during checking of '+dbFullPath+' : '+error)
+        return false  
+    }
+}
+
+function createDb(dbFullPath) {
+    const db = require('better-sqlite3')(dbFullPath)
+    let creationVol = 'CREATE TABLE Vol (V_ID integer NOT NULL PRIMARY KEY, V_Date TimeStamp, V_Duree integer,'
+    creationVol += 'V_sDuree varchar(20), V_LatDeco double, V_LongDeco double, V_AltDeco integer, '
+    creationVol += 'V_Site varchar(100), V_Pays varchar(50), V_Commentaire Long Text, V_IGC Long Text, V_Photos Long Text,UTC integer, V_CFD integer,V_Engin Varchar(10), '
+    creationVol += 'V_League integer, V_Score Long Text)'
+    const stmtCreaVol = db.prepare(creationVol)
+    stmtCreaVol.run()
+    console.log(stmtCreaVol.changes); // => 1
+    let creaTables = stmtCreaVol.changes
+    let creationSite = 'CREATE TABLE Site(S_ID integer NOT NULL primary key,S_Nom varchar(50),S_Localite varchar(50),'
+    creationSite += 'S_CP varchar(8),S_Pays varchar(50),S_Type varchar(1),S_Orientation varchar(20),S_Alti varchar(12),'
+    creationSite += 'S_Latitude double,S_Longitude double,S_Commentaire Long Text,S_Maj varchar(10))'
+    const stmtCreaSite = db.prepare(creationSite)
+    stmtCreaSite.run()
+    console.log(stmtCreaSite.changes); // => 1
+    creaTables += stmtCreaSite.changes
+    if (creaTables == 2)
+        return true
+    else 
+        return false
+}
+
+function setLangWithLocale() {
+    let _locale = app.getLocale()     
+    switch (_locale) {
+        case 'fr':
+            store.set('lang','fr')    
+            break
+        case 'de':
+            store.set('lang','de')
+            break
+        case 'it':
+            store.set('lang','it')        
+        default:
+            store.set('lang','en')    
+            break;
+    }                 
 }
 
 module.exports.checkSettings = checkSettings
