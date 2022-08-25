@@ -4,6 +4,7 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
   <title>Logfly</title>
   <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
   <link rel="stylesheet" href="../../assets/css/home.css">
@@ -17,148 +18,138 @@
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>      
     <div class="wrapper">
-        <!-- Sidebar  -->
-        <nav id="sidebar" class="active">
-            <div class="sidebar-header" id="dismiss">
-                <h4><img src="../../assets/img/Logo_JS_36_Blc.png" class="d-inline-block align-bottom" alt="">&nbsp;&nbsp;Logfly</h4>
-            </div>
-            <ul class="list-unstyled components">
-              <li>
-                <a href="#logbook" onclick="callPage('logbook')">Logbook</a>
-              </li>    
-              <li>
-                <a href="#overview" id="overview">Overview</a>
-              </li>    
-              <li>
-                <a href="#import" id="import">Import</a>
-              </li>             
-              <li>
-                <a href="#external" id="external">External</a>
-              </li>    
-              <li>
-                <a href="#stat" id="stat">Statistics</a>
-              </li>    
-              <li>
-                <a href="#sites" onclick="callPage('sites')">Sites</a>
-              </li>        
-              <li>
-                <a href="#waypoints" id="waypoints">Waypoints</a>
-              </li>    
-              <li>
-                <a href="#airspaces" id="airspaces">Espaces aériens</a>
-              </li>    
-              <li>
-                <a href="#photos" id="photos">Photos</a>
-              </li>        
-              <li>
-                <a href="#settings" onclick="callPage('settings')">Settings</a>
-              </li>                       
-              <li>
-                <a href="#logfile" id="logfile">Journal</a>
-              </li>                                                                                          
-            </ul>   
-            <ul class="list-unstyled CTAs">
-                <li>
-                    <a href="#about" class="download">About</a>
-                </li>
-            </ul>
-        </nav>
-      <!-- Page Content  -->     
-      <div id="content">
-        <!----  tab div    -->
-        <div>
-        <div class="jumbotron jumbotron-fluid">
-            <div class="container">
-                <h2></h1>Logfly cannot be initialized</h2>      
-                <p>Unable to find the database</p>
-            </div>
-            </div>            
-          <div class="container-fluid">       
-            <div id="div_logbook">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card top-buffer">
-                        <div class="card-header">
-                            <h4 class="card-title" id="lg_logbook" >Logbook</h4>
-                        </div>
-                        <div class="card-body">
-                            <form>
-                                <div class="row">
-                                    <div class="col-md-8 pr-1">
-                                    <label id="lg-working-path">Working folder path</label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                        <div class="col-sm-8 my-1">                                    
-                                            <input type="text" class="form-control" id="tx-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
-                                        </div>
-                                        <div class="col-auto my-1 align-self-center">
-                                            <button type="button" class="btn btn-outline-info" id="bt-work-path">Modify</button>
-                                        </div>
-                                </div>
-                                <div class="row top-buffer">
-                                    <div class="col-md-8 pr-1">
-                                    <label id="lg-folder-path">Current logbook folder</label>
-                                    </div>
-                                </div>         
-                                <div class="row">
-                                    <div class="col-sm-8 my-1">                                    
-                                        <input type="text" class="form-control" id="tx-log-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
-                                    </div>
-                                </div>       
-                                <div class="row top-buffer">
-                                    <div class="col-md-8 pr-1">
-                                    <label id="lg-curr-logbook">Current logbook</label>
-                                    </div>
-                                </div>         
-                                <div class="row">
-                                    <div class="col-sm-4 my-1">     
-                                        <select class="custom-select mr-sm-4" id="sel-logbook">
-                                        </select>                                 
-                                    </div>
-                                </div>                                   
-                                <div class="row top-buffer">
-                                    <div class="col-sm-8 my-1">                                    
-                                    <input type="text" class="form-control" id="lg-log-folder" disabled="" value="Choose a new logbook folder">
-                                    </div>
-                                    <div class="col-auto my-1 align-self-center">
-                                        <button type="button" class="btn btn-outline-info" id="bt-choose-folder">Choose</button>
-                                    </div>
-                                </div>                                                                             
-                                <div class="row top-buffer">
-                                    <div class="col-sm-8 my-1">                                    
-                                    <input type="text" class="form-control" id="lg-move-logbook" disabled="" value="Move logbook(s) to a different folder">
-                                    </div>
-                                    <div class="col-auto my-1 align-self-center">
-                                        <button type="button" class="btn btn-outline-info" id="bt-move-folder">Move</button>
-                                    </div>
-                                </div>         
-                                <div class="row top-buffer">
-                                    <div class="col-sm-8 my-1">                                    
-                                    <input type="text" class="form-control" id="lg-new-logbook" disabled="" value="Create a new logbook">
-                                    </div>
-                                    <div class="col-auto my-1 align-self-center">
-                                        <button type="button" class="btn btn-outline-info" id="bt-new-logbook">Create</button>
-                                    </div>
-                                </div>      
-                                <div class="row top-buffer">
-                                    <div class="col-sm-8 my-1">                                    
-                                    <input type="text" class="form-control" id="lg-repatriate" disabled="" value="Recover a copy">
-                                    </div>
-                                    <div class="col-auto my-1 align-self-center">
-                                        <button type="button" class="btn btn-outline-info" id="bt-repatriate">Recover</button>
-                                    </div>
-                                </div>                                                                           
-    
-                                <div class="clearfix"></div>
-                            </form>
-                        </div>
-                    </div>
-                    </div>
+        <!-- Page Content  -->     
+        <div id="content">
+            <div class="alert alert-danger text-center" role="alert" id="status"></div>       
+            <!---  First section -->                 
+            <div class="row">
+                <div class="col-sm-4 my-1">  
+                    <h4 id="lg_settings" ></h4>
                 </div>
-                </div>  
-          </div>
-        </div>
+            </div>
+            <form>
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-lang"></label>
+                    </div>                                    
+                    <div class="col-sm-6 my-1">                                    
+                        <input type="text" class="form-control" id="tx-lang" disabled="">
+                    </div>
+                    <div class="col-auto my-1 align-self-center">
+                        <img id="img-lang" />
+                    </div>                                                                           
+                </div>                                  
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-working-path"></label>
+                    </div>
+                    <div class="col-sm-6 my-1">                                    
+                        <input type="text" class="form-control" id="tx-work-path" disabled="">
+                    </div>
+                    <div class="col-auto my-1 align-self-center">
+                        <img id="img-work-path" />
+                    </div>                                         
+                </div>     
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-folder-log"></label>
+                    </div>                                    
+                    <div class="col-sm-6 my-1">                                    
+                        <input type="text" class="form-control" id="tx-log-path" disabled="">
+                    </div>
+                    <div class="col-auto my-1 align-self-center">
+                        <img id="img-log-path" />
+                    </div>                                                                           
+                </div>    
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-dbname"></label>
+                    </div>                                    
+                    <div class="col-sm-6 my-1">                                    
+                        <input type="text" class="form-control" id="tx-dbname" disabled="">
+                    </div>
+                    <div class="col-auto my-1 align-self-center">
+                        <img id="img-dbname" />
+                    </div>                                                                          
+                </div>                    
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-dbfullpath"></label>
+                    </div>                                    
+                    <div class="col-sm-6 my-1">                                    
+                        <input type="text" class="form-control" id="tx-dbfullpath" disabled="">
+                    </div>                                 
+                </div> 
+                  <!---  End of the first section --> 
+                <div class="row"> <div class="span12"> </br></div></div>
+                <div class="row">
+                    <div class="col text-center">
+                      <button type="button" class="btn btn-secondary btn-lg" disabled id="bt-start"></button>
+                    </div>
+                  </div> 
+                <div class="row"> <div class="span12"> </br></div></div>     
+                <!---  Second section -->                           
+                <div class="row">
+                    <div class="col-sm-4 my-1"> 
+                        <h4 id="lg_change" ></h4>
+                    </div>
+                </div>   
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-sel-lang"></label>
+                    </div> 
+                    <div class="col-sm-2 my-1">     
+                        <select class="custom-select mr-sm-2" id="sel-lang"></select>                                 
+                    </div>                                  
+                </div>                       
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-choose-working"></label>
+                    </div>                                     
+                    <div class="col-auto my-1 align-self-center">
+                        <button type="button" class="btn btn-outline-info" id="bt-choose-working"></button>
+                    </div>
+                </div>           
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-choose-dbpath"></label>
+                    </div>                                     
+                    <div class="col-auto my-1 align-self-center">
+                        <button type="button" class="btn btn-outline-info" id="bt-choose-dbpath"></button>
+                    </div>
+                </div>                                                                                           
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-sel-logbook"></label>
+                    </div> 
+                    <div class="col-sm-3 my-1">     
+                        <select class="custom-select mr-sm-3" id="sel-logbook">
+                        </select>                                 
+                    </div>
+                    <div class="col-auto my-1 align-self-center">
+                        <img id="img-select" />
+                    </div>                      
+                </div>      
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-create-logbook"></label>
+                    </div>   
+                    <div class="col-sm-3 my-1">                                    
+                        <input type="text" class="form-control" id="tx-create-logbook">
+                    </div>                                                      
+                    <div class="col-auto my-1 align-self-center">
+                        <button type="button" class="btn btn-outline-info" id="bt-create-logbook"></button>
+                    </div>                 
+                </div>     
+                <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-repatriate"></label>
+                    </div>                                     
+                    <div class="col-auto my-1 align-self-center">
+                        <button type="button" class="btn btn-outline-info" id="bt-repatriate"></button>
+                    </div>              
+                </div>                                                               
+            </form>        
       </div>
     </div>
     <script src="../../views/js/problem.js" type="text/javascript"></script>
