@@ -19,6 +19,16 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 const createWindow = () => {
 
+  /**
+   * pass additional arguments to Electron via electron-forge-start is tricky
+   * https://github.com/electron-userland/electron-forge/issues/190
+   * to test our prod mode we run ->  yarn start -- -- --prod     
+   * without this argument, we will be in dev prod
+   */
+   // let modeProd = app.commandLine.hasSwitch('prod') ? true : false;
+
+  const startOk = settings.checkSettings()
+
   loadMainProcesses() 
 
   // Create the browser window.
@@ -31,7 +41,11 @@ const createWindow = () => {
     }      
   });
 
-  loadSettings()
+  if (startOk) {
+    openWindow('logbook')
+  } else {
+    openWindow('problem')
+  }
 }
 
 // This method will be called when Electron has finished
@@ -56,20 +70,6 @@ app.on('activate', () => {
   }
 });
 
-function loadSettings() {
-  try {
-    const startOk = settings.checkSettings(app.isPackaged, app.getAppPath(), '6.0.0')
-    if (startOk) {
-      openWindow('logbook')
-    } else {
-      openWindow('problem')
-    }
-    
-  } catch (error) {
-      console.log('Error  : '+error)
-  } 
-}
-
 ipcMain.on("changeWindow", function(event, arg) {
     openWindow(arg)
 });
@@ -83,6 +83,7 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
 function openWindow(pageName) {
   switch (pageName) {
     case "logbook":
+      console.log('ok '+pageName)
         mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
      //   mainWindow.webContents.openDevTools(); 
         break;
@@ -108,7 +109,7 @@ function openWindow(pageName) {
         mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
         break;        
     case "tools":
-      mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
+      mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
       break;            
     case "support":
       mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
