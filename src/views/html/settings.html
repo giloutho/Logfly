@@ -4,6 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
     <title>Logfly</title>
     <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
     <link rel="stylesheet" href="../../assets/css/home.css">
@@ -20,33 +21,31 @@
         <div id="target-sidebar"></div>
         <div id="content">
             <!-- Horizontal navbar with menu button and different options -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <nav class="navbar navbar-expand-lg  navbar-custom">
                 <div class="container-fluid">
                     <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
                     <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
                     <span class="navbar-text mx-3" id="db-state"></span>
                     <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp pour comprendre les possibilités immenses de cette navbar -->
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                      <script id="navtemplate" type="x-tmpl-mustache">
-                        <ul class="nav navbar-nav ml-auto">
+                      <ul class="nav navbar-nav ml-auto">
                           <li class="nav-item">
-                            <a class="nav-link" id="lnk_logbook" href="#">{{logbook}}</a>
-                          </li>     
-                          <li class="nav-item">
-                            <a class="nav-link" id="lnk_pilot" href="#pilot">{{pilot}}</a>
+                            <a class="nav-link" id="tablog" href="#">log</a>
                           </li>
                           <li class="nav-item">
-                            <a class="nav-link" id="lnk_map" href="#">{{map}}</a>
+                            <a class="nav-link" id="tabpilot" href="#">Pil</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="tabmap" href="#">Map</a>
                           </li>              
                           <li class="nav-item">
-                            <a class="nav-link" id="lnk_misc" href="#"" >{{miscell}}</a>
-                          </li>      
+                            <a class="nav-link" id="tabmisc" href="#">Misc</a>
+                          </li>
                           <li class="nav-item">
-                            <a class="nav-link" id="lnk_web" href="#"" >{{web}}</a>
-                          </li>                      
-                        </ul>
-                      </script>
-                    </div>
+                            <a class="nav-link" id="tabweb" href="#">Web</a>
+                          </li>                     
+                      </ul>
+                  </div>
                 </div>
             </nav>  
             <!-- End of horizontal nabar  -->
@@ -73,8 +72,11 @@
                                                   </div>
                                                   <div class="row">
                                                         <div class="col-sm-8 my-1">                                    
-                                                            <input type="text" class="form-control" id="tx-work-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
+                                                            <input type="text" class="form-control" id="tx-work-path" disabled="" value="">
                                                         </div>
+                                                        <div class="col-auto my-1 align-self-center">
+                                                          <img id="img-work-path" />
+                                                        </div> 
                                                         <div class="col-auto my-1 align-self-center">
                                                             <button type="button" class="btn btn-outline-info" id="bt-work-path">Modify</button>
                                                         </div>
@@ -86,8 +88,11 @@
                                                   </div>         
                                                   <div class="row">
                                                     <div class="col-sm-8 my-1">                                    
-                                                        <input type="text" class="form-control" id="tx-log-path" disabled="" value="/Users/gil/pCloud Drive/Logfly_data">
-                                                    </div>
+                                                        <input type="text" class="form-control" id="tx-log-path" disabled="" value="">
+                                                    </div>   
+                                                    <div class="col-auto my-1 align-self-center">
+                                                      <img id="img-log-path" />
+                                                  </div>                                              
                                                   </div>       
                                                   <div class="row top-buffer">
                                                     <div class="col-md-8 pr-1">
@@ -99,6 +104,9 @@
                                                         <select class="custom-select mr-sm-4" id="sel-logbook">
                                                         </select>                                 
                                                     </div>
+                                                    <div class="col-auto my-1 align-self-center">
+                                                      <img id="img-dbname" />
+                                                    </div>    
                                                   </div>                                   
                                                   <div class="row top-buffer">
                                                     <div class="col-sm-8 my-1">                                    
@@ -160,6 +168,13 @@
                                 <h1>Internet</h1>    
                                 <p>paramètres des url internet</p>
                               </div>
+                          </div>
+                          <div>
+                            <div class="row">
+                              <div class="col text-center">
+                                <button type="button" class="btn btn-danger btn-lg" id="bt-valid"></button>
+                              </div>
+                            </div> 
                           </div>
                         </div>
                       </div>
