@@ -60,7 +60,7 @@ btnDbPath.addEventListener('click', (event) => {
             document.getElementById("img-dbname").src='../../assets/img/close.png'            
             document.getElementById('tx-dbfullpath').value = ''
             //document.getElementById("img-select").src='../../assets/img/select.png'   
-            fillSelect(selectedPath,false)
+            fillSelect(selectedPath,'')
             checkSettings()
         } else {
             document.getElementById("img-log-path").src='../../assets/img/close.png'
@@ -245,21 +245,26 @@ function checkSettings() {
     if (fs.existsSync(pathDb)) {
         startScoring += 1
         document.getElementById("img-log-path").src='../../assets/img/valid.png'
+        let dbName = document.getElementById('tx-dbname').value
+        if (dbName != undefined && dbName != '') {
+            let dbFullPath = path.join(pathDb,dbName)
+            if (dbbasic.testDb(dbFullPath)) {
+                startScoring += 1
+                document.getElementById("img-dbname").src='../../assets/img/valid.png'   
+                fillSelect(pathDb, dbName)
+            } else {
+                document.getElementById('tx-dbname').value = ''
+                document.getElementById("img-dbname").src='../../assets/img/close.png'  
+                fillSelect(pathDb, '')
+            }
+        } else {
+            document.getElementById("img-dbname").src='../../assets/img/close.png'              
+        }
     } else {
         document.getElementById("img-log-path").src='../../assets/img/close.png'
     }
 
-    let dbName = document.getElementById('tx-dbname').value
-    if (dbName != undefined && dbName != '') {
-        let dbFullPath = path.join(pathDb,dbName)
-        if (dbbasic.testDb(dbFullPath)) {
-            startScoring += 1
-            document.getElementById("img-dbname").src='../../assets/img/valid.png'   
-        } else {
-            document.getElementById('tx-dbname').value = ''
-            document.getElementById("img-dbname").src='../../assets/img/close.png'  
-        }
-    }
+
     if (startScoring == 4) {
         statusMsg.classList.remove('alert-danger')
         statusMsg.classList.add('alert-success')
@@ -321,7 +326,7 @@ function fillSelect(dirpath, selectCurrent) {
         dbFiles.unshift(i18n.gettext('Select and clic OK'))
         for(let i= 0; i < dbFiles.length; i++)
         {            
-            if (selectCurrent && dbFiles[i] === store.get('dbName'))
+            if (selectCurrent != '' && dbFiles[i] === selectCurrent)
                 $("#sel-logbook").append('<option value=' + i + ' selected >' + dbFiles[i] + '</option>')
             else
                 $("#sel-logbook").append('<option value=' + i + '>' + dbFiles[i] + '</option>')
@@ -350,7 +355,7 @@ function createLogbook(newDbName) {
             document.getElementById('tx-dbname').value = newDbName
             document.getElementById("img-dbname").src='../../assets/img/valid.png'
             document.getElementById('tx-dbfullpath').value = newDbFullPath
-            fillSelect(pathDb,true)
+            fillSelect(pathDb,newDbName)
         }        
     } else {
         document.getElementById("img-log-path").src='../../assets/img/close.png'
@@ -374,7 +379,7 @@ function copyLogbook(fullPathRep) {
                         document.getElementById('tx-dbname').value = newDbName
                         document.getElementById("img-dbname").src='../../assets/img/valid.png'
                         document.getElementById('tx-dbfullpath').value = newDbFullPath
-                        fillSelect(pathDb,true)     
+                        fillSelect(pathDb,newDbName)     
                     } else {
                         alert(newDbFullPath+' -> '+i18n.gettext('Database connection failed'))
                     }      
