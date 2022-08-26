@@ -42,7 +42,7 @@ const createWindow = () => {
   });
 
   if (startOk) {
-    openWindow('logbook')
+    openWindow('settings')
   } else {
     openWindow('problem')
   }
@@ -87,35 +87,48 @@ function openWindow(pageName) {
      //   mainWindow.webContents.openDevTools(); 
         break;
     case "overview":
-      mainWindow.loadFile(path.join(__dirname, './views/html/littlemap.html'));
-      mainWindow.webContents.openDevTools();  
+      mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'));
       break;      
     case "import":
       mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
-      mainWindow.webContents.openDevTools();
       break;        
+    case "external":
+      mainWindow.loadFile(path.join(__dirname, './views/html/external.html'));
+      break;              
+    case "stat":
+      mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'));
+      break;          
     case "sites":
         mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
         break;
+    case "wayp":
+      mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'));
+      break; 
+    case "airspaces":
+      mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'));
+      break;              
     case "photos":
       mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
-      mainWindow.webContents.openDevTools();  
+    //  mainWindow.webContents.openDevTools();  
       break;                
+    case "settings":
+      mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
+      break;          
+    case "utils":
+      mainWindow.loadFile(path.join(__dirname, './views/html/utils.html'));
+      break;         
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
-          break;        
-    case "settings":
-        mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
-        break;        
-    case "tools":
-      mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
-      break;            
+          break;                     
     case "support":
       mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
       break;   
     case "flyxc":
       mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
-      break;                 
+      break;       
+      case "noflights":
+        mainWindow.loadFile(path.join(__dirname, './views/html/noflights.html'));
+        break;                
   } 
 }
 
