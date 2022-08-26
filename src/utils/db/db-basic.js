@@ -1,4 +1,5 @@
 const log = require('electron-log')
+const fs = require('fs') 
 
 function testDb(dbFullPath) {
     try {
