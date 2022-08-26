@@ -32,7 +32,7 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    document.getElementById('tx_1').innerHTML = i18n.gettext('Overview')
+    document.getElementById('tx_1').innerHTML = i18n.gettext('Statistics')
     document.getElementById('tx_2').innerHTML = i18n.gettext('Coming soon')+'...'
 }
 

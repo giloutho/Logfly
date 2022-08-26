@@ -26,23 +26,37 @@
                     <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
                     <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
                     <span class="navbar-text mx-3" id="db-state"></span>
+                    <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp pour comprendre les possibilités immenses de cette navbar -->
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="nav navbar-nav ml-auto">
+                            <li class="nav-item">
+                              <a class="nav-link" id="option1" href="#"></a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" id="option2" href="#"></a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" id="option3" href="#"></a>
+                            </li>                          
+                        </ul>
+                    </div>
                 </div>
             </nav>  
             <!-- End of horizontal nabar  -->
             <!-- Main page content -->
             <div>
                 <div class="container-fluid">
-                  <div class="d-block" id="div_text">
-                    <p></p>
-                    <h1 id="tx_1">1</h1>
-                    <p></p>       
-                    <p></p>
-                    <h2 id="tx_2">2</h2>             
-                </div>  
+                    <div class="d-block" id="div_text">
+                        <p></p>
+                        <h1 id="tx_1">1</h1>
+                        <p></p>       
+                        <p></p>
+                        <h2 id="tx_2">2</h2>             
+                    </div>  
                 </div>
             </div>
             <!-- End of main page content -->
         </div>
     </div>    
-    <script src="../../views/js/statistics.js" type="text/javascript"></script>
+    <script src="../../views/js/utils.js" type="text/javascript"></script>
 </body>

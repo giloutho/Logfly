@@ -1,59 +1,48 @@
-<link rel="stylesheet" href="../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
+<!DOCTYPE html>
+<html>
 
-      <button type="button" id="sidebarCollapse" class="btn btn-info" onclick ="{ $('#sidebar').toggleClass('active'); }">
-          <i class="fas fa-align-left"></i>
-          <span>Menu</span>
-      </button>
-      <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
-      <span class="navbar-text mx-3" id="db-state"></span>
-      <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
-            pour comprendre les possibilités immenses de cette navbar 
-      -->
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="nav navbar-nav ml-auto">
-              <li class="nav-item">
-                <a class="nav-link" id="bigmap" href="#">Grande carte</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="flyxc" href="#">FlyXC</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="score" href="#">Score</a>
-              </li>              
-              <li class="nav-item">
-                <a class="nav-link" id="actions" href="#">Actions</a>
-              </li>                  
-          </ul>
-      </div>
-  </div>
-</nav>
-<!---- from https://www.wowthemes.net/bootstrap-4-split-screen-layout/
-       more simple : https://www.w3schools.com/howto/howto_css_split_screen.asp
-       but not really responsive      -->
-<div class="d-md-flex h-md-100 align-items-center">
-  <div class="col-md-7 p-0 h-md-100">
-      <table id="table_id" class="display table-striped table-bordered" style="width:100%; height:100%;">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Position</th>
-            <th>Office</th>
-            <th>Age</th>
-            <th>Start date</th>
-          </tr>
-        </thead>
-        <tbody>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <title>Logfly</title>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="../../assets/css/home.css">
+    <!-- if necessary some specifics css will be added like leaflet.css -->
+</head>
 
-        </tbody>
-      </table>
-      <p>Footer</p>
-  </div>
-  <div class="col-md-5 p-0 h-md-100">
-    <h2>Second half content here</h2></h2>
-  </div>    
-</div>
-
-<img src="./assets/img/loaded.gif" alt="" onload="$.getScript('./views/js/overview.js');this.parentNode.removeChild(this);" />
+<body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>  
+    <div class="wrapper">
+        <!-- Sidebar  -->
+        <div id="target-sidebar"></div>
+        <div id="content">
+            <!-- Horizontal navbar with menu button and different options -->
+            <nav class="navbar navbar-expand-lg  navbar-custom">
+                <div class="container-fluid">
+                    <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
+                    <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+                    <span class="navbar-text mx-3" id="db-state"></span>
+                </div>
+            </nav>  
+            <!-- End of horizontal nabar  -->
+            <!-- Main page content -->
+            <div>
+                <div class="container-fluid">
+                    <div class="d-block" id="div_text">
+                        <p></p>
+                        <h1 id="tx_1">1</h1>
+                        <p></p>       
+                        <p></p>
+                        <h2 id="tx_2">2</h2>             
+                    </div>  
+                </div>
+            </div>
+            <!-- End of main page content -->
+        </div>
+    </div>    
+    <script src="../../views/js/overview.js" type="text/javascript"></script>
+</body>

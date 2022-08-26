@@ -1,14 +1,18 @@
-var {ipcRenderer} = require('electron')
+const {ipcRenderer} = require('electron')
 
-var i18n = require('../../lang/gettext.js')()
-var Mustache = require('mustache')
+const i18n = require('../../lang/gettext.js')()
+const Mustache = require('mustache')
 const fs = require('fs')
 const path = require('path');
 const log = require('electron-log');
-var Store = require('electron-store')
-var store = new Store()
-let menuFill = require('../../views/tpl/sidebar.js')
-let btnMenu = document.getElementById('toggleMenu')
+const Store = require('electron-store')
+const store = new Store()
+const menuFill = require('../../views/tpl/sidebar.js')
+const btnMenu = document.getElementById('toggleMenu')
+const btnOption1 = document.getElementById('option1')
+const btnOption2 = document.getElementById('option2')
+const btnOption3 = document.getElementById('option3')
+const statusContent = document.getElementById("status")
 let currLang
 
 iniForm()
@@ -32,8 +36,12 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    document.getElementById('tx_1').innerHTML = i18n.gettext('Overview')
+    document.getElementById('tx_1').innerHTML = i18n.gettext('Utilities')
     document.getElementById('tx_2').innerHTML = i18n.gettext('Coming soon')+'...'
+    btnOption1.innerHTML = i18n.gettext('Logbook copy')
+    btnOption2.innerHTML = i18n.gettext('Csv export')
+    // btnOption1.addEventListener('click',(event) => {callDiskImport()})
+    // btnOption2.addEventListener('click',(event) => {clearStatus()})
 }
 
 // Calls up the relevant page 
@@ -49,3 +57,15 @@ btnMenu.addEventListener('click', (event) => {
     }
     $('#sidebar').toggleClass('active');
 })
+
+
+function displayStatus(content) {
+    statusContent.innerHTML = content
+    $('#status').show();
+}
+
+function clearStatus() {
+    statusContent.innerHTML = ''
+    $('#status').hide();
+}
+
