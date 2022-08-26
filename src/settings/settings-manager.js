@@ -57,6 +57,9 @@ function getEnv(modeProd) {
     store.set('nodeVersion',process.versions.node)
     store.set('version',app.getVersion())      
     store.set('locale',app.getLocale())
+    store.set('urlvisu','https://flyxc.app/?track=')
+    store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
+    store.set('urllogfly','http://www.logfly.org')
 }
 
 /**
@@ -82,7 +85,6 @@ function getEnv(modeProd) {
             store.set('finderlong',properties.get('finderlong'))
             store.set('finderlat',properties.get('finderlat'))
             store.set('pathWork',properties.get('pathw'))
-            store.set('urlicones',properties.get('urlicones'))
             store.set('dbFullPath',properties.get('fullpathdb'))
             store.set('pathimport',properties.get('pathimport'))
             const idxLang = properties.get('idxlang')
@@ -108,10 +110,6 @@ function getEnv(modeProd) {
             } else {
                 setLangWithLocale()
             }
-            // default assignments
-            store.set('urlvisu','https://flyxc.app/?track=')
-            store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
-            store.set('urllogfly','http://www.logfly.org')
             getEnv()
         } else {
             defaultSettings()
