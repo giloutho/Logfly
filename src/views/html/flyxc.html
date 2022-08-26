@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Logfly</title>
     <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="../../assets/css/font-awesome-450.min.css">  
     <link rel="stylesheet" href="../../assets/css/home.css">
     <!-- if necessary some specifics css will be added like leaflet.css -->
 </head>
@@ -22,8 +23,10 @@
             <!-- Horizontal navbar with menu button and different options -->
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
-                    <nav class="navbar navbar-expand-sm bg-light">
-                        <button type="button" id="bt-close" class="btn btn-outline-danger">Menu On</button>          
+                    <nav class="navbar navbar-expand-sm bg-light"> 
+                        <button type="button" id="bt-close" class="btn btn-outline-danger btn-lg">
+                            <i class="fa fa-close"></i>
+                        </button>                         
                     </nav>                    
                     <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
                     <span class="navbar-text mx-3" id="db-state"></span>
@@ -42,11 +45,13 @@
             <!-- Main page content -->
             <div>
                 <div class="container-fluid">
-                    <div class="embed-responsive embed-responsive-16by9">
+                    <!-- with embed-responsive-21by9 we don't see the bottom of the map   
+                        https://devstory.net/12065/bootstrap-embed for explanations -->
+                    <div class="embed-responsive embed-responsive-21by9">
                         <iframe class="embed-responsive-item" id="webframe"
                            src="" allowfullscreen>
                         </iframe>
-                     </div>  
+                    </div>  
                 </div>
             </div>
             <!-- End of main page content -->

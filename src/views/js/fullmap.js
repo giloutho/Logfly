@@ -379,7 +379,7 @@ function iniForm() {
   } catch (error) {
       log.error('[problem.js] Error while loading the language file')
   }  
-  btnClose.innerHTML = i18n.gettext('Close')
+ // btnClose.innerHTML = i18n.gettext('Close')
   btnClose.addEventListener('click',(event) => {
       ipcRenderer.send('hide-waiting-gif',null)
       window.close()
@@ -579,7 +579,7 @@ function fillSidebarSummary() {
   const mDisplay = m > 0 ? m + (m == 1 ? "mn" : "mn") : "";
   const sDisplay = s > 0 ? s + (s == 1 ? "s" : "s") : "";
   let hExtractTime = hDisplay + mDisplay + sDisplay;    
-  htmlText +='<p style="font-size:16px;">'+i18n.gettext('Avg th efficiency')+'&nbsp;&nbsp;<span style="margin-right:10px; font-size:14px;background-color: #'+efficiencyColor+'; color: white;">&nbsp;&nbsp;'+anaTrack.avgThermalEffi+'%</span>'+htmlIcon+'<br>'
+  htmlText +='<p style="font-size:16px;">'+i18n.gettext('Avg th efficiency')+'&nbsp;&nbsp;<span style="margin-right:10px; font-size:14px;background-color: #'+efficiencyColor+'; color: white;">&nbsp;&nbsp;'+Math.ceil(anaTrack.avgThermalEffi)+'%</span>'+htmlIcon+'<br>'
   htmlText += i18n.gettext('Avg thermal climb')+'&nbsp;&nbsp;'+avgThermalClimb+'&nbsp;m/s<br>'
   htmlText += i18n.gettext('Max gain')+'&nbsp;&nbsp;'+anaTrack.bestGain+' m<br>'
   htmlText += i18n.gettext('Extraction time')+'&nbsp;&nbsp;'+hExtractTime+'<br>'
