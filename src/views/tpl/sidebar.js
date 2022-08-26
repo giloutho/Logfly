@@ -16,7 +16,7 @@ function fillMenuOptions(i18n) {
         photos : i18n.gettext('Photos'),
         settings : i18n.gettext('Settings'),
         support : i18n.gettext('Support'),
-        tools : i18n.gettext('Tools'),
+        utils : i18n.gettext('Utilities'),
     };  
 
     return menuOptions
