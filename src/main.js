@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob')
-const settings = require(path.join(__dirname, './process-main/settings-manager.js'))
+const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 
 let mainWindow = null;
 let currLang 
@@ -83,7 +83,6 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
 function openWindow(pageName) {
   switch (pageName) {
     case "logbook":
-      console.log('ok '+pageName)
         mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
      //   mainWindow.webContents.openDevTools(); 
         break;
