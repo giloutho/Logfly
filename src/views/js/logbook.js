@@ -1,11 +1,11 @@
 const {ipcRenderer} = require('electron')
-const L = require('leaflet');
+const L = require('leaflet')
 const Mustache = require('mustache')
 const i18n = require('../../lang/gettext.js')()
 const path = require('path')
 const fs = require('fs')
 const Store = require('electron-store')
-const log = require('electron-log');
+const log = require('electron-log')
 const sharp = require('sharp')
 let webOk = require('internet-available')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
@@ -30,7 +30,10 @@ let currLang
 iniForm()
 
 function iniForm() {
-  console.log('arrivée logbook')
+  const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
+  let countFlights = stmt.get()
+  if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights'); 
+
   try {    
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
@@ -127,10 +130,11 @@ btnMenu.addEventListener('click', (event) => {
 
 btnScoring.addEventListener('click', (event) => {  
   console.log('clic scoring')
-  // $('#div_table').removeClass('d-block')
-  // $('#div_table').addClass('d-none')
-  // $('#div_waiting').addClass('d-block')
-  hideStatus()
+  //$('#div_table').removeClass('d-block')
+  $('#div_global').addClass('d-none')
+  displayStatus('Pas de vol...')
+ // $('#div_waiting').addClass('d-block')
+ // hideStatus()
 })
 
 btnFlyxc.addEventListener('click', (event) => { 
