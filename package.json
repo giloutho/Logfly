@@ -64,6 +64,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.0.1",
     "form-data": "^4.0.0",
+    "fs-jetpack": "^4.3.1",
     "geo-tz": "^7.0.1",
     "gettext.js": "^1.1.1",
     "glob": "^7.2.0",
@@ -84,7 +85,7 @@
     "sharp": "^0.30.7",
     "simplify-geojson": "^1.0.4",
     "spherical-geometry-js": "2.0.0",
-    "srtm-elevation": "^2.0.0",
+    "srtm-elevation": "^2.1.0",
     "zoned-date-time": "^1.1.0"
   },
   "devDependencies": {
