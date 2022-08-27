@@ -42,7 +42,7 @@ const createWindow = () => {
   });
 
   if (startOk) {
-    openWindow('settings')
+    openWindow('logbook')
   } else {
     openWindow('problem')
   }
