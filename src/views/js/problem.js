@@ -1,11 +1,11 @@
 const {ipcRenderer} = require('electron')
 const i18n = require('../../lang/gettext.js')()
 const fs = require('fs')
-const path = require('path');
+const path = require('path')
 const log = require('electron-log')
 const Store = require('electron-store')
-const dbbasic = require('../../utils/db/db-basic.js');
-const { event } = require('jquery');
+const dbbasic = require('../../utils/db/db-basic.js')
+const { event } = require('jquery')
 const store = new Store()
 let dbList = null
 let currLang 
@@ -14,10 +14,10 @@ try {
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
-        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-        let langjson = JSON.parse(content);
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+        let langjson = JSON.parse(content)
         i18n.setMessages('messages', currLang, langjson)
-        i18n.setLocale(currLang);
+        i18n.setLocale(currLang)
     }
   } catch (error) {
       log.error('[problem.js] Error while loading the language file')
@@ -106,23 +106,23 @@ $('#sel-lang').on('change', function() {
     switch (langIdx) {
         case 1 :
             choosedLang = 'de'
-            break;
+            break
         case 2 :
             choosedLang = 'en'          
-            break;        
+            break        
         case 3 :
             choosedLang = 'fr'            
-            break;
+            break
         case 4 :
             choosedLang = 'it'            
-            break;                                              
+            break                                              
     }      
     try {            
         if (choosedLang != undefined ) {
             if (choosedLang != 'en') {
                 currLangFile = choosedLang+'.json'
-                let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-                let langjson = JSON.parse(content);
+                let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+                let langjson = JSON.parse(content)
                 i18n.setMessages('messages', choosedLang, langjson)
                 i18n.setLocale(choosedLang)
             }
@@ -134,7 +134,7 @@ $('#sel-lang').on('change', function() {
     } catch (error) {
         log.error('[problem.js] Error while loading the language file')
     }  
-});
+})
 
 /**
  * A logbook is selected on the new logbook folder
@@ -142,12 +142,12 @@ $('#sel-lang').on('change', function() {
 $('#sel-logbook').on('change', function() {
     if (dbList.length > 0) {
       //  store.set('dbFullPath',path.join(store.get('pathdb'),dbList[this.value]))
-      //  alert(store.get('dbFullPath'));
+      //  alert(store.get('dbFullPath'))
         let msgConfirm = dbList[this.value]+' '+i18n.gettext('will become the current logbook')+' ?'
         let confirmChange = confirm(msgConfirm)
         if (confirmChange) changeLogBook(dbList[this.value])      
     }
-});
+})
 
 fillLanguage()
 displayLabels()
@@ -164,16 +164,16 @@ function displayLabels() {
         switch (currLang) {
             case 'de' :
                 document.getElementById('tx-lang').value = 'Deutsche'
-                break;
+                break
             case 'en' :
                 document.getElementById('tx-lang').value = 'English'
-                break;        
+                break        
             case 'fr' :
                 document.getElementById('tx-lang').value = 'Français'
-                break;
+                break
             case 'it' :
                 document.getElementById('tx-lang').value = 'Italiano'
-                break;   
+                break   
         }                                             
     } else {
         document.getElementById('tx-lang').value = 'not set'  
@@ -203,16 +203,16 @@ function displaySettings() {
         switch (currLang) {
             case 'de' :
                 document.getElementById('tx-lang').value = 'Deutsche'
-                break;
+                break
             case 'en' :
                 document.getElementById('tx-lang').value = 'English'
-                break;        
+                break        
             case 'fr' :
                 document.getElementById('tx-lang').value = 'Français'
-                break;
+                break
             case 'it' :
                 document.getElementById('tx-lang').value = 'Italiano'
-                break;                                                
+                break                                                
         }             
         document.getElementById("img-lang").src='../../assets/img/valid.png'
     } else {
@@ -286,7 +286,7 @@ function checkSettings() {
 
 function callPage(pageName) {
     console.log('clic page')
-    ipcRenderer.send("changeWindow", pageName);    // main.js
+    ipcRenderer.send("changeWindow", pageName)    // main.js
 }
 
 function fillLanguage() {
@@ -298,16 +298,16 @@ function fillLanguage() {
         switch (currLang) {
             case 'de' :
                 selIndex = 1
-                break;
+                break
             case 'en' :
                 selIndex = 2
-                break;        
+                break        
             case 'fr' :
                 selIndex = 3
-                break;
+                break
             case 'it' :
                 selIndex = 4
-                break;                                                
+                break                                                
         }     
     }
     for(let i= 0; i < arrLang.length; i++)
@@ -393,5 +393,5 @@ function copyLogbook(fullPathRep) {
         btnRepatriate.classList.remove('btn-danger')
         btnRepatriate.classList.add('btn-outline-info')
         btnRepatriate.innerHTML = i18n.gettext('Select')
-    }, 2000);
+    }, 2000)
 } 
