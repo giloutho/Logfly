@@ -109,7 +109,7 @@ function downloadElevation(locations, pathSrtm, myCallback) {
     let maxLat = Math.max.apply(null, lats);
     let minLng = Math.min.apply(null, lngs);
     let maxLng = Math.max.apply(null, lngs);
-    console.log('démarrage download')
+    console.log('démarrage download pour '+minLat+'-'+minLng+'  '+maxLat+'-'+maxLng)
     console.time("download");
 
     tileset = new SyncTileSet(pathSrtm, [minLat, minLng], [maxLat, maxLng], function(err) {
@@ -121,6 +121,14 @@ function downloadElevation(locations, pathSrtm, myCallback) {
         downloadResult = true
         myCallback(downloadResult)
     }, {
+        // un peu chaud ... Cela ne fonctionnait plus le 27 08 22
+        // upgrade version 2.1.2
+        // cette issue https://github.com/rapomon/srtm-elevation/issues/3
+        //  évoque le problème ou il répond que la nasa fonctionne mal
+        // on change le provider        
+        // provider: "https://srtm.fasma.org/{lat}{lng}.SRTMGL3S.hgt.zip",
+        // username: null,
+        // password: null        
         username: 'logfly_user',
         password: 'Logfly22'
     });
