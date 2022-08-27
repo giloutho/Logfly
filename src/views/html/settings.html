@@ -126,7 +126,7 @@
                                                   </div>         
                                                   <div class="row top-buffer">
                                                     <div class="col-sm-8 my-1">                                    
-                                                      <input type="text" class="form-control" id="lg-new-logbook" disabled="" value="Create a new logbook">
+                                                      <input type="text" class="form-control" id="tx-create-logbook">
                                                     </div>
                                                     <div class="col-auto my-1 align-self-center">
                                                         <button type="button" class="btn btn-outline-info" id="bt-new-logbook">Create</button>
@@ -140,7 +140,16 @@
                                                         <button type="button" class="btn btn-outline-info" id="bt-repatriate">Recover</button>
                                                     </div>
                                                   </div>                                                                           
-                      
+                                                  <div class="row top-buffer">
+                                                    <div class="col-sm-8 my-1">                                                                                          
+                                                    </div>
+                                                    <div class="col-auto my-1 align-self-center">
+                                                      <button type="button" class="btn btn-danger btn-lg" id="bt-log-cancel">An</button>
+                                                    </div>                                                                                                      
+                                                    <div class="col-auto my-1 align-self-center">
+                                                        <button type="button" class="btn btn-success btn-lg" id="bt-log-ok">OK</button>
+                                                    </div>
+                                                  </div>                          
                                                   <div class="clearfix"></div>
                                               </form>
                                           </div>
@@ -168,13 +177,6 @@
                                 <h1>Internet</h1>    
                                 <p>paramètres des url internet</p>
                               </div>
-                          </div>
-                          <div>
-                            <div class="row">
-                              <div class="col text-center">
-                                <button type="button" class="btn btn-danger btn-lg" id="bt-valid"></button>
-                              </div>
-                            </div> 
                           </div>
                         </div>
                       </div>

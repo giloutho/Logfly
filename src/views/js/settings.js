@@ -1,11 +1,14 @@
 var {ipcRenderer} = require('electron')
 const i18n = require('../../lang/gettext.js')()
 const fs = require('fs')
+const jetpack = require('fs-jetpack')
 const path = require('path');
 const log = require('electron-log')
 const Store = require('electron-store')
 const Mustache = require('mustache')
-let menuFill = require('../../views/tpl/sidebar.js')
+const dbbasic = require('../../utils/db/db-basic.js')
+let menuFill = require('../../views/tpl/sidebar.js');
+const { Alert } = require('bootstrap');
 const store = new Store()
 let dbList = null
 let currLang
@@ -16,13 +19,21 @@ const imgWorkPath = document.getElementById("img-work-path")
 const btnDbPath = document.getElementById('bt-choose-folder') 
 const imgLogPath = document.getElementById('img-log-path') 
 const imgDbName = document.getElementById('img-dbname') 
+const selectDb = document.getElementById('sel-logbook') 
 const btnMove = document.getElementById('bt-move-folder')
+const btnNewLog = document.getElementById('bt-new-logbook')
+const btnCopy = document.getElementById('bt-repatriate')
 const btnLogbook = document.getElementById('tablog')
 const btnPilot = document.getElementById('tabpilot')
 const btnMap = document.getElementById('tabmap')
 const btnMisc = document.getElementById('tabmisc')
 const btnWeb = document.getElementById('tabweb')
-const btnValid = document.getElementById('bt-valid')
+const btnValLog = document.getElementById('bt-log-ok')
+const btnCancelLog = document.getElementById('bt-log-cancel')
+const oldDbName = store.get('dbName')
+const oldPathDb = store.get('pathdb')
+const oldPathWork = store.get('pathWork')
+const oldDbFullPath = store.get('dbFullPath')
 
 iniForm()
 
@@ -66,7 +77,8 @@ function iniForm() {
     btnWeb.addEventListener('click',(event) => {
       fnWeb()
     })    
-    btnValid.innerHTML = i18n.gettext('Validate the changes')
+    btnValLog.innerHTML = i18n.gettext('Ok')
+    btnCancelLog.innerHTML = i18n.gettext('Cancel')
 }
 
 
@@ -76,7 +88,6 @@ function callPage(pageName) {
 
 btnMenu.addEventListener('click', (event) => {
   if (btnMenu.innerHTML === "Menu On") {
-    alert(imgLogPath.src)
       btnMenu.innerHTML = "Menu Off";
   } else {
       btnMenu.innerHTML = "Menu On";
@@ -86,14 +97,15 @@ btnMenu.addEventListener('click', (event) => {
 
 $('#sel-logbook').on('change', function() {
   if (dbList.length > 0) {
-    //  store.set('dbFullPath',path.join(store.get('pathdb'),dbList[this.value]))
-    //  alert(store.get('dbFullPath'));
-
-    /**  On fera la vérif à la fin
-      let msgConfirm = dbList[this.value]+' '+i18n.gettext('will become the current logbook')+' ?'
-      let confirmChange = confirm(msgConfirm)
-      if (confirmChange) changeLogBook(dbList[this.value])      
-    */
+    let newDbName = dbList[this.value]
+    let currPathDb = document.getElementById('tx-log-path').value
+    let newDbFullPath = path.join(currPathDb,newDbName) 
+    if (dbbasic.testDb(newDbFullPath)) {
+      document.getElementById("img-dbname").src='../../assets/img/valid.png'       
+    } else {
+      console.log('retour faux')      
+      alert(i18n.gettext('Reading problem in logbook'))
+    }
   }
 });
 
@@ -114,13 +126,14 @@ function iniLogbook() {
   fillSelect(pathDb,dbName)
   document.getElementById('lg-curr-logbook').innerHTML = i18n.gettext('Current logbook')
   $('#lg-log-folder').val(i18n.gettext('Choose a new logbook folder'))
-  document.getElementById('bt-choose-folder').innerHTML = i18n.gettext('Choose')
+  document.getElementById('bt-choose-folder').innerHTML = i18n.gettext('Select')
   $('#lg-move-logbook').val(i18n.gettext('Move logbook(s) to a different folder'))
-  document.getElementById('bt-move-folder').innerHTML = i18n.gettext('Move')
+  document.getElementById('bt-move-folder').innerHTML = i18n.gettext('Select')
   $('#lg-new-logbook').val(i18n.gettext('Create a new logbook'))
+  $('#tx-create-logbook').attr("placeholder", i18n.gettext('Type the name without extension'))
   document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
-  $('#lg-repatriate').val(i18n.gettext('Recover a copy'))
-  document.getElementById('bt-repatriate').innerHTML = i18n.gettext('Recover')
+  $('#lg-repatriate').val(i18n.gettext('Repatriate a copy'))
+  btnCopy.innerHTML = i18n.gettext('Select')
   // Assignment of the listeners
   btnWorkPath.addEventListener('click', (event) => {
     const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathWork'))
@@ -141,6 +154,7 @@ function iniLogbook() {
       let msgConfirm = i18n.gettext('Move logbook(s) to')+' '+selectedPath
       let confirmChange = confirm(msgConfirm)
       if (confirmChange) {
+        moveLogbooks(selectedPath)
        // changeLogBook(dbList[this.value])      
 
         // document.getElementById('tx-log-path').value = selectedPath
@@ -148,6 +162,39 @@ function iniLogbook() {
       }
     }
   })
+  btnNewLog.addEventListener('click',(event)=>{
+    let newDbName = document.getElementById('tx-create-logbook').value
+    if (newDbName != undefined && newDbName != '') {
+        document.getElementById('tx-create-logbook').value = ''
+        createLogbook(newDbName)
+    } else {
+        alert(i18n.gettext('Logbook name is empty'))
+    }
+  })
+  btnCopy.addEventListener('click', (event) => {
+    const repLogbook = ipcRenderer.sendSync('open-file','')
+    if (repLogbook !== undefined && repLogbook != null) {
+        copyLogbook(repLogbook[0])
+    }
+  })  
+
+  btnValLog.addEventListener('click', (event)=>{
+    // check logbook parameters
+    if (checkLogbooks()) {
+      // display menu
+      btnMenu.innerHTML = "Menu Off"
+      $('#sidebar').toggleClass('active');    
+    } else {
+      alert(i18n.gettext('The new settings are not correct'))
+    }
+  })
+
+  btnCancelLog.addEventListener('click',(event)=>{
+    let msgConfirm = i18n.gettext('Return to the original settings')+' ?'
+    let confirmCancel = confirm(msgConfirm)
+    if (confirmCancel) restoreSettings()
+  })
+
 }
 
 function fnLogbook() {
@@ -217,7 +264,157 @@ function fillSelect(dirpath, selectCurrent) {
     })
 }
 
-function checkSettings() {
-  // vérifier qu'il y a un carnet sélectionné (on peut rester sur OK)
-  // qu'il est valide
+function createLogbook(newDbName) {
+  // remove extension if needed
+  newDbName.replace(/\.[^/.]+$/, "")
+  // add db extension
+  newDbName += '.db' 
+  let pathDb = document.getElementById('tx-log-path').value
+  if (fs.existsSync(pathDb)) {
+      let newDbFullPath = path.join(pathDb,newDbName)
+      if (dbbasic.createDb(newDbFullPath)) {
+          fillSelect(pathDb,newDbName)
+      }        
+  } else {
+      document.getElementById("img-log-path").src='../../assets/img/close.png'
+      alert(i18n.gettext('Logbook(s) folder path does not exist'))
+  }  
+}
+
+function copyLogbook(fullPathRep) {
+  btnCopy.classList.remove('btn-outline-info')
+  btnCopy.classList.add('btn-danger')
+  let msgWait = i18n.gettext('Waiting')
+  btnCopy.innerHTML = msgWait    
+  setTimeout(function() {
+      let newDbName = path.basename(fullPathRep)
+      let pathDb = document.getElementById('tx-log-path').value
+      if (dbbasic.testDb(fullPathRep)) {           
+              if (fs.existsSync(pathDb)) {
+                  let newDbFullPath = path.join(pathDb,newDbName)
+                  fs.copyFileSync(fullPathRep, newDbFullPath)
+                  if (dbbasic.testDb(newDbFullPath)) {
+                      fillSelect(pathDb,newDbName)     
+                  } else {
+                      alert(newDbFullPath+' -> '+i18n.gettext('Database connection failed'))
+                  }      
+              } else {
+                  document.getElementById("img-log-path").src='../../assets/img/close.png'
+                  alert(i18n.gettext('Logbook(s) folder path does not exist'))
+              }  
+          
+      } else {
+          alert(fullPathRep+' -> '+i18n.gettext('Database connection failed'))
+      }   
+      btnCopy.classList.remove('btn-danger')
+      btnCopy.classList.add('btn-outline-info')
+      btnCopy.innerHTML = i18n.gettext('Select')
+  }, 2000)    // This is a trick to refresh the text and the color of the button
+} 
+
+function moveLogbooks(pathDest) {
+  let pathDb = document.getElementById('tx-log-path').value
+  if (fs.existsSync(pathDb)) {      
+      let dbName = $('#sel-logbook :selected').text()
+      if (dbName != undefined && dbName != '') {
+        btnMove.classList.remove('btn-outline-info')
+        btnMove.classList.add('btn-danger')
+        let msgWait = i18n.gettext('Waiting')
+        btnMove.innerHTML = msgWait 
+        setTimeout(function() {
+          jetpack.copy(pathDb, pathDest, { 
+            matching: "*.db",
+            overwrite: true
+          })
+          alert(i18n.gettext('Transfer completed'))
+          // to move files it was 
+          // let nbMoved = 0
+          // const src = jetpack.cwd(pathDb)
+          // const dst = jetpack.cwd(pathDest)
+          // src.find({ matching: "*.db" }).forEach(filePath => {
+          //   src.move(filePath, dst.path(filePath));
+          //   nbMoved++
+          // })
+          // alert(nbMoved+' '+i18n.gettext('files moved'))
+          if (fs.existsSync(pathDest)) {          
+            let newDbFullPath = path.join(pathDest,dbName)
+            if (dbbasic.testDb(newDbFullPath)) {
+              document.getElementById('tx-log-path').value = pathDest
+              imgLogPath.src='../../assets/img/valid.png'
+              fillSelect(pathDest,dbName)
+            }        
+          } else {
+            document.getElementById("img-log-path").src='../../assets/img/close.png'
+            alert(i18n.gettext('Logbook(s) folder path does not exist'))
+          }  
+          btnMove.classList.remove('btn-danger')
+          btnMove.classList.add('btn-outline-info')
+          btnMove.innerHTML = i18n.gettext('Select')
+        }, 2000)    // This is a trick to refresh the text and the color of the button
+      } else {
+        alert(i18n.gettext('Current logbook name is empty'))
+      }
+  } else {
+    alert(i18n.gettext('The source db folder does not exist'))
+  }      
+}
+
+/**
+ * a function with standard fs.rename
+ * Problem it does not work with usb sticks or virtual drives
+ */
+function moveLogbooksOld(pathDest) {
+  let pathDb = document.getElementById('tx-log-path').value
+  if (fs.existsSync(pathDb)) {
+    fs.readdir(pathDb, function(err, files) {
+      let nbMoved = 0
+      const dbFiles = files.filter(el => path.extname(el) === '.db')
+      console.log(dbFiles.length+ ' à transférer ')
+      btnMove.classList.remove('btn-outline-info')
+      btnMove.classList.add('btn-danger')
+      let msgWait = i18n.gettext('Waiting')
+      btnMove.innerHTML = msgWait    
+      for (let i = dbFiles.length - 1; i >= 0; i--) {
+        let srcFullPath = path.join(pathDb,dbFiles[i]) 
+        let destFullPath = path.join(pathDest,dbFiles[i]) 
+        try {
+          fs.renameSync(srcFullPath, destFullPath)
+          nbMoved++
+        } catch (error) {
+          alert(i18n.gettext('An error occurred during the transfer'+' '+error))
+        }
+      }
+      btnMove.classList.remove('btn-danger')
+      btnMove.classList.add('btn-outline-info')
+      btnMove.innerHTML = i18n.gettext('Select')
+    })
+  } else {
+    alert(i18n.gettext('The source folder does not exist'))
+  }
+}
+
+function checkLogbooks() {
+  let result = false
+  let pathDb = document.getElementById('tx-log-path').value
+  if (fs.existsSync(pathDb)) {      
+      let dbName = $('#sel-logbook :selected').text()
+      if (dbName != undefined && dbName != '') {
+        let newDbFullPath = path.join(pathDb,dbName)            
+            if (dbbasic.testDb(newDbFullPath)) {
+              store.set('dbName',dbName)
+	            store.set('pathdb',pathDb)
+		          store.set('pathWork', document.getElementById('tx-work-path').value)
+	            store.set('dbFullPath', newDbFullPath)
+              alert(i18n.gettext('Saved changes'))
+              result = true
+            }
+      }
+  }
+  return result
+}
+
+function restoreSettings() {
+  document.getElementById('tx-work-path').value = oldPathWork
+  document.getElementById('tx-log-path').value = oldPathDb
+  fillSelect(oldPathDb,oldDbName)
 }
