@@ -388,11 +388,9 @@ function iniForm() {
   btnInfos.addEventListener('click',(event) => {
     // sidebarState is updated by sidebar events: opening, closing defined on buildSidePanels()
     if (sidebarState) {
-      btnInfos.innerHTML = i18n.gettext('Show analysis')
       sidebar.close()
       sidebarState = false
     } else {
-      btnInfos.innerHTML = i18n.gettext('Hide analysis')
       sidebar.open('summary')
       sidebarState = true
     }
@@ -451,10 +449,12 @@ function buildSidePanels()
 
   sidebar.on('closing', function(e) {
     sidebarState = false
+    btnInfos.innerHTML = i18n.gettext('Show analysis')
   })
 
   sidebar.on('opening', function(e) {
     sidebarState = true
+    btnInfos.innerHTML = i18n.gettext('Hide analysis')
   })
 
 }
