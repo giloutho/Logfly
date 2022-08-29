@@ -1,4 +1,4 @@
-const {ipcMain, BrowserWindow} = require('electron')
+const {ipcMain, BrowserWindow, Menu} = require('electron')
 const fs = require('fs')
 const path = require('path')
 const log = require('electron-log')
@@ -62,14 +62,19 @@ function openFenetre(event,track) {
         frame : true,
         parent: BrowserWindow.getFocusedWindow(),
         modal: true,
+        frame: false,     // important
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false, 
         }              
     })
     win.maximize()
-    win.webContents.openDevTools();
-    win.on('close', () => { win = null })
+   // win.webContents.openDevTools();
+   process.platform === "win32" && win.removeMenu()
+ //  process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
+    win.on('close', () => {
+        win = null 
+    })
     win.loadURL(mapHtmlPath)
     win.webContents.on('did-finish-load', function() {    
         win.send('geojson-for-map', [track,anaTrack,tkSite])    // This is a simple passage of variables intended for fullmap.js
