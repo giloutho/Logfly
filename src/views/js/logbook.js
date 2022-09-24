@@ -163,8 +163,9 @@ btnFullmap.addEventListener('click', (event) => {
     if (track.fixes.length> 0) {    
       // functionnal code
       displayWait()
+      // Code OK
       let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
-      // try wit fullmap-compute
+      // Just for try 29 08 22 try wit fullmap-compute
       //let disp_map = ipcRenderer.send('compute-map', track)   // process-main/maps/fullmap-compute.js
     } else {
       log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
