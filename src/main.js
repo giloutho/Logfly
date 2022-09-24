@@ -43,7 +43,7 @@ const createWindow = () => {
 
   // Hide menu bar https://stackoverflow.com/questions/69629262/how-can-i-hide-the-menubar-from-an-electron-app
   process.platform === "win32" && mainWindow.removeMenu()
-  process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
+ // process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
 
   if (startOk) {
     openWindow('logbook')
