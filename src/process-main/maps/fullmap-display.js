@@ -121,10 +121,11 @@ function downloadElevation(locations, pathSrtm, myCallback) {
         if (err) {
             downloadResult = false;
             myCallback(downloadResult)
+        } else {
+            console.timeEnd("download")
+            downloadResult = true
+            myCallback(downloadResult)
         }
-        console.timeEnd("download")
-        downloadResult = true
-        myCallback(downloadResult)
     }, {
         // un peu chaud ... Cela ne fonctionnait plus le 27 08 22
         // upgrade version 2.1.2

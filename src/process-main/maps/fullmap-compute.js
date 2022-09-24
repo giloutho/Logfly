@@ -5,28 +5,29 @@ const log = require('electron-log')
 const IGCAnalyzer = require('../igc/igc-analyzer.js')
 const anaTrack = new IGCAnalyzer()
 const dblog = require('../../utils/db/db-search.js')
-
+const SyncTileSet = require('srtm-elevation').SyncTileSet
 const Store = require('electron-store')
 const store = new Store();
-const pathW  = store.get('pathw')
+const pathW  = store.get('pathWork')
 
 
 let tkSite
 let strmEle = []; 
-let originWindow
+let originWindow = BrowserWindow.getFocusedWindow()
 
 ipcMain.on('compute-map', (event, track) => {
-  openWindow(event,track)   
+  //openWindow(event,track)   
+  runComputing(track)
 })
 
-
-function openWindow(event,track) {
+function openWindow(track) {
+//function openWindow(event,track) {
     const mapHtmlPath = path.join('file://', __dirname, '../../views/html/fullmap.html')
     let win = new BrowserWindow({ 
         width: 1024,
         height: 620,
         frame : true,
-        parent: BrowserWindow.getFocusedWindow(),
+        parent: originWindow,
         modal: true,
         webPreferences: {
             nodeIntegration: true,
@@ -37,7 +38,7 @@ function openWindow(event,track) {
     win.webContents.openDevTools();
     win.on('close', () => { win = null })
     win.loadURL(mapHtmlPath)
-    runComputing(track)
+ //   runComputing(track)
     win.webContents.on('did-finish-load', function() {    
         win.send('geojson-for-map', [track,anaTrack,tkSite])  
         win.show();
@@ -45,7 +46,7 @@ function openWindow(event,track) {
 }
 
 function runComputing(track) {
-    const modalPath = path.join('file://', __dirname, '../../views/html/waiting-gif.html')
+    const modalPath = path.join('file://', __dirname, '../../views/html/waiting-or.html')
     let winWait = new BrowserWindow({ 
       width: 350,
       height: 350,
@@ -53,40 +54,47 @@ function runComputing(track) {
       modal: true,
       frame: false,
     })
-    originWindow = BrowserWindow.getFocusedWindow(),
-    winWait.on('close', () => { win = null })
+  //  originWindow = BrowserWindow.getFocusedWindow(),
+ //   winWait.on('close', () => { win = null })
     winWait.loadURL(modalPath)
     winWait.show();
     winWait.webContents.on('did-finish-load', function() {
         anaTrack.compute(track.fixes)
         tkSite = dblog.searchSiteInDb(track.fixes[0].latitude, track.fixes[0].longitude, false);
-
-        // // strm download process
-        // let pathOk = false
-        // let pathSrtm =  path.join(pathW,'Srtm') 
-        // if (fs.existsSync(pathSrtm)) {
-        //     pathOk = true
-        // } else {
-        //     try {
-        //         fs.mkdirSync(pathSrtm)
-        //         pathOk = true
-        //     } catch (error) {
-        //         log.error('[fullmap-compute] unable to create '+pathSrtm)
-        //     }            
-        // }
-        // if (pathOk) {
-        //     const coordsArray = track.fixes.map(({ latitude, longitude}) => ([latitude,longitude]));
-        //     downloadElevation(coordsArray,pathSrtm,function(strmEle) {
-        //         anaTrack.elevation.push(...strmEle)
-        //     })
-        // }
-
+        // strm download process
+        let pathOk = false
+        let pathSrtm =  path.join(pathW,'Srtm') 
+        if (fs.existsSync(pathSrtm)) {
+            pathOk = true
+        } else {
+            try {
+                fs.mkdirSync(pathSrtm)
+                pathOk = true
+            } catch (error) {
+                log.error('[fullmap-compute] unable to create '+pathSrtm)
+            }            
+        }
+        if (pathOk) {
+            let arrayElevation = []
+            const coordsArray = track.fixes.map(({ latitude, longitude}) => ([latitude,longitude]));
+            downloadElevation(coordsArray,pathSrtm,function(downloadResult) {  
+                console.log('retour callback')
+                if (downloadResult) { 
+                    coordsArray.forEach(l => {
+                        arrayElevation.push(Math.round(tileset.getElevation([l[0], l[1]])))            
+                    });                              
+                    anaTrack.elevation.push(...arrayElevation)
+                }
+            })
+        }
+        sleepFor(5000)
         winWait.close()
+        openWindow(track)
       })
 }
 
 function downloadElevation(locations, pathSrtm, myCallback) {    
-    let arrayElevation = []
+    let downloadResult
     // Calculate min and max lats/lngs
     let lats = locations.map(l => l[0]);
     let lngs = locations.map(l => l[1]);
@@ -94,19 +102,27 @@ function downloadElevation(locations, pathSrtm, myCallback) {
     let maxLat = Math.max.apply(null, lats);
     let minLng = Math.min.apply(null, lngs);
     let maxLng = Math.max.apply(null, lngs);
+    console.log('démarrage download pour '+minLat+'-'+minLng+'  '+maxLat+'-'+maxLng)
+    console.time("download");
 
-    var tileset = new SyncTileSet(pathSrtm, [minLat, minLng], [maxLat, maxLng], function(err) {
+    tileset = new SyncTileSet(pathSrtm, [minLat, minLng], [maxLat, maxLng], function(err) {
         if (err) {
-            console.log(err);
+            downloadResult = false;
+            myCallback(downloadResult)
+        } else {
+            console.timeEnd("download")
+            downloadResult = true
+            myCallback(downloadResult)
         }
-        // All tiles are loaded (or downloaded, if they were not already on disk)
-        // and queries can be made synchronous.
-        locations.forEach(l => {
-            arrayElevation.push(Math.round(tileset.getElevation([l[0], l[1]])))            
-        });    
-        console.log('Lg arrayElevation : '+arrayElevation.length+' première alti : '+arrayElevation[0]+' m')
-        myCallback(arrayElevation)
     }, {
+        // un peu chaud ... Cela ne fonctionnait plus le 27 08 22
+        // upgrade version 2.1.2
+        // cette issue https://github.com/rapomon/srtm-elevation/issues/3
+        //  évoque le problème ou il répond que la nasa fonctionne mal
+        // on change le provider        
+        // provider: "https://srtm.fasma.org/{lat}{lng}.SRTMGL3S.hgt.zip",
+        // username: null,
+        // password: null        
         username: 'logfly_user',
         password: 'Logfly22'
     });
