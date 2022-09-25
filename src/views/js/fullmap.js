@@ -377,7 +377,7 @@ function iniForm() {
         i18n.setLocale(currLang);
     }
   } catch (error) {
-      log.error('[problem.js] Error while loading the language file')
+      log.error('[fullmap.js] Error while loading the language file')
   }  
  // btnClose.innerHTML = i18n.gettext('Close')
   btnClose.addEventListener('click',(event) => {

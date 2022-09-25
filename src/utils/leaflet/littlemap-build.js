@@ -4,13 +4,15 @@ const Store = require('electron-store')
 const store = new Store()
 try {    
     let currLang = store.get('lang')
-    let currLangFile = currLang+'.json'
-    let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-    let langjson = JSON.parse(content);
-    i18n.setMessages('messages', currLang, langjson)
-    i18n.setLocale(currLang);
+    if (currLang != undefined && currLang != 'en') {
+        currLangFile = currLang+'.json'
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
+        i18n.setMessages('messages', currLang, langjson)
+        i18n.setLocale(currLang);
+    }
   } catch (error) {
-    log.error('[fullmap.js] Error while loading the language file')
+    log.error('[littlemap-build.js] Error while loading the language file')
   }
 
 
