@@ -46,7 +46,7 @@ const createWindow = () => {
  // process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
 
   if (startOk) {
-    openWindow('logbook')
+    openWindow('settings')
   } else {
     openWindow('problem')
   }
