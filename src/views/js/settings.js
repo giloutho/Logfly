@@ -7,6 +7,7 @@ const log = require('electron-log')
 const Store = require('electron-store')
 const Mustache = require('mustache')
 const dbbasic = require('../../utils/db/db-basic.js')
+const settingsList = require('../../settings/settings-list.js')
 let menuFill = require('../../views/tpl/sidebar.js');
 const { Alert } = require('bootstrap');
 const store = new Store()
@@ -25,17 +26,24 @@ const btnNewLog = document.getElementById('bt-new-logbook')
 const btnCopy = document.getElementById('bt-repatriate')
 const btnLogbook = document.getElementById('tablog')
 const btnPilot = document.getElementById('tabpilot')
-const btnMap = document.getElementById('tabmap')
+const btnGen = document.getElementById('tabgen')
 const btnMisc = document.getElementById('tabmisc')
 const btnWeb = document.getElementById('tabweb')
 const btnValLog = document.getElementById('bt-log-ok')
 const btnCancelLog = document.getElementById('bt-log-cancel')
+const btnValPil = document.getElementById('bt-pil-ok')
+const btnCancelPil = document.getElementById('bt-pil-cancel')
 const oldDbName = store.get('dbName')
 const oldPathDb = store.get('pathdb')
 const oldPathWork = store.get('pathWork')
 const oldDbFullPath = store.get('dbFullPath')
 
+const selectGps = document.getElementById("sel-gps")
+const selectLeague = document.getElementById("sel-league")
+
 iniForm()
+
+
 
 function iniForm() {
     try {    
@@ -65,9 +73,10 @@ function iniForm() {
     btnPilot.addEventListener('click',(event) => {
       fnPilot()
     })
-    btnMap.innerHTML = i18n.gettext('Map')
-    btnMap.addEventListener('click',(event) => {
-      fnMap()
+    iniPilot()
+    btnGen.innerHTML = i18n.gettext('General')
+    btnGen.addEventListener('click',(event) => {
+      fnGeneral()
     })
     btnMisc.innerHTML = i18n.gettext('Miscellaneous')
     btnMisc.addEventListener('click',(event) => {
@@ -197,28 +206,83 @@ function iniLogbook() {
 
 }
 
+function iniPilot() {
+    // Translation
+    document.getElementById('lg_pilot').innerHTML = i18n.gettext('Pilot')
+    document.getElementById('lg-pilotname').innerHTML = i18n.gettext('Pilot name')
+    document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
+    document.getElementById('lg-currgps').innerHTML = i18n.gettext('Usual GPS')
+    document.getElementById('lg-pilotmail').innerHTML = i18n.gettext('Pilot mail')
+    document.getElementById('lg-league').innerHTML = i18n.gettext('League')
+    document.getElementById('lg-login').innerHTML = i18n.gettext('Login')
+    document.getElementById('lg-pass').innerHTML = i18n.gettext('Pass')
+    btnValPil.innerHTML = i18n.gettext('Ok')
+    btnCancelPil.innerHTML = i18n.gettext('Cancel')
+    // Fields initialization
+    document.getElementById('tx-pilotname').value = store.get('defpilot')
+    document.getElementById('tx-glider').value = store.get('defglider')
+    document.getElementById('tx-pilotmail').value = store.get('pilotmail')
+    document.getElementById('tx-login').value = store.get('pilotid')
+    document.getElementById('tx-pass').value = store.get('pilotpass')
+
+    setGps = settingsList.getAllGps()
+    for (let index in setGps ) {
+      var gps = setGps[index];
+      selectGps.options[selectGps.options.length] = new Option(gps.val, gps.key);
+    }  
+    let selectedGPS = store.get('gps')
+    if (selectedGPS == '' || selectedGPS == null) selectedGPS = 'none'
+    selectGps.value = selectedGPS
+
+    setLeagues = settingsList.getLeagues()
+    for (let index in setLeagues ) {
+      var _league = setLeagues[index];
+      selectLeague.options[selectLeague.options.length] = new Option(_league.val, _league.key);
+    }  
+    let selectedLeague = store.get('league')
+    if (selectedLeague == '' || selectedLeague == null) selectedLeague = 'FR'
+    selectLeague.value = selectedLeague
+
+    btnValPil.addEventListener('click', (event)=>{
+      console.log(document.getElementById('tx-pilotname').value)
+      console.log(document.getElementById('check-pilot').checked)
+      console.log(document.getElementById('tx-glider').value)
+      console.log(document.getElementById('check-glider').checked)
+      console.log(document.getElementById('tx-glider').value)
+      console.log(document.getElementById('tx-pilotmail').value)
+      console.log(document.getElementById('tx-login').value)
+      console.log(document.getElementById('tx-pass').value)
+      console.log(selectGps.value)
+      console.log(selectLeague.value)
+    })
+  
+    btnCancelPil.addEventListener('click',(event)=>{
+      let msgConfirm = i18n.gettext('Return to the original settings')+' ?'
+      let confirmCancel = confirm(msgConfirm)
+      if (confirmCancel) restoreSettings()
+    })    
+}
+
 function fnLogbook() {
-    console.log('clic logbook')
     $('#div_logbook').show()
     $('#div_pilot').hide()
-    $('#div_map').hide()   
+    $('#div_gen').hide()   
     $('#div_misc').hide()
     $('#div_web').hide()
 }
 
 function fnPilot() {
-    console.log('clic pilot')
     $('#div_logbook').hide()
     $('#div_pilot').show()
-    $('#div_map').hide()   
+    $('#div_gen').hide()   
     $('#div_misc').hide()
     $('#div_web').hide()
 }
 
-function fnMap() {
+function fnGeneral() {
     $('#div_logbook').hide()
     $('#div_pilot').hide()
-    $('#div_map').show()   
+    $('#div_gen').show()   
     $('#div_misc').hide()
     $('#div_web').hide()
 }
@@ -227,7 +291,7 @@ function fnMisc() {
     console.log('clic Misc')
     $('#div_logbook').hide()
     $('#div_pilot').hide()
-    $('#div_map').hide()   
+    $('#div_gen').hide()   
     $('#div_misc').show()
     $('#div_web').hide()
 }
@@ -235,7 +299,7 @@ function fnMisc() {
 function fnWeb() {
     $('#div_logbook').hide()
     $('#div_pilot').hide()
-    $('#div_map').hide()   
+    $('#div_gen').hide()   
     $('#div_misc').hide()
     $('#div_web').show()
 }

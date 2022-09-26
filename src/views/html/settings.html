@@ -36,7 +36,7 @@
                             <a class="nav-link" id="tabpilot" href="#">Pil</a>
                           </li>
                           <li class="nav-item">
-                            <a class="nav-link" id="tabmap" href="#">Map</a>
+                            <a class="nav-link" id="tabgen" href="#">Map</a>
                           </li>              
                           <li class="nav-item">
                             <a class="nav-link" id="tabmisc" href="#">Misc</a>
@@ -54,9 +54,8 @@
                 <div class="container-fluid">
                     <div>
                         <div class="container-fluid">
-                          <div id="accordionDiv">
-                      
-                              <div id="div_logbook">
+                          <div id="accordionDiv">                    
+                               <div id="div_logbook">
                                   <div class="row">
                                       <div class="col-md-8">
                                         <div class="card top-buffer">
@@ -159,11 +158,117 @@
                                 </div>  
                       
                               <div id="div_pilot" style="display:none">
-                                <h1>Pilote</h1>    
-                                <p>paramètres concernant le pilote</p>
+                                <div class="row">
+                                  <div class="col-md-8">
+                                    <div class="card top-buffer">
+                                      <div class="card-header">
+                                          <h4 class="card-title" id="lg_pilot" >Pilot</h4>
+                                      </div>
+                                      <div class="card-body">
+                                          <form>
+                                              <div class="row">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-pilotname">Pilot name</label>
+                                                </div>
+                                              </div>
+                                              <div class="row">
+                                                    <div class="col-sm-7 my-1">                                    
+                                                        <input type="text" class="form-control" id="tx-pilotname" disabled="" value="">
+                                                    </div>
+                                                    <div class="col-sm-4 my-1 text-right">                                    
+                                                      <label id="lg-pil-check">Priority on IGC field</label>
+                                                  </div>         
+                                                  <div class="col-sm-1 my-1">                                    
+                                                    <input type="checkbox" class="form-check-input" id="check-pilot">
+                                                  </div>                                                                                                
+                                              </div>
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-glider">Glider</label>
+                                                </div>
+                                              </div>         
+                                              <div class="row">
+                                                <div class="col-sm-7 my-1">                                    
+                                                    <input type="text" class="form-control" id="tx-glider" disabled="" value="">
+                                                </div>   
+                                                <div class="col-sm-4 my-1 text-right">                                    
+                                                  <label id="lg-pil-check">Priority on IGC field</label>
+                                              </div>         
+                                              <div class="col-sm-1 my-1">                                    
+                                                <input type="checkbox" class="form-check-input" id="check-glider">
+                                              </div>                                                                                            
+                                              </div>       
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-currgps">Usual GPS</label>
+                                                </div>
+                                              </div>         
+                                              <div class="row">
+                                                <div class="col-sm-4 my-1">     
+                                                    <select class="custom-select mr-sm-4" id="sel-gps">
+                                                    </select>                                 
+                                                </div>
+                                              </div>                                   
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-pilotmail">Pilot mail</label>
+                                                </div>
+                                              </div>
+                                              <div class="row">
+                                                    <div class="col-sm-7 my-1">                                    
+                                                        <input type="text" class="form-control" id="tx-pilotmail" disabled="" value="">
+                                                    </div>
+                                              </div>      
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-league">League</label>
+                                                </div>                                                                                             
+                                              </div>    
+                                              <div class="row">
+                                                <div class="col-sm-4 my-1">     
+                                                    <select class="custom-select mr-sm-2" id="sel-league">
+                                                    </select>                                 
+                                                </div>
+                                              </div>       
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-login">Login</label>
+                                                </div>
+                                              </div>
+                                              <div class="row">
+                                                    <div class="col-sm-7 my-1">                                    
+                                                        <input type="text" class="form-control" id="tx-login" disabled="" value="">
+                                                    </div>
+                                              </div>
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-pass">Pass</label>
+                                                </div>
+                                              </div>         
+                                              <div class="row">
+                                                <div class="col-sm-7 my-1">                                    
+                                                    <input type="password" class="form-control" id="tx-pass" disabled="" value="">
+                                                </div>                                             
+                                              </div>                                                                                                                                                                                                                                               
+                                              <div class="row top-buffer">
+                                                <div class="col-sm-8 my-1">                                                                                          
+                                                </div>
+                                                <div class="col-auto my-1 align-self-center">
+                                                  <button type="button" class="btn btn-danger btn-lg" id="bt-pil-cancel">An</button>
+                                                </div>                                                                                                      
+                                                <div class="col-auto my-1 align-self-center">
+                                                    <button type="button" class="btn btn-success btn-lg" id="bt-pil-ok">OK</button>
+                                                </div>
+                                              </div>                          
+                                              <div class="clearfix"></div>
+                                          </form>
+                                      </div>
+                                  </div>
+                                  </div>
+                              </div>
                               </div>
                       
-                              <div id="div_map" style="display:none">
+                              <div id="div_gen" style="display:none">
                                 <h1>Carte</h1>    
                                 <p>paramètres concernant la cartographie</p>      
                               </div>
