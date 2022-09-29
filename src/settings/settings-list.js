@@ -34,6 +34,17 @@ function getAllGps() {
     return gpsList
 }
 
+function getLanguages(i18n) {
+    let langList = [
+        { key: 'de', val: i18n.gettext('German') },
+        { key: 'en', val: i18n.gettext('English') },
+        { key: 'fr', val: i18n.gettext('French') },
+        { key: 'it', val: i18n.gettext('Italian') }
+    ]
+
+    return langList
+}
+
 function getLeagues() {
     let leagueList = [
         { key: 'FR', val: 'FFVL' },
@@ -43,7 +54,41 @@ function getLeagues() {
     return leagueList
 }
 
+function getStart(i18n) {
+    let startList = [
+        { key: 'log', val: i18n.gettext('Logbook') },
+        { key: 'ove', val: i18n.gettext('Overview') }
+    ]
+
+    return startList
+}
+
+function getOverview(i18n) {
+    let overList = [
+        { key: 'cal', val: i18n.gettext('Calendar year') },
+        { key: 'last', val: i18n.gettext('Last twelve months') }
+    ]
+
+    return overList
+}
+
+function getMaps() {
+    let overList = [
+        { key: 'open', val: 'OpenTopo' },
+        { key: 'ign', val: 'IGN' },
+        { key: 'osm', val: 'OpenStreetMap' },
+        { key: 'mtk', val: 'MTK' },
+        { key: '4u', val: '4UMaps' },
+        { key: 'out', val: 'Outdoor' },        
+    ]
+
+    return overList
+}
+
 
 module.exports.getAllGps = getAllGps
 module.exports.getLeagues = getLeagues
-
+module.exports.getLanguages = getLanguages
+module.exports.getStart = getStart
+module.exports.getOverview = getOverview
+module.exports.getMaps = getMaps

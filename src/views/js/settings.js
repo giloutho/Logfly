@@ -33,13 +33,24 @@ const btnValLog = document.getElementById('bt-log-ok')
 const btnCancelLog = document.getElementById('bt-log-cancel')
 const btnValPil = document.getElementById('bt-pil-ok')
 const btnCancelPil = document.getElementById('bt-pil-cancel')
+const btnValGen = document.getElementById('bt-gen-ok')
+const btnCancelGen = document.getElementById('bt-gen-cancel')
+const btnValWeb = document.getElementById('bt-web-ok')
+const btnCancelWeb = document.getElementById('bt-web-cancel')
 const oldDbName = store.get('dbName')
 const oldPathDb = store.get('pathdb')
 const oldPathWork = store.get('pathWork')
 const oldDbFullPath = store.get('dbFullPath')
-
+const btnPathImport = document.getElementById('bt-import')
+const btnPathExport = document.getElementById('bt-export')
+const btnPathSyride = document.getElementById('bt-syride')
 const selectGps = document.getElementById("sel-gps")
 const selectLeague = document.getElementById("sel-league")
+const selectLang = document.getElementById("sel-lang")
+const selectStart = document.getElementById("sel-start")
+const selectOver = document.getElementById("sel-over")
+const selectMap = document.getElementById("sel-map")
+const selectPhoto = document.getElementById("sel-photos")
 
 iniForm()
 
@@ -58,36 +69,30 @@ function iniForm() {
       } catch (error) {
           log.error('[problem.js] Error while loading the language file')
       }  
-    let menuOptions = menuFill.fillMenuOptions(i18n)
-    $.get('../../views/tpl/sidebar.html', function(templates) { 
-        const template = $(templates).filter('#temp-menu').html();  
-        const rendered = Mustache.render(template, menuOptions)
-        document.getElementById('target-sidebar').innerHTML = rendered
-    })
-    btnLogbook.innerHTML = i18n.gettext('Logbook')
+    // let menuOptions = menuFill.fillMenuOptions(i18n)
+    // $.get('../../views/tpl/sidebar.html', function(templates) { 
+    //     const template = $(templates).filter('#temp-menu').html();  
+    //     const rendered = Mustache.render(template, menuOptions)
+    //     document.getElementById('target-sidebar').innerHTML = rendered
+    // })
+    translateLabels()
     btnLogbook.addEventListener('click',(event) => {
       fnLogbook()
     })
     iniLogbook()
-    btnPilot.innerHTML = i18n.gettext('Pilot')
     btnPilot.addEventListener('click',(event) => {
       fnPilot()
     })
     iniPilot()
-    btnGen.innerHTML = i18n.gettext('General')
+
     btnGen.addEventListener('click',(event) => {
       fnGeneral()
     })
-    btnMisc.innerHTML = i18n.gettext('Miscellaneous')
-    btnMisc.addEventListener('click',(event) => {
-      fnMisc()
-    })
-    btnWeb.innerHTML = i18n.gettext('Web')
+    iniGeneral()
     btnWeb.addEventListener('click',(event) => {
       fnWeb()
     })    
-    btnValLog.innerHTML = i18n.gettext('Ok')
-    btnCancelLog.innerHTML = i18n.gettext('Cancel')
+    iniWeb()
 }
 
 
@@ -122,27 +127,12 @@ function iniLogbook() {
   let pathDb = store.get('pathdb')
   let dbName = store.get('dbName')
   // translation
-  document.getElementById('lg_logbook').innerHTML = i18n.gettext('Logbook')
-  document.getElementById('lg-working-path').innerHTML = i18n.gettext('Working folder path')   
   $('#tx-work-path').val(store.get('pathWork'))
   imgWorkPath.src='../../assets/img/valid.png'
-  btnWorkPath.innerHTML = i18n.gettext('Modify')
-  document.getElementById('lg-folder-path').innerHTML = i18n.gettext('Logbook(s) folder path')
   $('#tx-log-path').val(pathDb)
   imgLogPath.src='../../assets/img/valid.png'
   imgDbName.src='../../assets/img/valid.png'
-  btnDbPath.innerHTML = i18n.gettext('Modify')
   fillSelect(pathDb,dbName)
-  document.getElementById('lg-curr-logbook').innerHTML = i18n.gettext('Current logbook')
-  $('#lg-log-folder').val(i18n.gettext('Choose a new logbook folder'))
-  document.getElementById('bt-choose-folder').innerHTML = i18n.gettext('Select')
-  $('#lg-move-logbook').val(i18n.gettext('Move logbook(s) to a different folder'))
-  document.getElementById('bt-move-folder').innerHTML = i18n.gettext('Select')
-  $('#lg-new-logbook').val(i18n.gettext('Create a new logbook'))
-  $('#tx-create-logbook').attr("placeholder", i18n.gettext('Type the name without extension'))
-  document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
-  $('#lg-repatriate').val(i18n.gettext('Repatriate a copy'))
-  btnCopy.innerHTML = i18n.gettext('Select')
   // Assignment of the listeners
   btnWorkPath.addEventListener('click', (event) => {
     const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathWork'))
@@ -207,67 +197,160 @@ function iniLogbook() {
 }
 
 function iniPilot() {
-    // Translation
-    document.getElementById('lg_pilot').innerHTML = i18n.gettext('Pilot')
-    document.getElementById('lg-pilotname').innerHTML = i18n.gettext('Pilot name')
-    document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
-    document.getElementById('lg-currgps').innerHTML = i18n.gettext('Usual GPS')
-    document.getElementById('lg-pilotmail').innerHTML = i18n.gettext('Pilot mail')
-    document.getElementById('lg-league').innerHTML = i18n.gettext('League')
-    document.getElementById('lg-login').innerHTML = i18n.gettext('Login')
-    document.getElementById('lg-pass').innerHTML = i18n.gettext('Pass')
     btnValPil.innerHTML = i18n.gettext('Ok')
     btnCancelPil.innerHTML = i18n.gettext('Cancel')
-    // Fields initialization
-    document.getElementById('tx-pilotname').value = store.get('defpilot')
-    document.getElementById('tx-glider').value = store.get('defglider')
-    document.getElementById('tx-pilotmail').value = store.get('pilotmail')
-    document.getElementById('tx-login').value = store.get('pilotid')
-    document.getElementById('tx-pass').value = store.get('pilotpass')
-
     setGps = settingsList.getAllGps()
     for (let index in setGps ) {
       var gps = setGps[index];
       selectGps.options[selectGps.options.length] = new Option(gps.val, gps.key);
     }  
-    let selectedGPS = store.get('gps')
-    if (selectedGPS == '' || selectedGPS == null) selectedGPS = 'none'
-    selectGps.value = selectedGPS
 
     setLeagues = settingsList.getLeagues()
     for (let index in setLeagues ) {
       var _league = setLeagues[index];
       selectLeague.options[selectLeague.options.length] = new Option(_league.val, _league.key);
     }  
-    let selectedLeague = store.get('league')
-    if (selectedLeague == '' || selectedLeague == null) selectedLeague = 'FR'
-    selectLeague.value = selectedLeague
 
     btnValPil.addEventListener('click', (event)=>{
-      console.log(document.getElementById('tx-pilotname').value)
-      console.log(document.getElementById('check-pilot').checked)
-      console.log(document.getElementById('tx-glider').value)
-      console.log(document.getElementById('check-glider').checked)
-      console.log(document.getElementById('tx-glider').value)
-      console.log(document.getElementById('tx-pilotmail').value)
-      console.log(document.getElementById('tx-login').value)
-      console.log(document.getElementById('tx-pass').value)
-      console.log(selectGps.value)
-      console.log(selectLeague.value)
+      store.set('defpilot',document.getElementById('tx-pilotname').value)
+      store.set('priorpilot',document.getElementById('check-pilot').checked)
+      store.set('defglider',document.getElementById('tx-glider').value)
+      store.set('priorglider',document.getElementById('check-glider').checked)
+      store.set('pilotmail',document.getElementById('tx-pilotmail').value)
+      store.set('pilotid',document.getElementById('tx-login').value)
+      store.set('pilotpass',document.getElementById('tx-pass').value)
+      store.set('gps',selectGps.value)
+      store.set('league',selectLeague.value)
     })
   
     btnCancelPil.addEventListener('click',(event)=>{
       let msgConfirm = i18n.gettext('Return to the original settings')+' ?'
       let confirmCancel = confirm(msgConfirm)
-      if (confirmCancel) restoreSettings()
+      if (confirmCancel) iniPilotSettings()
     })    
+
+    iniPilotSettings()
+}
+
+function iniGeneral() {
+  selectLang.innerHTML = null
+  setLang = settingsList.getLanguages(i18n)
+  for (let index in setLang ) {
+    var _lang = setLang[index];
+    selectLang.options[selectLang.options.length] = new Option(_lang.val, _lang.key);
+  }  
+
+  selectStart.innerHTML = null
+  setStart = settingsList.getStart(i18n)
+  for (let index in setStart ) {
+    var _start = setStart[index];
+    selectStart.options[selectStart.options.length] = new Option(_start.val, _start.key);
+  }  
+
+  selectOver.innerHTML = null
+  setOver = settingsList.getOverview(i18n)
+  for (let index in setOver ) {
+    var _over = setOver[index];
+    selectOver.options[selectOver.options.length] = new Option(_over.val, _over.key);
+  }  
+
+  selectMap.innerHTML = null
+  setMaps = settingsList.getMaps()
+  for (let index in setMaps ) {
+    var _map = setMaps[index];
+    selectMap.options[selectMap.options.length] = new Option(_map.val, _map.key);
+  }  
+
+  selectPhoto.innerHTML = null
+  selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('No'),'no');
+  selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('Yes'),'yes');
+
+  const btnPathImport = document.getElementById('bt-import')
+  btnPathImport.addEventListener('click', (event) => {
+    const selectedPath = ipcRenderer.sendSync('open-directory')
+    if (selectedPath != null) {
+      document.getElementById('tx-import').value = selectedPath
+    }
+  }) 
+
+  const btnPathExport = document.getElementById('bt-export')
+  btnPathExport.addEventListener('click', (event) => {
+    const selectedPath = ipcRenderer.sendSync('open-directory')
+    if (selectedPath != null) {
+      document.getElementById('tx-export').value = selectedPath
+    }
+  }) 
+
+  const btnPathSyride = document.getElementById('bt-syride')
+  btnPathSyride.addEventListener('click', (event) => {
+    const selectedPath = ipcRenderer.sendSync('open-directory')
+    if (selectedPath != null) {
+      document.getElementById('tx-syride').value = selectedPath
+    }
+  }) 
+
+  btnValGen.addEventListener('click', (event)=>{
+    const langChoosed = selectLang.value
+    if (langChoosed != store.get('lang')) {
+      currLang = langChoosed
+      if (currLang != undefined && currLang != 'en') {
+        currLangFile = currLang+'.json'
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
+        i18n.setMessages('messages', currLang, langjson)
+        i18n.setLocale(currLang)
+        translateLabels()
+    } else {
+        i18n.setLocale(currLang)
+        translateLabels()
+    }
+
+    }
+    store.set('lang',langChoosed)
+    store.set('start',selectStart.value)
+    store.set('over',selectOver.value)
+    store.set('map',selectMap.value)
+    store.set('pathimport',document.getElementById('tx-import').value)
+    store.set('pathexport',document.getElementById('tx-export').value)
+    store.set('pathsyride',document.getElementById('tx-syride').value)    
+    store.set('photo',selectPhoto.value)    
+  })  
+
+  btnCancelGen.addEventListener('click',(event)=>{
+    let msgConfirm = i18n.gettext('Return to the original settings')+' ?'
+    let confirmCancel = confirm(msgConfirm)
+    if (confirmCancel) {
+      iniGeneralsettings()
+    }
+  })    
+  
+  iniGeneralsettings()
+}
+
+function iniWeb() {
+  btnValWeb.addEventListener('click', (event)=>{
+    store.set('urllogfly',document.getElementById('tx-logfly').value)
+    store.set('urllogflyigc',document.getElementById('tx-visu').value)
+    store.set('urlvisu',document.getElementById('tx-flyxc').value)    
+    store.set('urlairspace',document.getElementById('tx-airspace').value)
+    store.set('urlcontest',document.getElementById('tx-contest').value)    
+  })  
+
+  btnCancelWeb.addEventListener('click',(event)=>{
+    let msgConfirm = i18n.gettext('Return to the original settings')+' ?'
+    let confirmCancel = confirm(msgConfirm)
+    if (confirmCancel) {
+      iniWebSettings()
+    }
+  })    
+
+  iniWebSettings()
 }
 
 function fnLogbook() {
     $('#div_logbook').show()
     $('#div_pilot').hide()
     $('#div_gen').hide()   
-    $('#div_misc').hide()
     $('#div_web').hide()
 }
 
@@ -275,7 +358,6 @@ function fnPilot() {
     $('#div_logbook').hide()
     $('#div_pilot').show()
     $('#div_gen').hide()   
-    $('#div_misc').hide()
     $('#div_web').hide()
 }
 
@@ -283,16 +365,6 @@ function fnGeneral() {
     $('#div_logbook').hide()
     $('#div_pilot').hide()
     $('#div_gen').show()   
-    $('#div_misc').hide()
-    $('#div_web').hide()
-}
-
-function fnMisc() {
-    console.log('clic Misc')
-    $('#div_logbook').hide()
-    $('#div_pilot').hide()
-    $('#div_gen').hide()   
-    $('#div_misc').show()
     $('#div_web').hide()
 }
 
@@ -300,7 +372,6 @@ function fnWeb() {
     $('#div_logbook').hide()
     $('#div_pilot').hide()
     $('#div_gen').hide()   
-    $('#div_misc').hide()
     $('#div_web').show()
 }
 
@@ -481,4 +552,135 @@ function restoreSettings() {
   document.getElementById('tx-work-path').value = oldPathWork
   document.getElementById('tx-log-path').value = oldPathDb
   fillSelect(oldPathDb,oldDbName)
+}
+
+function iniPilotSettings() {
+  document.getElementById('tx-pilotname').value = store.get('defpilot')
+  if (store.get('priorpilot'))
+    document.getElementById('check-pilot').checked = true
+  else
+    document.getElementById('check-pilot').checked = false
+  document.getElementById('tx-glider').value = store.get('defglider')
+  if (store.get('priorglider'))
+    document.getElementById('check-glider').checked = true
+  else
+    document.getElementById('check-glider').checked = false
+  document.getElementById('tx-pilotmail').value = store.get('pilotmail')
+  document.getElementById('tx-login').value = store.get('pilotid')
+  document.getElementById('tx-pass').value = store.get('pilotpass')
+
+  let selectedGPS = store.get('gps')
+  if (selectedGPS == '' || selectedGPS == null) selectedGPS = 'none'
+  selectGps.value = selectedGPS
+
+  let selectedLeague = store.get('league')
+  if (selectedLeague == '' || selectedLeague == null) selectedLeague = 'FR'
+  selectLeague.value = selectedLeague 
+}
+
+function iniGeneralsettings() {
+  let selectedLang = store.get('lang')
+  if (selectedLang == '' || selectedLang == null) selectedLang = 'en'
+  selectLang.value = selectedLang
+
+  let selectedStart = store.get('start')
+  if (selectedStart == '' || selectedStart == null) selectedStart = 'log'
+  selectStart.value = selectedStart
+
+  let selectedOver = store.get('over')
+  if (selectedOver == '' || selectedOver == null) selectedOver = 'cal'
+  selectOver.value = selectedOver  
+
+  let selectedMap = store.get('map')
+  if (selectedMap == '' || selectedMap == null) selectedMap = 'osm'
+  selectMap.value = selectedMap  
+
+  let selectedPhoto = store.get('photo')
+  if (selectedPhoto == '' || selectedPhoto == null) selectedPhoto = 'no'
+  selectPhoto.value = selectedPhoto  
+
+  const pPathImport = store.get('pathimport')
+  if (pPathImport == '' || pPathImport == null) 
+    document.getElementById('tx-import').value = ''
+  else
+    document.getElementById('tx-import').value = pPathImport
+
+  const pPathExport = store.get('pathexport')
+  if (pPathExport == '' || pPathExport == null) 
+    document.getElementById('tx-export').value = ''
+  else
+    document.getElementById('tx-export').value = pPathExport
+
+  const pPathSyride = store.get('pathsyride')
+  if (pPathSyride == '' || pPathSyride == null) 
+    document.getElementById('tx-syride').value = ''
+  else
+    document.getElementById('tx-syride').value = pPathSyride
+}
+
+function iniWebSettings() {
+  document.getElementById('tx-logfly').value = store.get('urllogfly')
+  document.getElementById('tx-visu').value = store.get('urllogflyigc')
+  document.getElementById('tx-flyxc').value = store.get('urlvisu')
+  document.getElementById('tx-airspace').value = store.get('urlairspace')
+  document.getElementById('tx-contest').value = store.get('urlcontest')
+}
+
+function translateLabels() {
+  let menuOptions = menuFill.fillMenuOptions(i18n)
+  $.get('../../views/tpl/sidebar.html', function(templates) { 
+      const template = $(templates).filter('#temp-menu').html();  
+      const rendered = Mustache.render(template, menuOptions)
+      document.getElementById('target-sidebar').innerHTML = rendered
+  })
+  btnLogbook.innerHTML = i18n.gettext('Logbook')
+  btnPilot.innerHTML = i18n.gettext('Pilot')
+  btnGen.innerHTML = i18n.gettext('General')
+  btnWeb.innerHTML = i18n.gettext('Web')
+  btnValLog.innerHTML = i18n.gettext('Ok')
+  btnCancelLog.innerHTML = i18n.gettext('Cancel')
+  document.getElementById('lg_logbook').innerHTML = i18n.gettext('Logbook')
+  document.getElementById('lg-working-path').innerHTML = i18n.gettext('Working folder path')   
+  btnWorkPath.innerHTML = i18n.gettext('Modify')
+ // document.getElementById('lg-document.
+  document.getElementById('lg-curr-logbook').innerHTML = i18n.gettext('Current logbook')
+  $('#lg-log-folder').val(i18n.gettext('Choose a new logbook folder'))
+  document.getElementById('bt-choose-folder').innerHTML = i18n.gettext('Select')
+  $('#lg-move-logbook').val(i18n.gettext('Move logbook(s) to a different folder'))
+  document.getElementById('bt-move-folder').innerHTML = i18n.gettext('Select')
+  $('#lg-new-logbook').val(i18n.gettext('Create a new logbook'))
+  $('#tx-create-logbook').attr("placeholder", i18n.gettext('Type the name without extension'))
+  document.getElementById('bt-new-logbook').innerHTML = i18n.gettext('Create')
+  $('#lg-repatriate').val(i18n.gettext('Repatriate a copy'))
+  btnCopy.innerHTML = i18n.gettext('Select')
+  btnDbPath.innerHTML = i18n.gettext('Modify')
+  document.getElementById('lg_pilot').innerHTML = i18n.gettext('Pilot')
+  document.getElementById('lg-pilotname').innerHTML = i18n.gettext('Pilot name')
+  document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
+  document.getElementById('lg-currgps').innerHTML = i18n.gettext('Usual GPS')
+  document.getElementById('lg-pilotmail').innerHTML = i18n.gettext('Pilot mail')
+  document.getElementById('lg-league').innerHTML = i18n.gettext('League')
+  document.getElementById('lg-login').innerHTML = i18n.gettext('Login')
+  document.getElementById('lg-pass').innerHTML = i18n.gettext('Pass')
+  document.getElementById('lg_gen').innerHTML = i18n.gettext('General')
+  document.getElementById('lg-lang').innerHTML = i18n.gettext('Language')
+  document.getElementById('lg-start').innerHTML = i18n.gettext('Start window')
+  document.getElementById('lg-overview').innerHTML = i18n.gettext('Overview')
+  document.getElementById('lg-map').innerHTML = i18n.gettext('Default map')
+  document.getElementById('lg-import').innerHTML = i18n.gettext('Select the import folder for GPS tracks')
+  document.getElementById('lg-export').innerHTML = i18n.gettext('Select the folder of GPS tracks to import')
+  document.getElementById('lg-syride').innerHTML = i18n.gettext('Select the Syride folder for GPS tracks')
+  document.getElementById('lg-photo').innerHTML = i18n.gettext('Automatic display of photos')
+  btnValGen.innerHTML = i18n.gettext('Ok')
+  btnCancelGen.innerHTML = i18n.gettext('Cancel')
+  btnPathImport.innerHTML = i18n.gettext('Select')
+  btnPathExport.innerHTML = i18n.gettext('Select')
+  btnPathSyride.innerHTML = i18n.gettext('Select')
+  document.getElementById('lg-logfly').innerHTML = i18n.gettext('Logfly site url')
+  document.getElementById('lg-visu').innerHTML = i18n.gettext('Download url')
+  document.getElementById('lg-flyxc').innerHTML = i18n.gettext('FlyXC url')
+  document.getElementById('lg-airspace').innerHTML = i18n.gettext('Airspace download url')
+  document.getElementById('lg-contest').innerHTML = i18n.gettext('Claim url')
+  btnValWeb.innerHTML = i18n.gettext('Ok')
+  btnCancelWeb.innerHTML = i18n.gettext('Cancel')  
 }

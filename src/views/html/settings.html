@@ -39,9 +39,6 @@
                             <a class="nav-link" id="tabgen" href="#">Map</a>
                           </li>              
                           <li class="nav-item">
-                            <a class="nav-link" id="tabmisc" href="#">Misc</a>
-                          </li>
-                          <li class="nav-item">
                             <a class="nav-link" id="tabweb" href="#">Web</a>
                           </li>                     
                       </ul>
@@ -173,7 +170,7 @@
                                               </div>
                                               <div class="row">
                                                     <div class="col-sm-7 my-1">                                    
-                                                        <input type="text" class="form-control" id="tx-pilotname" disabled="" value="">
+                                                        <input type="text" class="form-control" id="tx-pilotname" value="">
                                                     </div>
                                                     <div class="col-sm-4 my-1 text-right">                                    
                                                       <label id="lg-pil-check">Priority on IGC field</label>
@@ -189,7 +186,7 @@
                                               </div>         
                                               <div class="row">
                                                 <div class="col-sm-7 my-1">                                    
-                                                    <input type="text" class="form-control" id="tx-glider" disabled="" value="">
+                                                    <input type="text" class="form-control" id="tx-glider" value="">
                                                 </div>   
                                                 <div class="col-sm-4 my-1 text-right">                                    
                                                   <label id="lg-pil-check">Priority on IGC field</label>
@@ -216,7 +213,7 @@
                                               </div>
                                               <div class="row">
                                                     <div class="col-sm-7 my-1">                                    
-                                                        <input type="text" class="form-control" id="tx-pilotmail" disabled="" value="">
+                                                        <input type="text" class="form-control" id="tx-pilotmail" value="">
                                                     </div>
                                               </div>      
                                               <div class="row top-buffer">
@@ -237,7 +234,7 @@
                                               </div>
                                               <div class="row">
                                                     <div class="col-sm-7 my-1">                                    
-                                                        <input type="text" class="form-control" id="tx-login" disabled="" value="">
+                                                        <input type="text" class="form-control" id="tx-login" value="">
                                                     </div>
                                               </div>
                                               <div class="row top-buffer">
@@ -247,7 +244,7 @@
                                               </div>         
                                               <div class="row">
                                                 <div class="col-sm-7 my-1">                                    
-                                                    <input type="password" class="form-control" id="tx-pass" disabled="" value="">
+                                                    <input type="password" class="form-control" id="tx-pass" value="">
                                                 </div>                                             
                                               </div>                                                                                                                                                                                                                                               
                                               <div class="row top-buffer">
@@ -269,18 +266,195 @@
                               </div>
                       
                               <div id="div_gen" style="display:none">
-                                <h1>Carte</h1>    
-                                <p>paramètres concernant la cartographie</p>      
-                              </div>
-                      
-                              <div id="div_misc" style="display:none">
-                                <h1>Miscellaneous</h1>    
-                                <p>paramètres divers</p>
+                         <!--       <div class="row">   -->
+                                  <div class="col-md-10">
+                                    <div class="card top-buffer">
+                                      <div class="card-header">
+                                          <h4 class="card-title" id="lg_gen" >Gen</h4>
+                                      </div>
+                                      <div class="card-body">
+                                          <form>
+                                              <div class="row">
+                                                <div class="col-md-4 pr-1">
+                                                  <label id="lg-lang">Lang</label>
+                                                </div> 
+                                                <div class="col-md-3 pr-1"></div> 
+                                                <div class="col-md-4 pr-1">
+                                                  <label id="lg-start">Start</label>
+                                                </div>                                                                                               
+                                              </div>    
+                                              <div class="row">
+                                                <div class="col-sm-4 my-1">     
+                                                    <select class="custom-select mr-sm-2" id="sel-lang">
+                                                    </select>                                 
+                                                </div>
+                                                <div class="col-sm-3 my-1"></div>
+                                                <div class="col-sm-4 my-1">     
+                                                  <select class="custom-select mr-sm-2" id="sel-start">
+                                                  </select>                                 
+                                                </div>
+                                              </div>                                              
+                                              <div class="row top-buffer">
+                                                <div class="col-md-4 pr-1">
+                                                  <label id="lg-overview">Overview</label>
+                                                </div> 
+                                                <div class="col-md-3 pr-1"></div> 
+                                                <div class="col-md-4 pr-1">
+                                                  <label id="lg-map">Default map</label>
+                                                </div>                                                                                            
+                                              </div>    
+                                              <div class="row">
+                                                <div class="col-sm-4 my-1">     
+                                                    <select class="custom-select mr-sm-2" id="sel-over">
+                                                    </select>                                 
+                                                </div>
+                                                <div class="col-sm-3 my-1"></div>    
+                                                <div class="col-sm-4 my-1">     
+                                                  <select class="custom-select mr-sm-4" id="sel-map">
+                                                  </select>                                 
+                                                </div>
+                                              </div>         
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-import">Import folder</label>
+                                                </div>
+                                              </div>                           
+                                              <div class="row">
+                                                <div class="col-sm-8 my-1">                                    
+                                                  <input type="text" class="form-control" id="tx-import" disabled="" value="Import folder">                                                 
+                                                </div>
+                                                <div class="col-auto my-1 align-self-center">
+                                                    <button type="button" class="btn btn-outline-info" id="bt-import">Select</button>
+                                                </div>
+                                              </div>   
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-export">Export folder</label>
+                                                </div>
+                                              </div>                                                     
+                                              <div class="row">
+                                                <div class="col-sm-8 my-1">                                    
+                                                  <input type="text" class="form-control" id="tx-export" disabled="" value="Export folder">                                                
+                                                </div>
+                                                <div class="col-auto my-1 align-self-center">
+                                                    <button type="button" class="btn btn-outline-info" id="bt-export">Move</button>
+                                                </div>
+                                              </div>      
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-syride">Import Syride</label>
+                                                </div>
+                                              </div>                                                 
+                                              <div class="row">
+                                                <div class="col-sm-8 my-1">                                    
+                                                  <input type="text" class="form-control" id="tx-syride" disabled="" value="Syride folder">
+                                                </div>
+                                                <div class="col-auto my-1 align-self-center">
+                                                    <button type="button" class="btn btn-outline-info" id="bt-syride">Move</button>
+                                                </div>
+                                              </div>        
+                                              <div class="row top-buffer">
+                                                <div class="col-md-8 pr-1">
+                                                  <label id="lg-photo">Automatic disp</label>
+                                                </div>                                                                                             
+                                              </div>    
+                                              <div class="row">
+                                                <div class="col-sm-2 my-1">     
+                                                    <select class="custom-select mr-sm-2" id="sel-photos">
+                                                    </select>                                 
+                                                </div>
+                                              </div>                                                                                                                                                                                                                                               
+                                              <div class="row top-buffer">
+                                                <div class="col-sm-8 my-1">                                                                                          
+                                                </div>
+                                                <div class="col-auto my-1 align-self-center">
+                                                  <button type="button" class="btn btn-danger btn-lg" id="bt-gen-cancel">An</button>
+                                                </div>                                                                                                      
+                                                <div class="col-auto my-1 align-self-center">
+                                                    <button type="button" class="btn btn-success btn-lg" id="bt-gen-ok">OK</button>
+                                                </div>
+                                              </div>                          
+                                              <div class="clearfix"></div>
+                                          </form>
+                                      </div>
+                                   </div>  
+                                  </div>
+                            <!--  </div>    -->
                               </div>
                       
                               <div id="div_web" style="display:none">
-                                <h1>Internet</h1>    
-                                <p>paramètres des url internet</p>
+                                <div class="col-md-8">
+                                  <div class="card top-buffer">
+                                    <div class="card-header">
+                                        <h4 class="card-title" id="lg_web" >Web</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <form>
+                                            <div class="row">
+                                              <div class="col-md-8 pr-1">
+                                                <label id="lg-logfly">Logfly url</label>
+                                              </div>
+                                            </div>
+                                            <div class="row">
+                                                  <div class="col-sm-7 my-1">                                    
+                                                      <input type="text" class="form-control" id="tx-logfly" value="">
+                                                  </div>                                                                                            
+                                            </div>
+                                            <div class="row top-buffer">
+                                              <div class="col-md-8 pr-1">
+                                                <label id="lg-visu">Visu url</label>
+                                              </div>
+                                            </div>         
+                                            <div class="row">
+                                              <div class="col-sm-7 my-1">                                    
+                                                  <input type="text" class="form-control" id="tx-visu" value="">
+                                              </div>                                                                                             
+                                            </div>                                    
+                                            <div class="row top-buffer">
+                                              <div class="col-md-8 pr-1">
+                                                <label id="lg-flyxc">FlyXC url</label>
+                                              </div>
+                                            </div>
+                                            <div class="row">
+                                                  <div class="col-sm-7 my-1">                                    
+                                                      <input type="text" class="form-control" id="tx-flyxc" value="">
+                                                  </div>
+                                            </div>       
+                                            <div class="row top-buffer">
+                                              <div class="col-md-8 pr-1">
+                                                <label id="lg-airspace">Airspaces url</label>
+                                              </div>
+                                            </div>
+                                            <div class="row">
+                                                  <div class="col-sm-7 my-1">                                    
+                                                      <input type="text" class="form-control" id="tx-airspace" value="">
+                                                  </div>
+                                            </div>                                            
+                                            <div class="row top-buffer">
+                                              <div class="col-md-8 pr-1">
+                                                <label id="lg-contest">Contest url</label>
+                                              </div>
+                                            </div>
+                                            <div class="row">
+                                                  <div class="col-sm-7 my-1">                                    
+                                                      <input type="text" class="form-control" id="tx-contest" value="">
+                                                  </div>
+                                            </div>                                                                                                                                                                                                                                          
+                                            <div class="row top-buffer">
+                                              <div class="col-sm-8 my-1">                                                                                          
+                                              </div>
+                                              <div class="col-auto my-1 align-self-center">
+                                                <button type="button" class="btn btn-danger btn-lg" id="bt-web-cancel">An</button>
+                                              </div>                                                                                                      
+                                              <div class="col-auto my-1 align-self-center">
+                                                  <button type="button" class="btn btn-success btn-lg" id="bt-web-ok">OK</button>
+                                              </div>
+                                            </div>                          
+                                            <div class="clearfix"></div>
+                                        </form>
+                                    </div>
+                                </div>
+                                </div>
                               </div>
                           </div>
                         </div>

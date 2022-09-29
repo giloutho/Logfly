@@ -57,9 +57,6 @@ function getEnv(modeProd) {
     store.set('nodeVersion',process.versions.node)
     store.set('version',app.getVersion())      
     store.set('locale',app.getLocale())
-    store.set('urlvisu','https://flyxc.app/?track=')
-    store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
-    store.set('urllogfly','http://www.logfly.org')
 }
 
 /**
@@ -82,6 +79,9 @@ function getEnv(modeProd) {
             store.set('dbName',properties.get('dbname'))           
             store.set('pathsyride',properties.get('pathsyride'))            
             store.set('pathdb',properties.get('pathdb'))
+            store.set('urlvisu','https://flyxc.app/?track=')
+            store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
+            store.set('urllogfly','http://www.logfly.org')            
             store.set('finderlong',properties.get('finderlong'))
             store.set('finderlat',properties.get('finderlat'))
             store.set('pathWork',properties.get('pathw'))
@@ -99,7 +99,6 @@ function getEnv(modeProd) {
                         store.set('lang','de')
                         break;
                     case 1:
-                        console.log('envoi de idxLang '+idxLang)
                         store.set('lang','en')
                         break;
                     case 2:
@@ -187,6 +186,29 @@ function getEnv(modeProd) {
                     store.set('league','XC')
                     break;
             }
+            const idxMap = properties.get('idxmap')
+            switch (key) {
+                case 0:
+                    store.set('map','osm')
+                    break;     
+                case 1:
+                    store.set('map','open')
+                    break;            
+                case 2:
+                    store.set('map','mtk')
+                    break;     
+                case 3:
+                    store.set('map','4u')
+                    break;                                               
+                default:
+                    store.set('map','osm')
+                    break;
+            }
+            const pPhoto = properties.get('photoauto') ? true : false
+            store.set('photo',pPhoto)
+            // default settings without worrying about L5 settings 
+            store.set('start','log')
+            store.set('over','cal')
             getEnv()
         } else {
             defaultSettings()
@@ -202,8 +224,15 @@ function defaultSettings() {
     try {
         const store = new Store()
         getEnv()
+        store.set('urlvisu','https://flyxc.app/?track=')
+        store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
+        store.set('urllogfly','http://www.logfly.org')
         setLangWithLocale()    
         store.set('gps','none') // no gps selected
+        store.set('start','log')
+        store.set('over','cal')
+        store.set('map','osm')
+        store.set('photo','no')
         if (!fs.existsSync(logflyPath)) {
             fs.mkdirSync(logflyPath)    
             let logflyDbPath  = path.join(logflyPath, 'Logfly.db')  
