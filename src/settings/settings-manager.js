@@ -1,12 +1,11 @@
-const { app } = require('electron');
+const { app } = require('electron')
 const path = require('path')
 const fs = require('fs') 
 const Store = require('electron-store')
 const process = require('process')
 const propertiesReader = require('properties-reader')
 const log = require('electron-log')
-const dbbasic = require('../utils/db/db-basic.js');
-
+const dbbasic = require('../utils/db/db-basic.js')
 
 function checkSettings (appPath, progVersion) {          
     const store = new Store()
