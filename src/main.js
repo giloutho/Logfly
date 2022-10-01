@@ -1,12 +1,12 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob')
+const internetAvailable = require('internet-available')
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 
 let mainWindow = null;
-let currLang 
-let currLangMsg
+let releaseInfo
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -45,11 +45,22 @@ const createWindow = () => {
   process.platform === "win32" && mainWindow.removeMenu()
  // process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
 
-  if (startOk) {
-    openWindow('settings')
-  } else {
-    openWindow('problem')
-  }
+  // if (checkInfo()) {
+  //   console.log('infos')
+  //   openWindow('infos')
+  // } else {
+  //   if (startOk) {
+  //     openWindow('overview')
+  //   } else {
+  //     openWindow('problem')
+  //   }
+  // }
+    if (startOk) {
+      checkInfo()
+    } else {
+      openWindow('problem')
+    }
+
 }
 
 // This method will be called when Electron has finished
@@ -83,6 +94,9 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
   mainWindow.webContents.send('remove-waiting-gif')
 });
 
+ipcMain.on('ask-infos', function(event, arg) {
+  mainWindow.webContents.send('read-infos', releaseInfo)
+});
 
 function openWindow(pageName) {
   switch (pageName) {
@@ -93,6 +107,11 @@ function openWindow(pageName) {
     case "overview":
       mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'));
       break;      
+    case "infos":
+      mainWindow.loadFile(path.join(__dirname, './views/html/information.html'));
+      mainWindow.webContents.send('read-infos')
+      mainWindow.webContents.openDevTools(); 
+      break;            
     case "import":
       mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
       break;        
@@ -134,6 +153,45 @@ function openWindow(pageName) {
         mainWindow.loadFile(path.join(__dirname, './views/html/noflights.html'));
         break;                
   } 
+}
+
+function checkInfo() {
+  const url = 'http://logfly.org/download/logfly6/release.json'
+    internetAvailable().then(() => {
+      const request = net.request({
+        method: 'GET',
+        url : url,
+      })
+    //  const request = net.request(url);
+      request.on("response", (response) => {
+        const data = [];
+        response.on("data", (chunk) => {
+          data.push(chunk);
+        });
+        response.on("end", () => {
+          const json = Buffer.concat(data).toString()
+          console.log(json)
+          try {
+            const currVersion = app.getVersion() 
+            releaseInfo = JSON.parse(json);
+            if (releaseInfo.release > currVersion || releaseInfo.message !== undefined )  {
+                console.log(releaseInfo.release)
+                openWindow('infos')
+            } else {
+              openWindow('logbook')
+            }
+          } catch (error) {
+            openWindow('logbook')
+          }
+        })
+      });
+    
+      request.end();
+    }).catch(() => {
+        console.log("No internet ou web response");
+        // Not great, but waiting for better
+        openWindow('logbook')
+    })
 }
 
 // Require each JS file in the main-process dir
