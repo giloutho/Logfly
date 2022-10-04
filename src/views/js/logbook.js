@@ -18,6 +18,40 @@ let btnMenu = document.getElementById('toggleMenu')
 let inputArea = document.getElementById('inputdata')
 
 let mapPm
+
+const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 16,
+    attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+});
+const ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
+'&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
+'&LAYER={ignLayer}&STYLE={style}&FORMAT={format}'+
+'&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}',
+{
+  ignApiKey: 'pratique',
+  ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+  style: 'normal',
+  format: 'image/png',
+  service: 'WMTS',
+});
+const mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+const fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+const outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+  maxZoom: 18,
+  attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  });    
+const baseMaps = {
+  "OSM": osmlayer,
+  "OpenTopo" : OpenTopoMap,
+  "IGN" : ignlayer,
+  "MTK" : mtklayer,
+  "4UMaps" : fouryoulayer,
+  "Outdoor" : outdoorlayer,
+};
+
 let table
 let currIdFlight
 let currIgcText
@@ -774,26 +808,31 @@ function readIgc(igcID, dbGlider) {
       mapPm.remove();
     }
     mapPm = L.map('mapid').setView([latDeco,longDeco], 12)
-    const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
-    const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 16,
-        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-    });
-    let mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
-    let fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
-    const baseMaps = {
-      "OSM": osmlayer,
-      "OpenTopo" : OpenTopoMap,
-      "MTK" : mtklayer,
-      "4UMaps" : fouryoulayer,
-    };
-
-    // default layer map
-    osmlayer.addTo(mapPm)
-
     L.control.layers(baseMaps).addTo(mapPm)
+    const defaultMap = store.get('map')
+    switch (defaultMap) {
+      case 'open':
+        OpenTopoMap.addTo(mapPm)   
+        break;
+      case 'ign':
+        ignlayer.addTo(mapPm)   
+        break;      
+      case 'osm':
+        osmlayer.addTo(mapPm)   
+        break;
+      case 'mtk':
+        mtklayer.addTo(mapPm)   
+        break;  
+      case '4u':
+        fouryoulayer.addTo(mapPm)   
+        break;     
+      case 'out':
+        outdoorlayer.addTo(mapPm)   
+        break;           
+      default:
+        osmlayer.addTo(mapPm)  
+        break;         
+    }    
 
     const takeOffPopUp = deco+'<br>'+altDeco+'m'
     let StartIcon = new L.Icon({
@@ -816,36 +855,31 @@ function readIgc(igcID, dbGlider) {
       mapPm.remove();
     }
     mapPm = L.map('mapid').setView([0, 0], 5)
-    const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
-    const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 16,
-        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-    });
-    var ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
-    '&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
-    '&LAYER={ignLayer}&STYLE={style}&FORMAT={format}'+
-    '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}',
-    {
-      ignApiKey: 'pratique',
-      ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
-      style: 'normal',
-      format: 'image/png',
-      service: 'WMTS',
-    });
-    let mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
-    let fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
-    const baseMaps = {
-      "OSM": osmlayer,
-      "OpenTopo" : OpenTopoMap,
-      "IGN" : ignlayer,
-      "MTK" : mtklayer,
-      "4UMaps" : fouryoulayer,
-    };
-    
     L.control.layers(baseMaps).addTo(mapPm)
-    osmlayer.addTo(mapPm)   // default is osm
+    const defaultMap = store.get('map')
+    switch (defaultMap) {
+      case 'open':
+        OpenTopoMap.addTo(mapPm)   
+        break;
+      case 'ign':
+        ignlayer.addTo(mapPm)   
+        break;      
+      case 'osm':
+        osmlayer.addTo(mapPm)   
+        break;
+      case 'mtk':
+        mtklayer.addTo(mapPm)   
+        break;  
+      case '4u':
+        fouryoulayer.addTo(mapPm)   
+        break;     
+      case 'out':
+        outdoorlayer.addTo(mapPm)   
+        break;           
+      default:
+        osmlayer.addTo(mapPm)  
+        break;         
+    }
 
     const geojsonLayer = L.geoJson(mapTrack.trackjson,{ style: mapTrack.trackOptions}).addTo(mapPm)
     mapPm.fitBounds(geojsonLayer.getBounds());

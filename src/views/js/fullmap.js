@@ -81,7 +81,30 @@ function buildMap() {
           service: 'WMTS',
       });
 
-  OpenTopoMap.addTo(map);
+  const defaultMap = store.get('map')
+  switch (defaultMap) {
+    case 'open':
+      OpenTopoMap.addTo(map)   
+      break;
+    case 'ign':
+      ignlayer.addTo(map)   
+      break;      
+    case 'osm':
+      osmlayer.addTo(map)   
+      break;
+    case 'mtk':
+      mtklayer.addTo(map)   
+      break;  
+    case '4u':
+      fouryoulayer.addTo(map)   
+      break;     
+    case 'out':
+      outdoorlayer.addTo(map)   
+      break;           
+    default:
+      osmlayer.addTo(map)  
+      break;         
+  }    
 
   const baseMaps = {
       "OpenTopo" : OpenTopoMap,
