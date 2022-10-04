@@ -17,6 +17,10 @@ function addFlight(trackParams,msg) {
     totalSeconds %= 3600
     let minutes = Math.floor(totalSeconds / 60);
     const sDuration = String(hours).padStart(2, "0")+'h'+String(minutes).padStart(2, "0")+'mn'
+    let gliderName = trackParams.glider
+    if (store.get('priorglider') == true) {
+        gliderName = store.get('defglider') 
+    }
     if (db.open) {
         let siteTakeOff = dbsearch.searchSiteInDb(trackParams.firstLat, trackParams.firstLong, false) 
         if (siteTakeOff == null || siteTakeOff == '') {
@@ -36,7 +40,7 @@ function addFlight(trackParams,msg) {
             let smt1 ='INSERT INTO Vol (V_Date,V_Duree,V_sDuree,V_LatDeco,V_LongDeco,V_AltDeco,V_Site,V_Pays,V_IGC,UTC,V_Engin)'
             let smt2 = '(?,?,?,?,?,?,?,?,?,?,?)'
             const stmt = db.prepare(smt1+' VALUES '+smt2)
-            const newFlight = stmt.run(sqlDate, duration, sDuration, trackParams.firstLat, trackParams.firstLong, trackParams.startGpsAlt, siteName, siteCountry, trackParams.igcFile, trackParams.offsetUTC, trackParams.glider)
+            const newFlight = stmt.run(sqlDate, duration, sDuration, trackParams.firstLat, trackParams.firstLong, trackParams.startGpsAlt, siteName, siteCountry, trackParams.igcFile, trackParams.offsetUTC, gliderName)
             result = newFlight.changes // newFlight.changes must return 1 for one row added                  
         } else {
             log.error('[addFlight] Unable to find a site or to add a blank one')
