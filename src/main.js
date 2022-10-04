@@ -41,25 +41,47 @@ const createWindow = () => {
     }      
   });
 
+ const template = [
+  {
+    label: app.name,
+    submenu: [
+      { label : 'Hide Logfly',
+        role: 'hide' },
+      { label : 'Hide Others',
+        role: 'hideOthers' },
+      { label : 'Show All',
+        role: 'unhide' },
+      { type: 'separator' },
+      { label : 'Quit Logfly',
+        role: 'quit' }      
+    ]
+  },{
+    label: 'Help',
+    submenu: [
+      {
+        label: 'Help on line',
+        click: async () => {
+          const { shell } = require('electron')
+          await shell.openExternal('https://logfly.org')
+        }
+      }
+    ]
+  }
+]
+
+
+
   // Hide menu bar https://stackoverflow.com/questions/69629262/how-can-i-hide-the-menubar-from-an-electron-app
   process.platform === "win32" && mainWindow.removeMenu()
- // process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
+  process.platform === "linux" && mainWindow.removeMenu()
+  process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 
-  // if (checkInfo()) {
-  //   console.log('infos')
-  //   openWindow('infos')
-  // } else {
-  //   if (startOk) {
-  //     openWindow('overview')
-  //   } else {
-  //     openWindow('problem')
-  //   }
-  // }
     if (startOk) {
       checkInfo()
     } else {
       openWindow('problem')
     }
+
 
 }
 
@@ -67,6 +89,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
+
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -170,12 +193,10 @@ function checkInfo() {
         });
         response.on("end", () => {
           const json = Buffer.concat(data).toString()
-          console.log(json)
           try {
             const currVersion = app.getVersion() 
             releaseInfo = JSON.parse(json);
             if (releaseInfo.release > currVersion || releaseInfo.message !== undefined )  {
-                console.log(releaseInfo.release)
                 openWindow('infos')
             } else {
               openWindow('logbook')
