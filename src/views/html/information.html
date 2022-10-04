@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <title>Logfly</title>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="../../assets/css/home.css">
+    <!-- if necessary some specifics css will be added like leaflet.css -->
+</head>
+
+<body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>  
+    <div class="wrapper">
+        <!-- Sidebar  -->
+        <div id="target-sidebar"></div>
+        <div id="content">
+            <!-- Horizontal navbar with menu button and different options -->
+            <nav class="navbar navbar-expand-lg  navbar-custom">
+                <div class="container-fluid">
+                    <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
+                    <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
+                    <span class="navbar-text mx-3" id="db-state"></span>
+                </div>
+            </nav>  
+            <!-- End of horizontal nabar  -->
+            <!-- Main page content -->
+            <div>
+                <div class="container-fluid">
+                    <div class="jumbotron">
+                        <h2 id="info-title">Hello, world!</h1>
+                        <p class="lead" id="info-text-fr"></p>
+                        <hr class="my-4">
+                        <p class="lead" id="info-text-en"></p>
+                        <div class="d-none" id="div-downl">
+                            <a class="btn btn-success btn-lg" href="#" id="bt-downl" role="button">Downl</a>
+                        </div>
+                        <div id="div-progress" class="d-none">
+                            <!-- Note that you must set the same height for the progress container and the progress bar -->
+                            <div class="progress" style="margin-top: 40px;height:25px">
+                                <div class="progress-bar" role="progressbar" style="width:25%;height:25px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div id="div-msg-mac" class="d-none" style="margin-top: 20px;text-align: center;">
+                            <div class="alert alert-primary" role="alert">
+                                <h4 id="msg-mac1"></h4>
+                            </div>
+                            <div style="text-align: center;"><img id="drag-mac" /></div>
+                            <div class="alert alert-primary" role="alert" style="margin-top: 20px;">
+                                <h4 id="msg-mac2"></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End of main page content -->
+        </div>
+    </div>    
+    <script src="../../views/js/information.js" type="text/javascript"></script>
+</body>
