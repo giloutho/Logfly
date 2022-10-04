@@ -19,7 +19,10 @@
   "license": "MIT",
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": 
+        {
+          "icon" : "src/assets/logo/logo6"
+        },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
@@ -37,13 +40,16 @@
             "darwin"
           ],
           "config": {
-            "background": "src/assets/img/dmg-background.png",
+            "background": "src/assets/logo/dmg-background.png",
             "format": "ULFO"
           }
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
+          "config": 
+            {
+              "icon" : "src/assets/logo/logo6.png"
+            }
         },
         {
           "name": "@electron-forge/maker-rpm",
