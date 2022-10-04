@@ -323,3 +323,7 @@ table{
 .badge.even-larger-badge {
     font-size: 1.2em;
   }
+
+  .embed-responsive-flyxc {
+    padding-bottom: 47%;
+  }
