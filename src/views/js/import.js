@@ -167,7 +167,7 @@ function callUsbGps(typeGPS) {
 }
 
 function callSyride() {
-  const syrideSetting = store.get('pathSyride')
+  const syrideSetting = store.get('pathsyride')
   log.info('[Import Syride] from '+syrideSetting)
   const syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
   if (syridePath.parapentepath != null) {
