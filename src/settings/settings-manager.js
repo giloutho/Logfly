@@ -208,6 +208,8 @@ function getEnv(modeProd) {
             // default settings without worrying about L5 settings 
             store.set('start','log')
             store.set('over','cal')
+            store.set('priorpilot', false)
+            store.set('priorglider',false)
             getEnv()
         } else {
             defaultSettings()
@@ -232,6 +234,8 @@ function defaultSettings() {
         store.set('over','cal')
         store.set('map','osm')
         store.set('photo','no')
+        store.set('priorpilot', false)
+        store.set('priorglider',false)
         if (!fs.existsSync(logflyPath)) {
             fs.mkdirSync(logflyPath)    
             let logflyDbPath  = path.join(logflyPath, 'Logfly.db')  
