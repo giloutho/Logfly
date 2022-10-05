@@ -64,7 +64,11 @@ const createWindow = () => {
           const { shell } = require('electron')
           await shell.openExternal('https://logfly.org')
         }
-      }
+      },
+      { 
+        label :'Debug mode',
+        role: 'toggleDevTools' 
+      }      
     ]
   }
 ]
