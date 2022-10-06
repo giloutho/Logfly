@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 var log = require('electron-log');
 const dblog = require('../../utils/db/db-search.js')
+const gpsDumpFiles = require('../../settings/gpsdump-name.js')
 
 const Store = require('electron-store');
 const store = new Store();
@@ -11,18 +12,20 @@ const currOS = store.get('currOS')
 let gpsDump
 let testPath
 let gpsDumpPath = null
+let gpsDumpNames = gpsDumpFiles.getNames()
 switch (currOS) {
     case 'win':
-        gpsDumpPath = './ext_resources/bin_win'
+        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_win',gpsDumpNames['win'])
         break
     case 'mac':
         // https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin/gpsdumpMac64_9')
+      //  gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin/gpsdumpMac64_14')
+        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac'])
         // only fir debug purpose
         testPath = path.join(path.dirname(__dirname), '../../docs/flight_list.txt')
         break
     case 'linux':
-        gpsDumpPath = './ext_resources/bin_linux'
+        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_linux',gpsDumpNames['linux'])
         break
 }
 

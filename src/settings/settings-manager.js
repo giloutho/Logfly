@@ -114,94 +114,106 @@ function getEnv(modeProd) {
                 setLangWithLocale()
             }
             const idxGps = properties.get('idxgps')
-            switch (key) {
-                case 0:
-                    store.set('gps','none') // V5 no gps selected
-                    break;                
-                case 1:
-                    store.set('gps','6020') // V5 GPS_List.add("6020/6030");
-                    break;
-                case 2:
-                    store.set('gps','6015') // V5 GPS_List.add("6015");
-                    break;       
-                case 3:
-                    store.set('gps','flynet') // V5 GPS_List.add("Flynet");
-                    break;     
-                case 4:
-                    store.set('gps','flymold') // V5 GPS_List.add("Flymaster (old)");
-                    break;         
-                case 5:
-                    store.set('gps','rever') // V5 GPS_List.add("Reversale");
-                    break;       
-                case 6:
-                    store.set('gps','sky2') // V5 GPS_List.add("Skytraax 2");
-                    break;     
-                case 7:
-                    store.set('gps','oudi') // V5 GPS_List.add("Oudie");
-                    break;           
-                case 8:
-                    store.set('gps','elem') // V5  GPS_List.add("Element");
-                    break;       
-                case 9:
-                    store.set('gps','sens') // V5 GPS_List.add("Sensbox");
-                    break;     
-                case 10:
-                    store.set('gps','syri') // V5 GPS_List.add("Syride");
-                    break;         
-                case 11:
-                    store.set('gps','flyma') // V5 GPS_List.add("Flymaster");
-                    break;       
-                case 12:
-                    store.set('gps','conn') // V5 GPS_List.add("Connect");
-                    break;     
-                case 13:
-                    store.set('gps','sky3') // V5 GPS_List.add("Skytraxx 3");
-                    break;          
-                case 14:
-                    store.set('gps','cpil') // V5 GPS_List.add("C-Pilot Evo");
-                    break;       
-                case 15:
-                    store.set('gps','xctra') // V5 GPS_List.add("XC Tracer"); 
-                    break;     
-                case 16:
-                    store.set('gps','flyma') // V5 GPS_List.add("Flymaster +");
-                    break;         
-                case 17:
-                    store.set('gps','digi') // V5 GPS_List.add("Digifly");
-                    break;       
-                case 18:
-                    store.set('gps','vard') // V5 GPS_List.add("Varduino");
-                    break;                                                                                         
-                default:
-                    store.set('gps','none') 
-                    break;
+            if (idxGps != undefined) {
+                switch (idxGps) {
+                    case 0:
+                        store.set('gps','none') // V5 no gps selected
+                        break;                
+                    case 1:
+                        store.set('gps','6020') // V5 GPS_List.add("6020/6030");
+                        break;
+                    case 2:
+                        store.set('gps','6015') // V5 GPS_List.add("6015");
+                        break;       
+                    case 3:
+                        store.set('gps','flynet') // V5 GPS_List.add("Flynet");
+                        break;     
+                    case 4:
+                        store.set('gps','flymold') // V5 GPS_List.add("Flymaster (old)");
+                        break;         
+                    case 5:
+                        store.set('gps','rever') // V5 GPS_List.add("Reversale");
+                        break;       
+                    case 6:
+                        store.set('gps','sky2') // V5 GPS_List.add("Skytraax 2");
+                        break;     
+                    case 7:
+                        store.set('gps','oudi') // V5 GPS_List.add("Oudie");
+                        break;           
+                    case 8:
+                        store.set('gps','elem') // V5  GPS_List.add("Element");
+                        break;       
+                    case 9:
+                        store.set('gps','sens') // V5 GPS_List.add("Sensbox");
+                        break;     
+                    case 10:
+                        store.set('gps','syri') // V5 GPS_List.add("Syride");
+                        break;         
+                    case 11:
+                        store.set('gps','flyma') // V5 GPS_List.add("Flymaster");
+                        break;       
+                    case 12:
+                        store.set('gps','conn') // V5 GPS_List.add("Connect");
+                        break;     
+                    case 13:
+                        store.set('gps','sky3') // V5 GPS_List.add("Skytraxx 3");
+                        break;          
+                    case 14:
+                        store.set('gps','cpil') // V5 GPS_List.add("C-Pilot Evo");
+                        break;       
+                    case 15:
+                        store.set('gps','xctra') // V5 GPS_List.add("XC Tracer"); 
+                        break;     
+                    case 16:
+                        store.set('gps','flyma') // V5 GPS_List.add("Flymaster +");
+                        break;         
+                    case 17:
+                        store.set('gps','digi') // V5 GPS_List.add("Digifly");
+                        break;       
+                    case 18:
+                        store.set('gps','vard') // V5 GPS_List.add("Varduino");
+                        break;                                                                                         
+                    default:
+                        store.set('gps','none') 
+                        break;
+                }
+            } else {
+                store.set('gps','none') 
             }
             const idxLeague = properties.get('idxleague')
-            switch (key) {
-                case 0:
-                    store.set('league','FR') 
-                    break;                
-                default:
-                    store.set('league','XC')
-                    break;
+            if (idxLeague != undefined) {
+                switch (idxLeague) {
+                    case 0:
+                        store.set('league','FR') 
+                        break;                
+                    default:
+                        store.set('league','XC')
+                        break;
+                }
+            } else {
+                store.set('league','XC')
             }
             const idxMap = properties.get('idxmap')
-            switch (key) {
-                case 0:
-                    store.set('map','osm')
-                    break;     
-                case 1:
-                    store.set('map','open')
-                    break;            
-                case 2:
-                    store.set('map','mtk')
-                    break;     
-                case 3:
-                    store.set('map','4u')
-                    break;                                               
-                default:
-                    store.set('map','osm')
-                    break;
+            if (idxMap != undefined) {
+                switch (idxMap) {
+                    case 0:
+                        store.set('map','osm')
+                        break;     
+                    case 1:
+                        store.set('map','open')
+                        break;            
+                    case 2:
+                        store.set('map','mtk')
+                        break;     
+                    case 3:
+                        store.set('map','4u')
+                        break;                                               
+                    default:
+                        store.set('map','osm')
+                        break;
+                }
+            } else {
+                store.set('map','osm')
             }
             const pPhoto = properties.get('photoauto') ? true : false
             store.set('photo',pPhoto)

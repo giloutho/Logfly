@@ -10,7 +10,7 @@ const sharp = require('sharp')
 let webOk = require('internet-available')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 
-let store = new Store() 
+let store = new Store()
 let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js')
 const { Alert } = require('bootstrap')
@@ -20,11 +20,11 @@ let inputArea = document.getElementById('inputdata')
 let mapPm
 
 const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 })
 const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 16,
-    attribution: 'Map data: &copy <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 })
 const ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
 '&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
@@ -36,13 +36,13 @@ const ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
   style: 'normal',
   format: 'image/png',
   service: 'WMTS',
-})
-const mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png')
-const fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png')
+});
+const mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+const fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
 const outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
   maxZoom: 18,
-  attribution: '&copy <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  })    
+  attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  });    
 const baseMaps = {
   "OSM": osmlayer,
   "OpenTopo" : OpenTopoMap,
@@ -50,7 +50,7 @@ const baseMaps = {
   "MTK" : mtklayer,
   "4UMaps" : fouryoulayer,
   "Outdoor" : outdoorlayer,
-}
+};
 
 let table
 let currIdFlight
@@ -66,23 +66,23 @@ iniForm()
 function iniForm() {
   const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
   let countFlights = stmt.get()
-  if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights')
+  if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights'); 
 
   try {    
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
-        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
-        let langjson = JSON.parse(content)
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+        let langjson = JSON.parse(content);
         i18n.setMessages('messages', currLang, langjson)
-        i18n.setLocale(currLang)
+        i18n.setLocale(currLang);
     }
   } catch (error) {
       log.error('[problem.js] Error while loading the language file')
   }   
   let menuOptions = menuFill.fillMenuOptions(i18n)
   $.get('../../views/tpl/sidebar.html', function(templates) { 
-      const template = $(templates).filter('#temp-menu').html()  
+      const template = $(templates).filter('#temp-menu').html();  
       const rendered = Mustache.render(template, menuOptions)
       document.getElementById('target-sidebar').innerHTML = rendered
   })
@@ -141,8 +141,8 @@ function iniForm() {
             "Igc": {name: i18n.gettext("Export IGC")},
             "Merge": {name: i18n.gettext("Merge flights")}
         }
-    })
-})
+    });
+});
   
 }
 
@@ -150,16 +150,16 @@ tableStandard()
 
 // Calls up the relevant page 
 function callPage(pageName) {
-    ipcRenderer.send("changeWindow", pageName)    // main.js
+    ipcRenderer.send("changeWindow", pageName);    // main.js
 }
 
 btnMenu.addEventListener('click', (event) => {
   if (btnMenu.innerHTML === "Menu On") {
-      btnMenu.innerHTML = "Menu Off"
+      btnMenu.innerHTML = "Menu Off";
   } else {
-      btnMenu.innerHTML = "Menu On"
+      btnMenu.innerHTML = "Menu On";
   }
-  $('#sidebar').toggleClass('active')
+  $('#sidebar').toggleClass('active');
 })
 
 btnScoring.addEventListener('click', (event) => {  
@@ -172,7 +172,7 @@ btnScoring.addEventListener('click', (event) => {
 })
 
 btnFlyxc.addEventListener('click', (event) => { 
-  //ipcRenderer.send("changeWindow", 'flyxc')    
+  //ipcRenderer.send("changeWindow", 'flyxc');    
   // webOk({
   //   // Provide maximum execution time for the verification
   //   timeout: 3000,
@@ -182,7 +182,7 @@ btnFlyxc.addEventListener('click', (event) => {
   //   ipcRenderer.send('error-dialog',['Internet', 'Internet Ok'])  
   // }).catch(() => {
   //   ipcRenderer.send('error-dialog',['Internet', 'Internet non disponible'])  
-  // })
+  // });
   // ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
   //displayStatus('Decoding problem in track file')  
 
@@ -219,7 +219,7 @@ function displayFlyxc() {
     } else {
       if (resUpload.includes('OK')) {
         // response is OK:20220711135317_882.igc
-        let igcUrl = resUpload.replace( /^\D+/g, '') // replace all leading non-digits with nothing
+        let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
    //     store.set('igcVisu',igcUrl)
         let disp_flyxc = ipcRenderer.send('display-flyxc', igcUrl)   // process-main/maps/flyxc-display.js
       } else {
@@ -245,7 +245,7 @@ if (db.open) {
     const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
     let countFlights = stmt.get()
     // on récupére la valeur avec counFlights['COUNT(*)']
-    msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`)
+    msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`);
     //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
     let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire,'
     reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
@@ -260,9 +260,9 @@ if (db.open) {
           data: 'Photo',
           render: function(data, type, row) {
             if (data == 'Yes') {
-              return '<img src="../../assets/img/Camera.png" alt=""></img>'
+              return '<img src="../../assets/img/Camera.png" alt=""></img>';
             } 
-            return data
+            return data;
           },          
           className: "dt-body-center text-center"
         },       
@@ -303,7 +303,7 @@ if (db.open) {
     // Finally, I don't really like
     'createdRow': function( row, data, dataIndex ) {
       if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
-        $(row).addClass('tableredline')
+        $(row).addClass('tableredline');
       }
     },      
     }
@@ -327,8 +327,8 @@ if (db.open) {
           currGlider = dt.row(indexes).data().V_Engin
           readIgc(currIdFlight, currGlider)
         }        
-    } )
-    table.row(':eq(0)').select()    // Sélectionne la première lmigne
+    } );
+    table.row(':eq(0)').select();    // Sélectionne la première lmigne
     $('#table_id').removeClass('d-none')
 } else {
     msgdbstate = 'db connection error'
@@ -337,34 +337,36 @@ if (db.open) {
 
 // To select the first row at each page change
 $('#table_id').on( 'page.dt', function () {
-  table.row(':eq(0)', { page: 'current' }).select()
-})
+  //var info = table.page.info();
+  //alert( 'Showing page: '+info.page+' of '+info.pages );
+  table.row(':eq(0)', { page: 'current' }).select();
+});
 
 // Click on the first column dedicated to the management of the photo of the day
 $('#table_id').on('click', 'tbody td:first-child', function () {  
-  let data = table.row( $(this).parents('tr') ).data()
+  let data = table.row( $(this).parents('tr') ).data();
   let rowIndex = $(this).parents('tr').index()
   if (data['Photo']=== 'Yes') photoDecoding(data['V_ID'], rowIndex)
-})
+});
 
 
 
 function photoDecoding(flightId, rowIndex) {
   if (db.open) {
-    const stmt = db.prepare('SELECT V_Photos FROM Vol WHERE V_ID = ?')
-    const dbImage = stmt.get(flightId)
+    const stmt = db.prepare('SELECT V_Photos FROM Vol WHERE V_ID = ?');
+    const dbImage = stmt.get(flightId);
     const strImage = dbImage.V_Photos
 
-    let src = 'data:image/pngbase64,'+strImage
+    let src = 'data:image/png;base64,'+strImage
     // We want to get image width and height from the base64 string
-    let i = new Image() 
+    let i = new Image(); 
     i.onload = function(){
       let winWidth = i.width
       let winHeight = i.height+30
-      // Using a string variable eg  winSize = '"width:'+winWidth+'pxheight: '+winHeight+'px"' does not work
+      // Using a string variable eg  winSize = '"width:'+winWidth+'px;height: '+winHeight+'px;"' does not work
       // templte litteral is working https://stackoverflow.com/questions/52112894/pass-a-variable-into-setattribute-method
-      document.getElementById('modalwin').setAttribute("style",`width:${winWidth}pxheight: ${winHeight}px`)
-    }                                                         
+      document.getElementById('modalwin').setAttribute("style",`width:${winWidth}px;height: ${winHeight}px;`);
+    };                                                         
     i.src = src 
     // https://stackoverflow.com/questions/49536873/display-image-on-single-bootstrap-modal
     $(".modal-img").prop("src",src)
@@ -380,8 +382,8 @@ function photoManager(flightId, rowNum, flPhoto) {
     let btnDelete = document.createElement("input")   // must be input not button
     btnDelete.type = "button"
     btnDelete.name = "delete"
-    btnDelete.style.marginLeft = "20px"  
-    btnDelete.value=i18n.gettext("Delete")
+    btnDelete.style.marginLeft = "20px";  
+    btnDelete.value=i18n.gettext("Delete");
     btnDelete.className="btn btn-danger btn-sm"
     btnDelete.onclick = function () {      
       if (db.open) {
@@ -403,7 +405,7 @@ function photoManager(flightId, rowNum, flPhoto) {
     btnAdd.type = "button"
     btnAdd.name = "add"
     btnAdd.value=i18n.gettext("Add")
-    btnAdd.style.marginLeft = "20px"  
+    btnAdd.style.marginLeft = "20px";  
     btnAdd.className="btn btn-success btn-sm"
     btnAdd.onclick = function () {
       photoUpload(flightId, rowNum)
@@ -413,14 +415,14 @@ function photoManager(flightId, rowNum, flPhoto) {
   let btnCancel = document.createElement("input")   // must be input not button
   btnCancel.type = "button"
   btnCancel.name = "cancel" 
-  btnCancel.style.marginLeft = "10px"  
-  btnCancel.value=i18n.gettext("Cancel")
+  btnCancel.style.marginLeft = "10px";  
+  btnCancel.value=i18n.gettext("Cancel");
   btnCancel.className="btn btn-secondary btn-sm"
   btnCancel.onclick = function () {
     $('#inputdata').hide()    
-  }
+  };
   inputArea.appendChild(btnCancel)  
-  $('#inputdata').show()   
+  $('#inputdata').show();   
 }
 
 function photoUpload(flightId, rowNum) {  
@@ -451,13 +453,13 @@ function photoUpload(flightId, rowNum) {
             .toBuffer()
             .then(function(outputBuffer) {
               let rawSrc = outputBuffer.toString('base64')
-              let src = `data:image/pngbase64,${outputBuffer.toString('base64')}`
-              document.getElementById('modalwin').setAttribute("style",`width:${wantedWidth}pxheight: ${wantedHeight}px`)                        
+              let src = `data:image/png;base64,${outputBuffer.toString('base64')}`
+              document.getElementById('modalwin').setAttribute("style",`width:${wantedWidth}px;height: ${wantedHeight}px;`);                        
               $(".modal-img").prop("src",src)
               $('#Modal').modal('show')
               if (db.open) {
                 try {
-                  const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?')
+                  const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?');
                   const updloadImg = stmt.run(rawSrc,flightId)          
                   //table.cell({row:rowNum, column:0}).data('<img src="../../assets/img/camera.png" alt=""></img>')
                   table.cell({row:rowNum, column:0}).data('Yes')                  
@@ -471,20 +473,20 @@ function photoUpload(flightId, rowNum) {
             .catch(function(err){
               log.error('Got Error during sharp process')
               displayStatus('Got Error during sharp process')
-            })            
+            });            
           })                 
   }
 }
 
 function deleteFlights() {
-  let rows = table.rows('.selected')
+  let rows = table.rows('.selected');
   if(rows.data().length > 0 && db.open) {
     table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
       let flightId = table.cell(this, 7).data()
       let smt = 'DELETE FROM Vol WHERE V_ID = ?'            
       const stmt = db.prepare(smt)
       const delFlight = stmt.run(flightId)    
-    })
+    });
     tableStandard()
   }
   
@@ -502,7 +504,7 @@ function tableSelection(idFlight) {
       readIgc(idFlight)
       currIdFlight = idFlight
     }
-  })  
+  });  
 }
 
 function testSelected() {
@@ -514,16 +516,16 @@ function gliderHours(flGlider) {
     try {
       let msgResult = '<strong>'+i18n.gettext("Glider flight time")+' '+flGlider+'</strong>'
       const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
-      const result = stmt.get(flGlider)
+      const result = stmt.get(flGlider);
       if (result.seconds != null && result.seconds > 0) {         
         const nbHours = Math.floor(result.seconds/3600)
         const nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
         const minutes = String(nbMin).padStart(2, '0')
-        msgResult += '<span class="badge badge-primary even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
-        msgResult += '<span class="badge badge-warning even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+minutes+'mn'+'</span>'
+        msgResult += '<span class="badge badge-primary even-larger-badge" style="margin-left:30px" ;>'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
+        msgResult += '<span class="badge badge-warning even-larger-badge" style="margin-left:30px" ;>'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+minutes+'mn'+'</span>'
       let displayResult = document.getElementById('inputcomment')
       displayResult.innerHTML = msgResult
-      $('#inputcomment').show() 
+      $('#inputcomment').show(); 
       } else {
         msgResult = i18n.gettext('No flights counted for this glider')
       }
@@ -543,11 +545,11 @@ function gliderHours(flGlider) {
  */
 function changeGlider(flightId, rowNum, flightDef) {
  if (db.open) {  
-  let inputContent = flightDef+'&nbsp&nbsp&nbsp&nbsp'+i18n.gettext('Choose an existant glider')+' : '
-  inputArea.style.marginTop = "8px" 
+  let inputContent = flightDef+'&nbsp;&nbsp;&nbsp;&nbsp;'+i18n.gettext('Choose an existant glider')+' : '
+  inputArea.style.marginTop = "8px"; 
   inputArea.innerHTML = inputContent
   // select came from https://github.com/snapappointments/bootstrap-select
-  let selectGlider = document.createElement("select")
+  let selectGlider = document.createElement("select");
   // We want the most recent used in first
   const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
   let nbGliders = 0
@@ -556,14 +558,14 @@ function changeGlider(flightId, rowNum, flightDef) {
     let newOption = document.createElement("option")
     newOption.value= nbGliders.toString()
     newOption.innerHTML= (gl.V_Engin)
-    selectGlider.appendChild(newOption)
+    selectGlider.appendChild(newOption);
   } 
   selectGlider.id = "selglider"
-  selectGlider.style.marginRight = "25px"
+  selectGlider.style.marginRight = "25px";
   inputArea.appendChild(selectGlider)
   const newText= document.createTextNode(i18n.gettext('Or new glider')+' : ')
   inputArea.appendChild(newText)
-  let newGlider = document.createElement("input")
+  let newGlider = document.createElement("input");
   newGlider.type = "text"
  // newGlider.className = "form-control col-xs-2"
   newGlider.placeholder= "New glider name"
@@ -576,7 +578,7 @@ function changeGlider(flightId, rowNum, flightDef) {
   btnUpdate.type = "button"
   btnUpdate.name = "update"
   btnUpdate.value=i18n.gettext("Modify")
-  btnUpdate.style.marginRight = "20px"  
+  btnUpdate.style.marginRight = "20px";  
   btnUpdate.className="btn btn-danger"
   btnUpdate.onclick = function () {
     let selectedName
@@ -606,11 +608,11 @@ function changeGlider(flightId, rowNum, flightDef) {
   let btnCancel = document.createElement("input")   // must be input not button
   btnCancel.type = "button"
   btnCancel.name = "cancel"
-  btnCancel.value=i18n.gettext("Cancel")
+  btnCancel.value=i18n.gettext("Cancel");
   btnCancel.className="btn btn-secondary"
   btnCancel.onclick = function () {
     $('#inputdata').hide()
-  }
+  };
   inputArea.appendChild(btnCancel)
  }
  $('#inputdata').show()
@@ -618,11 +620,11 @@ function changeGlider(flightId, rowNum, flightDef) {
 
 function updateComment(flightId, currComment,flDate, flTime,rowIndex){
   // A clear of input zone
-  inputArea.innerHTML = ''
-  inputArea.style.marginTop = "8px"  
-  let iDiv = document.createElement('div')
-  iDiv.id = 'input-group'
-  iDiv.className = 'input-group'
+  inputArea.innerHTML = '';
+  inputArea.style.marginTop = "8px";  
+  let iDiv = document.createElement('div');
+  iDiv.id = 'input-group';
+  iDiv.className = 'input-group';
   inputArea.appendChild(iDiv)
   let commentArea = document.createElement("textarea")   // must be input not button
   commentArea.name = "commenttext"
@@ -631,7 +633,7 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
   commentArea.rows = "2"
   commentArea.value = currComment
   iDiv.appendChild(commentArea)
-  let btDiv = document.createElement('div')
+  let btDiv = document.createElement('div');
   btDiv.id = 'input-group-append'
   btDiv.className = 'input-group-append'
   iDiv.appendChild(btDiv)
@@ -639,8 +641,8 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
   btnUpdate.type = "button"
   btnUpdate.name = "update"
   btnUpdate.value=i18n.gettext("OK")
-  btnUpdate.style.marginTop = "8px"  
-  btnUpdate.style.marginLeft = "20px"  
+  btnUpdate.style.marginTop = "8px";  
+  btnUpdate.style.marginLeft = "20px";  
   btnUpdate.className="btn btn-success btn-sm"
   btnUpdate.onclick = function () {
     let newComment = commentArea.value
@@ -648,8 +650,8 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
       try {
         const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
         const updateComment = stmt.run(newComment,flightId)     
-        table.cell(rowIndex,6).data(newComment)        
-        table.$('tr.selected').addClass('tableredline')
+        table.cell(rowIndex,6).data(newComment);        
+        table.$('tr.selected').addClass('tableredline');
         $('#inputdata').hide()      
         manageComment(flightId, newComment, flDate, flTime, rowIndex)
       } catch (error) {
@@ -663,29 +665,29 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
   let btnCancel = document.createElement("input")   // must be input not button
   btnCancel.type = "button"
   btnCancel.name = "cancel"
-  btnCancel.style.marginTop = "8px" 
-  btnCancel.style.marginLeft = "10px"  
-  btnCancel.value=i18n.gettext("Cancel")
+  btnCancel.style.marginTop = "8px"; 
+  btnCancel.style.marginLeft = "10px";  
+  btnCancel.value=i18n.gettext("Cancel");
   btnCancel.className="btn btn-danger btn-sm"
   btnCancel.onclick = function () {
     let displayComment = document.getElementById('inputcomment')
     displayComment.innerHTML = currComment
     $('#inputdata').hide()
     manageComment(flightId, currComment, flDate, flTime)
-  }
+  };
   btDiv.appendChild(btnCancel)
   $('#inputdata').show()
-  document.getElementById("commenttext").focus()
+  document.getElementById("commenttext").focus();
 }
 
 function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
   if (currComment != null && currComment !='') {
     let displayComment = document.getElementById('inputcomment')
-    displayComment.innerHTML = ''
-    displayComment.style.marginTop = "8px"  
-    let iDiv = document.createElement('div')
-    iDiv.id = 'input-group'
-    iDiv.className = 'input-group'
+    displayComment.innerHTML = '';
+    displayComment.style.marginTop = "8px";  
+    let iDiv = document.createElement('div');
+    iDiv.id = 'input-group';
+    iDiv.className = 'input-group';
     displayComment.appendChild(iDiv)    
     let commentArea = document.createElement("textarea")   // must be input not button
     commentArea.name = "commenttext"
@@ -696,7 +698,7 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
     commentArea.value = flDate+' '+flTime+' : '+currComment
     commentArea.disabled = true
     iDiv.appendChild(commentArea)
-    let btDiv = document.createElement('div')
+    let btDiv = document.createElement('div');
     btDiv.id = 'input-group-append'
     btDiv.className = 'input-group-append'
     iDiv.appendChild(btDiv)
@@ -704,20 +706,20 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
     btnUpdate.type = "button"
     btnUpdate.name = "update"
     btnUpdate.value=i18n.gettext("Modify")
-    btnUpdate.style.marginTop = "5px"  
-    btnUpdate.style.marginLeft = "10px"  
+    btnUpdate.style.marginTop = "5px";  
+    btnUpdate.style.marginLeft = "10px";  
     btnUpdate.className="btn btn-success btn-sm"
     btnUpdate.onclick = function () {
-      $('#inputcomment').hide() 
+      $('#inputcomment').hide(); 
       updateComment(flightId, currComment,flDate, flTime, rowIndex)
     }
     btDiv.appendChild(btnUpdate)
     let btnDelete = document.createElement("input")   // must be input not button
     btnDelete.type = "button"
     btnDelete.name = "cancel"
-    btnDelete.style.marginTop = "5px"  
-    btnDelete.style.marginLeft = "10px"  
-    btnDelete.value=i18n.gettext("Delete")
+    btnDelete.style.marginTop = "5px";  
+    btnDelete.style.marginLeft = "10px";  
+    btnDelete.value=i18n.gettext("Delete");
     btnDelete.className="btn btn-danger btn-sm"
     btnDelete.onclick = function () {      
       if (db.open) {
@@ -725,8 +727,8 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
           let newComment = ''
           const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
           const updateComment = stmt.run(newComment,flightId)
-          table.cell(rowIndex,6).data(newComment)
-          table.$('tr.selected').removeClass('tableredline')
+          table.cell(rowIndex,6).data(newComment);
+          table.$('tr.selected').removeClass('tableredline');
           $('#inputdata').hide()     
           $('#inputcomment').hide()           
         } catch (error) {
@@ -734,9 +736,9 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
           displayStatus('Error during flight update')
         }
       }
-    }
+    };
     btDiv.appendChild(btnDelete)    
-    $('#inputcomment').show() 
+    $('#inputcomment').show(); 
   }
 }
 
@@ -802,8 +804,8 @@ function readIgc(igcID, dbGlider) {
    */
   function mapWithoutIgc(latDeco, longDeco, altDeco, deco){
     if (mapPm != null) {
-      mapPm.off()
-      mapPm.remove()
+      mapPm.off();
+      mapPm.remove();
     }
     mapPm = L.map('mapid').setView([latDeco,longDeco], 12)
     L.control.layers(baseMaps).addTo(mapPm)
@@ -811,25 +813,25 @@ function readIgc(igcID, dbGlider) {
     switch (defaultMap) {
       case 'open':
         OpenTopoMap.addTo(mapPm)   
-        break
+        break;
       case 'ign':
         ignlayer.addTo(mapPm)   
-        break      
+        break;      
       case 'osm':
         osmlayer.addTo(mapPm)   
-        break
+        break;
       case 'mtk':
         mtklayer.addTo(mapPm)   
-        break  
+        break;  
       case '4u':
         fouryoulayer.addTo(mapPm)   
-        break     
+        break;     
       case 'out':
         outdoorlayer.addTo(mapPm)   
-        break           
+        break;           
       default:
         osmlayer.addTo(mapPm)  
-        break         
+        break;         
     }    
 
     const takeOffPopUp = deco+'<br>'+altDeco+'m'
@@ -840,7 +842,7 @@ function readIgc(igcID, dbGlider) {
       iconAnchor: [0, 22],
       popupAnchor: [1, -34],
       shadowSize: [25, 25]
-    })
+    });
   
     const startLatlng = L.latLng(latDeco, longDeco)
     L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm).bindPopup(takeOffPopUp).openPopup()
@@ -849,8 +851,8 @@ function readIgc(igcID, dbGlider) {
   function mapIgc(track) {
     const mapTrack = elemMap.buildElements(track)
     if (mapPm != null) {
-      mapPm.off()
-      mapPm.remove()
+      mapPm.off();
+      mapPm.remove();
     }
     mapPm = L.map('mapid').setView([0, 0], 5)
     L.control.layers(baseMaps).addTo(mapPm)
@@ -858,56 +860,56 @@ function readIgc(igcID, dbGlider) {
     switch (defaultMap) {
       case 'open':
         OpenTopoMap.addTo(mapPm)   
-        break
+        break;
       case 'ign':
         ignlayer.addTo(mapPm)   
-        break      
+        break;      
       case 'osm':
         osmlayer.addTo(mapPm)   
-        break
+        break;
       case 'mtk':
         mtklayer.addTo(mapPm)   
-        break  
+        break;  
       case '4u':
         fouryoulayer.addTo(mapPm)   
-        break     
+        break;     
       case 'out':
         outdoorlayer.addTo(mapPm)   
-        break           
+        break;           
       default:
         osmlayer.addTo(mapPm)  
-        break         
+        break;         
     }
 
     const geojsonLayer = L.geoJson(mapTrack.trackjson,{ style: mapTrack.trackOptions}).addTo(mapPm)
-    mapPm.fitBounds(geojsonLayer.getBounds())
+    mapPm.fitBounds(geojsonLayer.getBounds());
 
     const StartIcon = new L.Icon(mapTrack.startIcon)
     const startLatlng = L.latLng(mapTrack.startLatlng.lat,mapTrack.startLatlng.long)
-    L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm)
+    L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm);
 
     const EndIcon = new L.Icon(mapTrack.endIcon)
     const endLatlng = L.latLng(mapTrack.endLatlng.lat,mapTrack.endLatlng.long)
-    L.marker(endLatlng,{icon: EndIcon}).addTo(mapPm)
+    L.marker(endLatlng,{icon: EndIcon}).addTo(mapPm);
 
-    const info = L.control({position: 'bottomright'})
+    const info = L.control({position: 'bottomright'});
 
     info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'map-info') // create a div with a class "map-info"
-        this.update()
-        return this._div
-    }
+        this._div = L.DomUtil.create('div', 'map-info'); // create a div with a class "map-info"
+        this.update();
+        return this._div;
+    };
 
     // method that we will use to update the control based on feature properties passed
     info.update = function () {
-        this._div.innerHTML = ''
+        this._div.innerHTML = '';
         this._div.innerHTML += mapTrack.flDate+'<br>'
         this._div.innerHTML += mapTrack.infoGlider
         this._div.innerHTML += mapTrack.maxAlti
         this._div.innerHTML += mapTrack.maxVario
-    }
+    };
 
-    info.addTo(mapPm)  
+    info.addTo(mapPm);  
 
   }
   
@@ -925,10 +927,10 @@ function readIgc(igcID, dbGlider) {
 
   function displayStatus(content) {
     document.getElementById('status').innerHTML = i18n.gettext(content)
-    $('#status').show() 
+    $('#status').show(); 
   }
 
   function hideStatus() {
-    if ($('#status').show().is(":visible")) $('#status').hide()  
+    if ($('#status').show().is(":visible")) $('#status').hide();  
   }
   
