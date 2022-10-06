@@ -221,6 +221,7 @@ function iniPilot() {
       store.set('pilotpass',document.getElementById('tx-pass').value)
       store.set('gps',selectGps.value)
       store.set('league',selectLeague.value)
+      alert(i18n.gettext('Saved changes'))
     })
   
     btnCancelPil.addEventListener('click',(event)=>{
@@ -333,7 +334,8 @@ function iniWeb() {
     store.set('urllogflyigc',document.getElementById('tx-visu').value)
     store.set('urlvisu',document.getElementById('tx-flyxc').value)    
     store.set('urlairspace',document.getElementById('tx-airspace').value)
-    store.set('urlcontest',document.getElementById('tx-contest').value)    
+    store.set('urlcontest',document.getElementById('tx-contest').value)   
+    alert(i18n.gettext('Saved changes')) 
   })  
 
   btnCancelWeb.addEventListener('click',(event)=>{
