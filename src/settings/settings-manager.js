@@ -113,6 +113,7 @@ function getEnv(modeProd) {
             } else {
                 setLangWithLocale()
             }
+            // ....
             const idxGps = properties.get('idxgps')
             if (idxGps != undefined) {
                 switch (idxGps) {
