@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path');
 const log = require('electron-log');
 const i18n = require('../../lang/gettext.js')()
+const gpsDumpFiles = require('../../settings/gpsdump-name.js')
 const Mustache = require('mustache')
 const Store = require('electron-store')
 const store = new Store()
@@ -18,6 +19,7 @@ let renderDisplay = 'render'
 let mainDisplay = 'main'
 let loadLangTime
 let currLang 
+let gpsDumpNames = gpsDumpFiles.getNames()
 
 iniForm()         
 
@@ -166,6 +168,10 @@ function fnSystemDisplay() {
   customReport.push(['Electron',store.get('electronVersion')])
   customReport.push(['Chrome',store.get('chromeVersion')])
   customReport.push(['Node',store.get('nodeVersion')])
+  customReport.push(['GpsDump Windows',gpsDumpNames['win']])
+  customReport.push(['GpsDump Mac',gpsDumpNames['mac']])
+  customReport.push(['GpsDump Linux',gpsDumpNames['linux']])
+  customReport.push([' ',' '])
   // test db
   let dbFullPath = (store.get('dbFullPath'))
   customReport.push(['Current db path',store.get('dbFullPath')])
@@ -189,7 +195,7 @@ function fnSystemDisplay() {
   }
 
   // Add blank line
-  customReport.push(['',''])
+  customReport.push(['========================================',''])
   customReport.push(['<b>Config file</b>',store.path])
 
   let rawconfig = fs.readFileSync(store.path)
