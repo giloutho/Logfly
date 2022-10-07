@@ -36,6 +36,22 @@ function getEnv(modeProd) {
         case 'darwin': 
             currOS = 'mac'
             currVersion = process.getSystemVersion()
+            if (currVersion != undefined && currVersion != null) {
+              const arrVersion = currVersion.split('.')
+              if (arrVersion.length == 3) { 
+                if (arrVersion[0] === '10') {
+                  if (arrVersion[1] < 15) {
+                    store.set('macversion','mac32')
+                  } else {
+                    store.set('macversion','mac64')
+                  }
+                } else {
+                    store.set('macversion','mac64')
+                }
+              } else {
+                store.set('macversion','mac64')
+              }
+            }
             break;
         case 'linux': 
             currOS = 'linux'
