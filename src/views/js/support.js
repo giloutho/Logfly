@@ -169,7 +169,8 @@ function fnSystemDisplay() {
   customReport.push(['Chrome',store.get('chromeVersion')])
   customReport.push(['Node',store.get('nodeVersion')])
   customReport.push(['GpsDump Windows',gpsDumpNames['win']])
-  customReport.push(['GpsDump Mac',gpsDumpNames['mac']])
+  customReport.push(['GpsDump Mac 64 bit',gpsDumpNames['mac64']])
+  customReport.push(['GpsDump Mac 32 bit',gpsDumpNames['mac32']])
   customReport.push(['GpsDump Linux',gpsDumpNames['linux']])
   customReport.push([' ',' '])
   // test db
