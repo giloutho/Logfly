@@ -13,19 +13,27 @@ let gpsDump
 let testPath
 let gpsDumpPath = null
 let gpsDumpNames = gpsDumpFiles.getNames()
+let osVersion
+// https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
 switch (currOS) {
     case 'win':
         gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_win',gpsDumpNames['win'])
+        osVersion = 'win'
         break
     case 'mac':
-        // https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
-      //  gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin/gpsdumpMac64_14')
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac'])
-        // only fir debug purpose
-        testPath = path.join(path.dirname(__dirname), '../../docs/flight_list.txt')
+        if (store.get('macversion') == 'mac64') {
+          osVersion = 'mac64'        
+          gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac64'])
+        } else {
+          osVersion = 'mac32'
+          gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac32'])
+        }
+        // only for debug purpose
+        // testPath = path.join(path.dirname(__dirname), '../../docs/flight_list.txt')
         break
     case 'linux':
         gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_linux',gpsDumpNames['linux'])
+        osVersion = 'linux'
         break
 }
 
@@ -94,22 +102,22 @@ function askFlightList(gpsModel) {
     try {
       switch (modelGPS) {
         case 'FlymasterSD':
-          switch (currOS) {
+          switch (osVersion) {
             case 'win':
               paramGPS = '/gps=flymaster'
               break
-            case 'mac':
+            case 'mac64':
             case 'linux':
               paramGPS = '-gyn'  
               break
           }                    
           break      
         case 'FlymasterOld':
-          switch (currOS) {
+          switch (osVersion) {
             case 'win':
               paramGPS = '/gps=flymasterold'
               break
-            case 'mac':
+            case 'mac64':
             case 'linux':
               paramGPS = '-gy'   // Whatever the model, this old protocol displays the list of flights
               break
@@ -117,11 +125,11 @@ function askFlightList(gpsModel) {
           break                
         case 'Flytec20':
           // Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
-          switch (currOS) {
+          switch (osVersion) {
             case 'win':
               paramGPS = '/gps=iqcompeo';	
               break;
-            case 'mac':
+            case 'mac64':
             case 'linux':
               paramGPS = '-gc'  
               break
@@ -129,11 +137,11 @@ function askFlightList(gpsModel) {
           break      
         case 'Flytec15':
           // IQ-Basic / Flytec 6015
-          switch (currOS) {
+          switch (osVersion) {
             case 'win':
               paramGPS = '/gps=iqbasic'	
               break;
-            case 'mac':
+            case 'mac64':
             case 'linux':
               paramGPS =  '-giq'
               break

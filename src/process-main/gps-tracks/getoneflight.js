@@ -11,14 +11,17 @@ const currOS = store.get('currOS')
 
 let gpsDumpPath = null
 let gpsDumpNames = gpsDumpFiles.getNames()
+
 switch (currOS) {
     case 'win':
         gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_win',gpsDumpNames['win'])
         break
     case 'mac':
-        // https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac'])
-        testPath = path.join(path.dirname(__dirname), '../../docs/flight_list.txt')
+        if (store.get('macversion') == 'mac64') {    
+            gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac64'])
+          } else {
+            gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac32'])
+        }
         break
     case 'linux':
         gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_linux',gpsDumpNames['linux'])
