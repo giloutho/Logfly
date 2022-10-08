@@ -31,6 +31,7 @@ function getEnv(modeProd) {
     const store = new Store(); 
     let currOS
     let currVersion
+    let specOS
     const platform = process.platform;
     switch(platform) {
         case 'darwin': 
@@ -41,24 +42,26 @@ function getEnv(modeProd) {
               if (arrVersion.length == 3) { 
                 if (arrVersion[0] === '10') {
                   if (arrVersion[1] < 15) {
-                    store.set('macversion','mac32')
+                    specOS = 'mac32'
                   } else {
-                    store.set('macversion','mac64')
+                    specOS = 'mac64'
                   }
                 } else {
-                    store.set('macversion','mac64')
+                    specOS = 'mac64'
                 }
               } else {
-                store.set('macversion','mac64')
+                specOS = 'mac64'
               }
             }
             break;
         case 'linux': 
             currOS = 'linux'
+            specOS = 'linux'
             currVersion = process.getSystemVersion()
             break;
         case 'win32':
             currOS = 'win'
+            specOS = 'win'
             currVersion = process.getSystemVersion()
             break;    
         default: 
@@ -66,6 +69,7 @@ function getEnv(modeProd) {
             currVersion = 'ns'
     }
     store.set('currOS',currOS)
+    store.set('specOS',specOS)
     store.set('osVersion',currVersion)
     store.set('chromeVersion',process.versions.chrome)
     store.set('electronVersion',process.versions.electron)
