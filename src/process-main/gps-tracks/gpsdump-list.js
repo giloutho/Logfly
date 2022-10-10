@@ -1,41 +1,14 @@
-const {ipcMain, BrowserWindow} = require('electron')
+const {app, ipcMain, BrowserWindow} = require('electron')
 const path = require('path')
 const fs = require('fs')
-var log = require('electron-log');
+var log = require('electron-log')
 const dblog = require('../../utils/db/db-search.js')
-const gpsDumpFiles = require('../../settings/gpsdump-name.js')
-
-const Store = require('electron-store');
-const store = new Store();
+const gpsDumpFiles = require('../../settings/gpsdump-settings.js')
+const gpsDumpParams = gpsDumpFiles.getParam()
+const Store = require('electron-store')
+const store = new Store()
 const currOS = store.get('currOS')
-
-let gpsDump
-let testPath
-let gpsDumpPath = null
-let gpsDumpNames = gpsDumpFiles.getNames()
-let osVersion
-// https://stackoverflow.com/questions/46022443/electron-how-to-add-external-files
-switch (currOS) {
-    case 'win':
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_win',gpsDumpNames['win'])
-        osVersion = 'win'
-        break
-    case 'mac':
-        if (store.get('macversion') == 'mac64') {
-          osVersion = 'mac64'        
-          gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac64'])
-        } else {
-          osVersion = 'mac32'
-          gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac32'])
-        }
-        // only for debug purpose
-        // testPath = path.join(path.dirname(__dirname), '../../docs/flight_list.txt')
-        break
-    case 'linux':
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_linux',gpsDumpNames['linux'])
-        osVersion = 'linux'
-        break
-}
+const specOS = store.get('specOS')
 
 let flightList = {}
 
@@ -93,82 +66,66 @@ function readOnPorts(gpsCom) {
 
 
 function askFlightList(gpsModel) {
+  const execFileSync = require('child_process').execFileSync
+  let gpsDumpPath
+  let data
+  let paramGPS
+  let paramPort
+  let paramList
+  let paramFile
+  let modelGPS = gpsModel.model  
+  const wNoWin = '/win=0'  
+  const wExit = '/exit'  
+  const wOverw = "/overwrite"    
+  gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources',gpsDumpParams[specOS].gpsdump)
+  paramList = gpsDumpParams[specOS].list
+  paramFile = gpsDumpParams[specOS].listfile
+  switch (modelGPS) {
+    case 'FlymasterSD':
+      paramGPS = gpsDumpParams[specOS].flym      
+      console.log(paramGPS)       
+      break      
+    case 'FlymasterOld':
+      paramGPS = gpsDumpParams[specOS].flymold          
+      break                
+    case 'Flytec20':
+      // Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
+      paramGPS = gpsDumpParams[specOS].fly20              
+      break      
+    case 'Flytec15':
+      // IQ-Basic / Flytec 6015
+      paramGPS = gpsDumpParams[specOS].fly15                 
+      break                     
+  }      
   if (gpsDumpPath != null && fs.existsSync(gpsDumpPath)) { 
-    const execFileSync = require('child_process').execFileSync
-    let data
-    let paramGPS
-    let paramPort
-    let modelGPS = gpsModel.model    
     try {
-      switch (modelGPS) {
-        case 'FlymasterSD':
-          switch (osVersion) {
-            case 'win':
-              paramGPS = '/gps=flymaster'
-              break
-            case 'mac64':
-            case 'linux':
-              paramGPS = '-gyn'  
-              break
-          }                    
-          break      
-        case 'FlymasterOld':
-          switch (osVersion) {
-            case 'win':
-              paramGPS = '/gps=flymasterold'
-              break
-            case 'mac64':
-            case 'linux':
-              paramGPS = '-gy'   // Whatever the model, this old protocol displays the list of flights
-              break
-          }                    
-          break                
-        case 'Flytec20':
-          // Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
-          switch (osVersion) {
-            case 'win':
-              paramGPS = '/gps=iqcompeo';	
-              break;
-            case 'mac64':
-            case 'linux':
-              paramGPS = '-gc'  
-              break
-          }                    
-          break      
-        case 'Flytec15':
-          // IQ-Basic / Flytec 6015
-          switch (osVersion) {
-            case 'win':
-              paramGPS = '/gps=iqbasic'	
-              break;
-            case 'mac64':
-            case 'linux':
-              paramGPS =  '-giq'
-              break
-          }                    
-          break                     
-      }
-      // formatting of the serial port expression depends of operating system
-      switch (currOS) {
+      switch (specOS) {
         case 'win':
-            // ...
+            paramPort = gpsModel.port.replace('COM','')
+            log.info(path.basename(gpsDumpPath)+' '+wNoWin+' '+paramPort+' '+paramGPS+' '+paramList+' '+paramFile+' '+wOverw+' '+wExit)
+            data = execFileSync(gpsDumpPath, [wNoWin, paramPort, paramGPS, paramList, paramFile, wOverw, wExit ])
+            // L5 -> new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sNotify, sOverw,wExit};
             break
-        case 'mac':
-            // In Logfly5, we got /dev/cu in ports list
-            // with this module, it seems that it is tty !!
+        case 'mac32':
+          paramPort = gpsModel.port.replace('/dev/tty','-cu')
+          // in terminal ./GpsDump /gps=flymaster /name=temp.igc /flightlist
+          log.info(path.basename(gpsDumpPath)+' '+paramGPS+' '+paramPort+' '+paramList)
+          data = execFileSync(gpsDumpPath, [paramGPS,paramPort, paramList])
+          // L5 -> new String[]{pathGpsDump,sTypeGps, sAction};     
+          break            
+        case 'mac64':
             paramPort = gpsModel.port.replace('/dev/tty','-cu')
+            console.log(paramPort)
+            // in terminal :  ./GpsDumpMac64_9 -gyn -cu.usbmodem0000001 -ltempo.txt -f0  
+            log.info(path.basename(gpsDumpPath)+' '+paramGPS+' '+paramPort+' '+paramFile+' '+paramList)
+            data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
             break
         case 'linux':
-            // ..
+            // A définir sur le modèle mac -> paramPort = gpsModel.port.replace('/dev/tty','-cu')
+            log.info(path.basename(gpsDumpPath)+' '+paramGPS+' '+paramPort+' '+paramFile+' '+paramList)
+            data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
             break
       }
-      let paramFile = '-lnomatter.txt'  // required, but not used when f = 0
-      // terminal command is : 
-      // ./GpsDumpMac64_9 -gyn -cu.usbmodem0000001 -ltempo.txt -f0  
-      // last parameter -f"N" -> if N=0 a flightlist is displayed
-      // success test for a Flymaster SD -> data = execFileSync(gpsDumpPath, ['-gyn','-cu.usbmodem0000001','-ltempo.txt','-f0'])
-      log.info('[GpsDump called] with '+paramGPS+','+paramPort+','+paramFile)
-      data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,'-f0'])
     } catch (err) {
         log.error('askFlightList error : '+err)
     }
@@ -177,18 +134,18 @@ function askFlightList(gpsModel) {
       switch (modelGPS) {
         case 'FlymasterSD':
           flightlistFlymaster(data,modelGPS,paramGPS,paramPort)      
-          break;      
+          break
         case 'FlymasterOld':
           flightlistFlymaster(data,modelGPS,paramGPS,paramPort)           
-          break;                
+          break                
         case 'Flytec20':
           // For Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
           // same decoding process          
-          flightlistFlymaster(data,'Flytec 20/30 Compeo',paramGPS,paramPort)                            
-          break;      
+          flightlistFlymaster(data,modelGPS,paramGPS,paramPort)                            
+          break      
         case 'Flytec15':
           flightlistFlytec(data,modelGPS,paramGPS,paramPort)              
-          break;     
+          break    
           }
     } else {
       flightList.error = true
@@ -226,40 +183,26 @@ function decodingTest() {
 function flightlistFlymaster(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
   try {
     let lines = gpsdumpOutput.toString().trim().split('\n')
-    if (lines.length > 0) {
-      // excellent site for regex testing : https://www.regextester.com/
-      // it displays the group by passing the cursor over the expression
-      // line with product name is for Flymaster : Product: Flymaster GpsSD  SN02988  SW2.03h
-      // For Flytec, it is                         Product: 6030, SN07172, SW3.38
-      // regexProduct don't match for Flytec... For the time being, we do not include flytec decoding
-      // By default we fill in the flightList.model field
+    let typeGPS = gpsModel
+    if (gpsModel == 'Flytec20') {
+      flightList.model = 'Flytec 20/30 Compeo'
+    } else {  
       flightList.model = gpsModel
+    }
+    let gpsdumpOrder = gpsdumpGPS+','+gpsdumpPort+','+typeGPS
+    if (lines.length > 0) {
+      switch (specOS) {
+        case 'win':
 
-      let regexProduct = /(Product:)[ ]{1,}(\w*)[ ]{1,}(\S*)[ ]{1,}(\S*)[ ]{1,}(\S*)/
-      // line with a flight is like :  1   23.07.20   06:08:16   01:21:57
-      let regexDateHours = /((\d{1,2}\.){2}\d{2}(\d{2})?)[ ]{1,}((\d{1,2}:){2}\d{2}(\d{2})?)[ ]{1,}((\d{1,2}:){2}\d{2}(\d{2})?)/
-      for (let i = 0; i < lines.length; i++) {
-        if(lines[i].match(regexProduct)) {
-          let arrProduct = regexProduct.exec(lines[i])
-          flightList.manufacturer = arrProduct[2]
-          flightList.model = gpsModel = arrProduct[2]+' '+arrProduct[3]
-          flightList.serial = arrProduct[4]
-          flightList.firmware = arrProduct[5]         
-        } else if (lines[i].match(regexDateHours)) {
-          let flDate = regexDateHours.exec(lines[i])
-          let flight = {}
-          // If a flight is "new", this means that it must be added to the logbook
-          // By default, all the flights are to be added to the logbook.  
-          // A check in the logbook is made by dblog.checkFlightList
-          flight['new'] = true
-          flight['date'] = flDate[1]
-          flight['takeoff'] = flDate[4]
-          flight['duration'] = flDate[7]
-          flight['gpsdump'] = gpsdumpGPS+','+gpsdumpPort
-          flightList.flights.push(flight)     
-        } else {
-          flightList.otherlines.push('Line '+i.toString()+' '+lines[i])
-        }
+            break
+        case 'mac32':
+            mac32Decoding(lines, gpsdumpOrder)
+          break            
+        case 'mac64':
+            mac64Decoding(lines, gpsdumpOrder)
+            break
+        case 'linux':
+            break
       }
     }
     if (flightList.manufacturer != null) {
@@ -322,4 +265,75 @@ function flightlistFlytec(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
   } catch (err) {
     log.error('flightlistFlytec exception : '+err)
   }  
+}
+
+/**
+ * excellent site for regex testing : https://www.regextester.com/
+ * it displays the group by passing the cursor over the expression
+ * line with product name is for Flymaster : Product: Flymaster GpsSD  SN02988  SW2.03h
+ * For Flytec, it is                         Product: 6030, SN07172, SW3.38
+ * regexProduct don't match for Flytec... For the time being, we do not include flytec decoding
+ * By default we fill in the flightList.model field
+*/
+
+function mac64Decoding(rawLines, gpsdumpOrder) {
+  let regexProduct = /(Product:)[ ]{1,}(\w*)[ ]{1,}(\S*)[ ]{1,}(\S*)[ ]{1,}(\S*)/
+  // line with a flight is like :  1   23.07.20   06:08:16   01:21:57
+  let regexDateHours = /((\d{1,2}\.){2}\d{2}(\d{2})?)[ ]{1,}((\d{1,2}:){2}\d{2}(\d{2})?)[ ]{1,}((\d{1,2}:){2}\d{2}(\d{2})?)/
+  for (let i = 0; i < rawLines.length; i++) {
+    if(rawLines[i].match(regexProduct)) {
+      let arrProduct = regexProduct.exec(rawLines[i])
+      flightList.manufacturer = arrProduct[2]
+      flightList.model = gpsModel = arrProduct[2]+' '+arrProduct[3]
+      flightList.serial = arrProduct[4]
+      flightList.firmware = arrProduct[5]         
+    } else if (rawLines[i].match(regexDateHours)) {
+      let flDate = regexDateHours.exec(rawLines[i])
+      let flight = {}
+      // If a flight is "new", this means that it must be added to the logbook
+      // By default, all the flights are to be added to the logbook.  
+      // A check in the logbook is made by dblog.checkFlightList
+      flight['new'] = true
+      flight['date'] = flDate[1]
+      flight['takeoff'] = flDate[4]
+      flight['duration'] = flDate[7]
+      flight['gpsdump'] = gpsdumpOrder
+      flightList.flights.push(flight)     
+    } else {
+      flightList.otherlines.push('Line '+i.toString()+' '+rawLines[i])
+    }
+  } 
+}
+
+function mac32Decoding(rawLines, gpsdumpOrder) {
+  let regexProduct = /\S+(?:\s\S+)*/g
+  // line with a flight is like : '  1 Flight date 29.07.22, time 06:00:54, duration 00:00:34'
+  let regexDateHours = /Flight date ([0-9]+(\.[0-9]+)+), time ([0-9]+(:[0-9]+)+), duration ([0-9]+(:[0-9]+)+)/
+  if (rawLines.length > 0) {
+    // line with a flight is like : '  1 Flight date 29.07.22, time 06:00:54, duration 00:00:34'
+    let regexDateHours = /Flight date ([0-9]+(\.[0-9]+)+), time ([0-9]+(:[0-9]+)+), duration ([0-9]+(:[0-9]+)+)/
+    // flightList.model is already initialized with our expression (FymasterSD, FlymaterOld, etc..)
+    // Decoding the line concerning the GPS characteristics is too random
+    // The first lines are :
+    // Port: /dev/cu.usbmodem000001
+    // Trying port /dev/cu.usbmodem000001
+    // Flymaster GpsSD  SN02988  SW2.03h
+    for (let i = 1; i < rawLines.length; i++) {     
+      if (rawLines[i].match(regexDateHours)) {
+        let flDate = regexDateHours.exec(rawLines[i])
+        let flight = {}
+        // If a flight is "new", this means that it must be added to the logbook
+        // By default, all the flights are to be added to the logbook.  
+        // A check in the logbook is made by dblog.checkFlightList
+        flight['new'] = true
+        flight['date'] = flDate[1]
+        flight['takeoff'] = flDate[3]
+        flight['duration'] = flDate[5]
+        flight['gpsdump'] = gpsdumpOrder
+        flightList.flights.push(flight)     
+      } else {
+        flightList.otherlines.push('Line '+i.toString()+' '+rawLines[i])
+      }
+    } 
+  }
 }

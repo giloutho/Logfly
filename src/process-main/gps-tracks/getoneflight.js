@@ -3,30 +3,10 @@ const path = require('path')
 const fs = require('fs')
 var log = require('electron-log');
 const gpsdumpOne = require('../gps-tracks/gpsdump-flight.js')
-const gpsDumpFiles = require('../../settings/gpsdump-name.js')
-
+const gpsDumpFiles = require('../../settings/gpsdump-settings.js')
+const gpsDumpParams = gpsDumpFiles.getParam()
 const Store = require('electron-store');
 const store = new Store();
-const currOS = store.get('currOS')
-
-let gpsDumpPath = null
-let gpsDumpNames = gpsDumpFiles.getNames()
-
-switch (currOS) {
-    case 'win':
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_win',gpsDumpNames['win'])
-        break
-    case 'mac':
-        if (store.get('macversion') == 'mac64') {    
-            gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac64'])
-          } else {
-            gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_darwin',gpsDumpNames['mac32'])
-        }
-        break
-    case 'linux':
-        gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources/bin_linux',gpsDumpNames['linux'])
-        break
-}
 
 // process-main/gps-tracks/getoneflight.js
 ipcMain.on('displayoneflight', (event, gpsParam, flightIndex) => {
