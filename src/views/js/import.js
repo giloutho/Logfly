@@ -256,7 +256,7 @@ function serialGpsCall(gpsModel) {
           break;             
       }      
       log.info(msg+result.length+' ports detected')
-      for (let i = 0; i < result.length; i++) {        
+      for (let i = 0; i < result.length; i++) {                
         if (typeof result[i].manufacturer != 'undefined') {
           const regexProlif = /prolific/i
           const regexFlym = /flymas/i
@@ -265,7 +265,10 @@ function serialGpsCall(gpsModel) {
             // deux ports dev/cu.usbserial et dev/cu.usbserial-1440 apparaissent
             // plantage si on utilise cu.usbserial alors que cela fonctionne avec cu.usbserial-1440            
             // FIXME pour debugging  if en dur pour le 6015   
-            if (result[i].path.includes('-')) {
+            // on avait donc fait un if
+            //  if (result[i].path.includes('-')) {
+            // Il semblerait qu'avec serialport un seul port apparaisse
+            // usbserial-1440 sur macOS 12.6   usbserial sur macOS.10.11
               gpsReq =  {
                 'chip': result[i].manufacturer,
                 'model': gpsModel,
@@ -273,7 +276,7 @@ function serialGpsCall(gpsModel) {
               }          
               gpsCom.push(gpsReq)                            
               log.info(msg+' Prolific manufacturer detected on '+result[i].path)
-            }
+           // }
           } else if (result[i].manufacturer.search(regexFlym) >= 0) {
             gpsReq =  {
               'chip': result[i].manufacturer,
