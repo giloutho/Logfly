@@ -41,7 +41,7 @@ const createWindow = () => {
     }      
   });
 
- const template = [
+ const macTemplate = [
   {
     label: app.name,
     submenu: [
@@ -73,12 +73,38 @@ const createWindow = () => {
   }
 ]
 
+const winTemplate = [
+  {
+    label: app.name,
+    submenu: [
+      { label : 'Quit Logfly',
+        role: 'quit' }      
+    ]
+  },{
+    label: 'Help',
+    submenu: [
+      {
+        label: 'Help on line',
+        click: async () => {
+          const { shell } = require('electron')
+          await shell.openExternal('https://logfly.org')
+        }
+      },
+      { 
+        label :'Debug mode',
+        role: 'toggleDevTools' 
+      }      
+    ]
+  }
+]
+
 
 
   // Hide menu bar https://stackoverflow.com/questions/69629262/how-can-i-hide-the-menubar-from-an-electron-app
-  process.platform === "win32" && mainWindow.removeMenu()
+//  process.platform === "win32" && mainWindow.removeMenu()
+  process.platform === "win32" && Menu.setApplicationMenu(Menu.buildFromTemplate(winTemplate))
   process.platform === "linux" && mainWindow.removeMenu()
-  process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
     if (startOk) {
       checkInfo()
@@ -141,6 +167,7 @@ function openWindow(pageName) {
       break;            
     case "import":
       mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
+      //mainWindow.webContents.openDevTools();
       break;        
     case "external":
       mainWindow.loadFile(path.join(__dirname, './views/html/external.html'));
