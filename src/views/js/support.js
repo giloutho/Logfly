@@ -117,9 +117,12 @@ var dialogLang = {
  *   on Windows: %USERPROFILE%\AppData\Roaming\{app name}\logs\{process type}.log
  */
  switch (currOS) {
-  case 'win':      
-    logmainpath = path.join(homedir,'/Library/Logs/logfly/main.log')
-    logrendererpath = path.join(homedir,'/Library/Logs/logfly/renderer.log')
+  case 'win':     
+    // electron-log default path : %USERPROFILE%\AppData\Roaming\{app name}\logs\{process type}.log 
+    // logmainpath = path.join(homedir,'/Library/Logs/logfly/main.log')
+    // logrendererpath = path.join(homedir,'/Library/Logs/logfly/renderer.log')    
+    logmainpath = path.join(homedir,'AppData/Roaming/logfly/logs/main.log')
+    logrendererpath = path.join(homedir,'AppData/Roaming/logfly/logs/renderer.log')
     break
     case 'mac':
     logmainpath = path.join(homedir,'/Library/Logs/logfly/main.log')
