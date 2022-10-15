@@ -101,10 +101,21 @@ function askFlightList(gpsModel) {
     try {
       switch (specOS) {
         case 'win':
-            paramPort = gpsModel.port.replace('COM','')
-            log.info(path.basename(gpsDumpPath)+' '+wNoWin+' '+paramPort+' '+paramGPS+' '+paramList+' '+paramFile+' '+wOverw+' '+wExit)
-            data = execFileSync(gpsDumpPath, [wNoWin, paramPort, paramGPS, paramList, paramFile, wOverw, wExit ])
+            const numPort = gpsModel.port.replace('COM','')
+            paramPort = '/com='+numPort
+            // Stein himself was surprised when I told him that notify could send to a file
+            // I found this on change log of version 5.12 
+            // Our mail exchange 08 2019
+            const wParamFile = '/notify='+paramFile
             // L5 -> new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sNotify, sOverw,wExit};
+            let wParam = [wNoWin, paramPort, paramGPS, paramList, wParamFile, wOverw, wExit ]
+            // Unlike the Mac and Linux versions, the Windows version does not return the list on the screen
+            // It is saved in a file whose path is in paramFile
+            log.info(path.basename(gpsDumpPath)+wParam)
+            let result = execFileSync(gpsDumpPath, wParam)
+            if(result) {
+              data = fs.readFileSync(paramFile, 'utf8')
+            }
             break
         case 'mac32':
           paramPort = gpsModel.port.replace('/dev/tty','-cu')
@@ -193,7 +204,7 @@ function flightlistFlymaster(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
     if (lines.length > 0) {
       switch (specOS) {
         case 'win':
-
+            winDecoding(lines,gpsdumpOrder)
             break
         case 'mac32':
             mac32Decoding(lines, gpsdumpOrder)
@@ -306,9 +317,6 @@ function mac64Decoding(rawLines, gpsdumpOrder) {
 }
 
 function mac32Decoding(rawLines, gpsdumpOrder) {
-  let regexProduct = /\S+(?:\s\S+)*/g
-  // line with a flight is like : '  1 Flight date 29.07.22, time 06:00:54, duration 00:00:34'
-  let regexDateHours = /Flight date ([0-9]+(\.[0-9]+)+), time ([0-9]+(:[0-9]+)+), duration ([0-9]+(:[0-9]+)+)/
   if (rawLines.length > 0) {
     // line with a flight is like : '  1 Flight date 29.07.22, time 06:00:54, duration 00:00:34'
     let regexDateHours = /Flight date ([0-9]+(\.[0-9]+)+), time ([0-9]+(:[0-9]+)+), duration ([0-9]+(:[0-9]+)+)/
@@ -335,5 +343,32 @@ function mac32Decoding(rawLines, gpsdumpOrder) {
         flightList.otherlines.push('Line '+i.toString()+' '+rawLines[i])
       }
     } 
+  }
+}
+
+function winDecoding(rawLines, gpsdumpOrder) {
+  if (rawLines.length > 0) {
+    // line with a flight is like : '2022.06.18,13:06:13,1:25:54'
+    let regexDateHours = /((\d{1,2}\.){2}\d{2}(\d{2})?)[,]{1,}((\d{1,2}:){2}\d{2}(\d{2})?)[,]{1,}((\d{1,2}:){2}\d{2}(\d{2})?)/
+    // flightList.model is initialized with our expression (FymasterSD, FlymaterOld, etc..)
+    // No line concerning the GPS characteristics in windows list
+    for (let i = 1; i < rawLines.length; i++) {     
+      if (rawLines[i].match(regexDateHours)) {
+        let flDate = regexDateHours.exec(rawLines[i])
+        let flight = {}
+        // If a flight is "new", this means that it must be added to the logbook
+        // By default, all the flights are to be added to the logbook.  
+        // A check in the logbook is made by dblog.checkFlightList
+        flight['new'] = true
+        // 2022.06.18 -> 18.06.2022
+        flight['date'] = flDate[1].substring(6)+flDate[1].substring(2,6)+flDate[1].substring(0,2)
+        flight['takeoff'] = flDate[4]
+        flight['duration'] = flDate[7]
+        flight['gpsdump'] = gpsdumpOrder
+        flightList.flights.push(flight)     
+      } else {
+        flightList.otherlines.push('Line '+i.toString()+' '+rawLines[i])
+      }
+    }
   }
 }
