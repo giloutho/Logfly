@@ -21,7 +21,8 @@
     "forge": {
       "packagerConfig": 
         {
-          "icon" : "src/assets/logo/logo6"
+          "icon" : "src/assets/logo/logo6",
+          "name": "logfly"
         },
       "makers": [
         {
