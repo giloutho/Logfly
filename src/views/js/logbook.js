@@ -213,19 +213,18 @@ btnFullmap.addEventListener('click', (event) => {
 function displayFlyxc() {
   if (track !== undefined && track.fixes.length> 0) {  
     let resUpload = ipcRenderer.sendSync('upload-igc', currIgcText)  // process-main/igc/igc-read.js.js
-    if (resUpload == null) {
-      displayStatus('Download failed')
-      log.error('[displayFlyxc] Download failed')
+    if (resUpload.includes('OK')) {
+      // response is OK:20220711135317_882.igc
+      let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
+     //     store.set('igcVisu',igcUrl)
+      let disp_flyxc = ipcRenderer.send('display-flyxc', igcUrl)   // process-main/maps/flyxc-display.js
     } else {
-      if (resUpload.includes('OK')) {
-        // response is OK:20220711135317_882.igc
-        let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
-   //     store.set('igcVisu',igcUrl)
-        let disp_flyxc = ipcRenderer.send('display-flyxc', igcUrl)   // process-main/maps/flyxc-display.js
+      displayStatus('Download failed')
+      if (resUpload == null) {
+        log.error('[displayFlyxc] Download failed')
       } else {
-        log.error('[displayFlyxc] '+resUpload)
-        displayStatus(resUpload)
-      }
+          log.error('[displayFlyxc] '+resUpload)
+      }      
     }
   }
 }
