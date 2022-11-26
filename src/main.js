@@ -230,7 +230,7 @@ function checkInfo() {
             if (releaseInfo.release > currVersion || releaseInfo.message !== undefined )  {
                 openWindow('infos')
             } else {
-              openWindow('logbook')
+              openWindow('import')
             }
           } catch (error) {
             openWindow('logbook')
