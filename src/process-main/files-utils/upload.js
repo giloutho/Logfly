@@ -21,7 +21,7 @@ ipcMain.on('upload-igc', (event, igcText) => {
         };
         form.submit({
           host: 'logfly.org',
-          path: 'http://logfly.org/Visu/jsupload.php',
+          path: '/Visu/jsupload.php',
           options
         }, function(err, res) {
           const body = []
