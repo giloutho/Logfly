@@ -54,13 +54,14 @@ function validIGC(flightData, igcData) {
      */
     // offsetUTC is in minutes, original timestamp in milliseconds
     this.startLocalTimestamp = flightData.fixes[0].timestamp + (this.offsetUTC*60000)
-    //const dateLocal = (new Date(flightData.fixes[0].timestamp)).toUTCString()   // toUTCString() to avoid the time zone computer
-    const dateLocal = new Date(flightData.fixes[0].timestamp)
+    const isoLocalStart = new Date(this.startLocalTimestamp).toISOString()
+    const dateLocal = new Date(isoLocalStart.slice(0, -1))
     this.dateStart = dateLocal
     // format of flightData.date is not good -> YYYY-MM-DD
     this.date = String(dateLocal.getDate()).padStart(2, '0')+'-'+String((dateLocal.getMonth()+1)).padStart(2, '0')+'-'+dateLocal.getFullYear()
     this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');  
-    this.dateEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp)
+    const isoLocalEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp+(this.offsetUTC*60000)).toISOString()
+    this.dateEnd = new Date(isoLocalEnd.slice(0, -1))
     this.errors = [] 
     // check if track is present in the logbook     
     let inLogbook = dblog.flightByTakeOff(this.firstLat, this.firstLong, this.startLocalTimestamp) 

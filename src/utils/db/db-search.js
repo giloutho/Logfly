@@ -8,34 +8,34 @@ const trigo = require('../geo/trigo.js')
  * If the database is not found  an exception will be thrown
  */
 
-function flightByTakeOff(flLat, flLng, dayDate) {
+function flightByTakeOff(flLat, flLng, startLocalTimestamp) {
   let maxDist = 300
   let maxDelay = 120
   let flFound = false
   const db = require('better-sqlite3')(store.get('dbFullPath'))
   if (db.open) {
-    // Convert timestamp to milliseconds
-    let date = new Date(dayDate);
+    const isoLocalStart = new Date( startLocalTimestamp).toISOString()
+    const date = new Date(isoLocalStart.slice(0, -1))
     let strDate =  date.getFullYear()+'-'+('0' + (date.getMonth()+1)).slice(-2) + '-'+('0' + date.getDate()).slice(-2)      
     let dateStart = strDate+' 00:00:00'
     let dateEnd = strDate+' 23:59:59'
     // Javascript unixtimestamp is in milliseconds, conversion needed
-    dayDate = dayDate /+ 1000
+    startLocalTimestamp = startLocalTimestamp /+ 1000
     // Are there any flights on that day ?
     // With strftime('%s', V_Date)  result is directly a timestamp in seconds
 //    console.log('flightByTakeOff avec dayDayte : '+dayDate+'acec strDate : '+strDate+' donne de '+dateStart+' à '+dateEnd)
     const flightsOfDay = db.prepare(`SELECT strftime('%s', V_Date) AS tsDate,V_Duree,V_LatDeco,V_LongDeco FROM Vol WHERE V_Date >= '${dateStart}' and V_Date <= '${dateEnd}'`)
-    for (const fl of flightsOfDay.iterate()) {
-
+    for (const fl of flightsOfDay.iterate()) {      
       let logLat = fl.V_LatDeco
       let logLng = fl.V_LongDeco
       let logDate = fl.tsDate
-      let distLogToFl = Math.abs(trigo.distance(logLat, logLng, flLat, flLng, "K") * 1000)     
+      let distLogToFl = Math.abs(trigo.distance(logLat, logLng, flLat, flLng, "K") * 1000)   
+      if (isNaN(distLogToFl)) distLogToFl = 0
+   //   console.log(fl.tsDate+' '+fl.V_Duree+' '+logLat+' '+logLng+' '+flLat+' '+flLng+' '+distLogToFl)  
       // We start by examining whether take-offs are confined to a 500m radius
       if (distLogToFl < maxDist) {
         // Compute difference between the respective take-off times
-        let diffSeconds = Math.abs(logDate - dayDate);       
-        debugtime = Date.now()
+        let diffSeconds = Math.abs(logDate - startLocalTimestamp)       
         if (diffSeconds < maxDelay) {
           flFound = true;
           break;  // exit possible https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#iteratebindparameters---iterator
