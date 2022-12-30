@@ -9,6 +9,7 @@ const Store = require('electron-store')
 const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
 const dbadd = require('../../utils/db/db-add.js')
+let db = require('better-sqlite3')(store.get('dbFullPath'))
 
 const btnMenu = document.getElementById('toggleMenu')
 // status messages
@@ -90,6 +91,15 @@ function iniForm() {
     btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
     btnDisk.addEventListener('click', (event) => {callDisk()})
     btnManu.addEventListener('click', (event) => {callManu()})
+    // Manual import translation
+    document.getElementById('lb-manu-title').innerHTML = i18n.gettext('Manual import')
+    document.getElementById('lb-manu-date').innerHTML = i18n.gettext('Date')
+    document.getElementById('lb-manu-time').innerHTML = i18n.gettext('Take-off time')
+    document.getElementById('lb-manu-duration').innerHTML = i18n.gettext('Duration')
+    document.getElementById('lb-manu-glider').innerHTML = i18n.gettext('Glider')
+    document.getElementById('lb-manu-tkoff').innerHTML = i18n.gettext('Take off')
+    document.getElementById('lb-manu-comment').innerHTML = i18n.gettext('Comment')
+
 }
 
 // Calls up the relevant page 
@@ -155,7 +165,7 @@ function callUsbGps(typeGPS) {
           callDiskImport(logResult,gpsStatus)  
       } else {
           let errorMsg
-          clearPage()
+          clearTable()
           if (typeGPS == 'varduino') {
             errorMsg = gpsStatus+' '+i18n.gettext('The USB connection being very random, it is advised to use directly the microSD connected to the computer')
           } else {
@@ -174,7 +184,7 @@ function callSyride() {
     const gpsStatus = '<strong>Syride : </strong>'  
     callDiskImport(syridePath.parapentepath,gpsStatus)  
   } else {
-    clearPage()
+    clearTable()
     const errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
     displayStatus(errorMsg,false)
   }
@@ -190,13 +200,25 @@ function callDisk() {
 }
 
 function callManu() {
-  clearPage()
-  displayStatus('Not implemented in this release',false)
+  clearForm()
+  // I hesitated between putting these functions at initialization iniForm() or here
+  // Few users use this function so we don't overload the initialization iniForm()
+  // Prepare list of gliders
+  selectGlider =  document.getElementById('sel-glider')
+  const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
+  let nbGliders = 0
+  for (const gl of GliderSet.iterate()) {
+    nbGliders++
+    let newOption = document.createElement("option")
+    newOption.value= nbGliders.toString()
+    newOption.innerHTML= (gl.V_Engin)
+    selectGlider.appendChild(newOption);
+  }   
 }
 
 function callDiskImport(selectedPath, statusContent) {
     try {    
-      clearPage()
+      clearTable()
       displayWaiting('many')
       log.info('[Import disk] for '+selectedPath)
       // main/gps-tracks/disk-import.js
@@ -236,7 +258,7 @@ function callDiskImport(selectedPath, statusContent) {
 function serialGpsCall(gpsModel) {
   let gpsCom = []
   let msg
-  clearPage()
+  clearTable()
   displayWaiting('many')
 
   ipcRenderer.invoke('ports-list').then((result) => {
@@ -628,12 +650,20 @@ function updateLogbook() {
   }
 }
   
-function clearPage() {
-    if ($.fn.DataTable.isDataTable('#tableimp_id')) {
-      $('#tableimp_id').DataTable().clear().destroy()
-      $('#tableimp_id').addClass('d-none')
-    } 
-    $('#status').hide();
+function clearForm() {
+  $('#div_form').show()   
+  $('#div_table').hide()
+  $('#status').hide()
+}
+
+function clearTable() {
+  $('#div_form').hide()   
+  $('#div_table').show()
+  if ($.fn.DataTable.isDataTable('#tableimp_id')) {
+    $('#tableimp_id').DataTable().clear().destroy()
+    $('#tableimp_id').addClass('d-none')
+  } 
+  $('#status').hide()
 }
 
 function displayStatus(content,updateDisplay) {
