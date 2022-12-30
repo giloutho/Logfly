@@ -1,7 +1,7 @@
 {
   "name": "logfly",
   "productName": "Logfly",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Paragliding flights logbook",
   "main": "src/main.js",
   "scripts": {
@@ -19,11 +19,10 @@
   "license": "MIT",
   "config": {
     "forge": {
-      "packagerConfig": 
-        {
-          "icon" : "src/assets/logo/logo6",
-          "name": "logfly"
-        },
+      "packagerConfig": {
+        "icon": "src/assets/logo/logo6",
+        "name": "logfly"
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
@@ -43,10 +42,9 @@
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": 
-            {
-              "icon" : "src/assets/logo/logo6.png"
-            }
+          "config": {
+            "icon": "src/assets/logo/logo6.png"
+          }
         },
         {
           "name": "@electron-forge/maker-rpm",
@@ -75,6 +73,7 @@
     "highcharts": "^10.0.0",
     "iana-tz-data": "^2019.1.0",
     "igc-parser": "^1.1.0",
+    "inputmask": "^5.0.7",
     "internet-available": "^1.0.0",
     "jquery": "^3.6.0",
     "jquery-contextmenu": "^2.9.2",
