@@ -19,7 +19,6 @@ let inputArea = document.getElementById('inputdata')
 const tiles = require('../../leaflet/tiles.js')
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
-console.log({baseMaps})
 let mapPm
 
 let table
@@ -168,7 +167,7 @@ btnFullmap.addEventListener('click', (event) => {
       // functionnal code
       displayWait()
       // Code OK
-      let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
+      let disp_map = ipcRenderer.send('display-maplog', track)   // process-main/maps/fullmap-display.js
       // Just for try 29 08 22 try wit fullmap-compute
       //let disp_map = ipcRenderer.send('compute-map', track)   // process-main/maps/fullmap-compute.js
     } else {
