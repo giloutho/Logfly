@@ -77,3 +77,32 @@ ipcMain.on('save-igc', (event, stringIgc) => {
     event.returnValue = 'Error : '+err
     })
 })
+
+ipcMain.on('save-json', (event, jsonData) => {
+  let resultMsg = null
+  filename = dialog.showSaveDialog(
+    { title: 'Export JSON',
+      filters: [{
+        name: 'JSON format',
+        extensions: ['json']
+      }]
+    }
+  )
+  .then(result => {
+      filename = result.filePath
+      if (filename === undefined) {
+        event.returnValue = 'Error : the user clicked the btn but didn\'t created a file'        
+      }
+      console.log(jsonData.length)
+      fs.writeFile(filename, jsonData, (err) => {
+        if (err) {
+          event.returnValue = 'Error : An error ocurred with file creation ' + err.message          
+        }
+        event.returnValue = result.filePath        
+      })      
+    })
+  .catch(err => {
+    console.log(err)
+    event.returnValue = 'Error : '+err
+    })
+})
