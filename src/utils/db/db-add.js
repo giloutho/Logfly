@@ -75,4 +75,32 @@ function addBlankSite(pLat, pLong, pAlt, msg) {
      return siteName
    }
 
-   module.exports.addFlight = addFlight
+function importSites(arrSites) {
+    let nbInsert = 0
+    if (db.open) {
+        const updateDate = new Date()
+        let p_Update = updateDate.getFullYear()+'-'+String((updateDate.getMonth()+1)).padStart(2, '0')+'-'+String(updateDate.getDate()).padStart(2, '0') 
+        const stmt = db.prepare('INSERT INTO Site (S_Nom,S_Localite,S_CP,S_Pays,S_Type,S_Orientation,S_Alti,S_Latitude,S_Longitude,S_Commentaire,S_Maj) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+        arrSites.forEach(element => {
+            let p_Type = ""
+            if (element.Type.indexOf("coll") > 0) // en principe on a "Décollage"
+                p_Type = "D"
+            else if (element.Type.indexOf("tter") > 0)   // En principe on a atterrisage
+                p_Type = "A"       
+            // Le CP a été vu 
+            let p_CP =  element.CP.toString()           
+            // Je voulais l'altitude en pur numérique pour pouvoir éventuellement rechercher tous les décos supérieur à 1000
+            // L'altitude peut être saisie avec ou sans espaces et avec la lettre m (1870m)       
+            let sAlti = element.Alt.toString()
+            let alti = sAlti.replace(/\D+$/g, "")  
+            let p_Alt = ""  
+            if (alti > 0) p_Alt = alti             
+            const addSite = stmt.run(element.Nom,element.Ville,p_CP,element.Pays,p_Type,element.Orientation,p_Alt,element.Lat,element.Long,element.Commentaire,p_Update)
+            nbInsert++              
+        })
+    }
+    return nbInsert
+}
+
+module.exports.addFlight = addFlight
+module.exports.importSites = importSites
