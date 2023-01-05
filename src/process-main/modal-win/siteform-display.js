@@ -8,7 +8,7 @@ ipcMain.on('display-site-form', (event, currSite) => {
 })
 
 function openWindow(event,currSite) {
-    const siteHtmlPath = path.join('file://', __dirname, '../../views/html/siteform.html')
+    const siteHtmlPath = path.join('file://', __dirname, '../../views/html/secondary/siteform.html')
     let win = new BrowserWindow({ 
         width: 1200,   // 1024
         height: 700,
@@ -29,7 +29,6 @@ function openWindow(event,currSite) {
     })
     win.loadURL(siteHtmlPath)
     win.webContents.on('did-finish-load', function() {    
-        win.send('current-site', currSite)    // This is a simple passage of variables intended for fullmap.js
-     //   win.show();
+        win.send('current-site', currSite)    
     });
 }

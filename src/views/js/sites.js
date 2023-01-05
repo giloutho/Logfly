@@ -8,6 +8,7 @@ const log = require('electron-log')
 const Store = require('electron-store')
 const store = new Store()
 const db = require('better-sqlite3')(store.get('dbFullPath'))
+const dbadd = require('../../utils/db/db-add.js')
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
 const inputSearch = document.getElementById('tx-search')
@@ -49,6 +50,26 @@ function iniForm() {
       addNewSite()
     })
 
+    document.getElementById("mnu_down").addEventListener('click',(event)=>{
+      const callList = ipcRenderer.send('display-sites-down', '')   // process-main/modal-win/site-down-list.js
+    })
+
+    document.getElementById("mnu_import").addEventListener('click',(event)=>{
+      importSites()
+    })
+
+    document.getElementById("mnu_export").addEventListener('click',(event)=>{
+      const msg1 = i18n.gettext('The whole table displayed will be exported')
+      const mgs2 = i18n.gettext('Choose a destination and a filename')
+      let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="exportTable()" id="btn-export">'
+      msg += mgs2+'</button>'
+      displayStatus(msg)  
+    })
+
+    document.getElementById("mnu-dupli").addEventListener('click',(event)=>{
+      displayDuplicates()
+    })
+
     inputSearch.placeholder = i18n.gettext('Search')+'...'
 
     // inputSearch.addEventListener('input', (event) => {
@@ -57,8 +78,7 @@ function iniForm() {
 
     const stmtCount = db.prepare('SELECT COUNT(*) FROM Site')
     const countSites = stmtCount.get()
-    // displayStatus('Sites '+' : '+countSites['COUNT(*)'])   
-    if (countSites['COUNT(*)'] < 1)  displayStatus('No sites in logbook')  
+    if (countSites['COUNT(*)'] < 1)  displayStatus(i18n.gettext('No sites in logbook, you can import French or Swiss sites from Logfly.org'))  
     $(function(){
         $('#table_id').contextMenu({
             selector: 'tr', 
@@ -86,10 +106,10 @@ function iniForm() {
                 "Comment" : {name: i18n.gettext('Comment')}
             }
         });
-    });
+    })
+    // Even if the table is empty it must be initialize
+    tableStandard('all')
 }
-
-tableStandard()
 
 // Calls up the relevant page 
 function callPage(pageName) {
@@ -133,6 +153,7 @@ ipcRenderer.on('back_siteform', (_, updateSite) => {
      $('#inputcomment').hide()
    }  
   } else {
+      table.cell(updateSite.rowNumber,0).data(updateSite.typeSite)
       table.cell(updateSite.rowNumber,1).data(updateSite.nom)
       table.cell(updateSite.rowNumber,2).data(updateSite.localite)
       table.cell(updateSite.rowNumber,3).data(updateSite.cp)
@@ -151,6 +172,13 @@ ipcRenderer.on('back_siteform', (_, updateSite) => {
   }
 })
 
+ipcRenderer.on('back_sitedown', (_, downloaded) => { 
+  if (downloaded) {
+    hideStatus()
+    tableStandard('all')
+  }
+})
+
 btnMenu.addEventListener('click', (event) => {
     if (btnMenu.innerHTML === "Menu On") {
         btnMenu.innerHTML = "Menu Off";
@@ -160,13 +188,27 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
-function tableStandard() {
+function tableStandard(setData) {
     if ($.fn.DataTable.isDataTable('#table_id')) {
         $('#table_id').DataTable().clear().destroy()
     }
     if (db.open) {
-        //const stmSites = db.prepare('SELECT * FROM Site ORDER BY S_Nom').all()
-        const stmSites = db.prepare('SELECT * FROM Site').all()
+        let sqlReq
+        switch (setData) {
+          case 'all':
+            sqlReq = 'SELECT * FROM Site ORDER BY S_Nom'
+            break;
+          case 'dup':
+            sqlReq = 'SELECT a.* FROM Site a'
+            sqlReq += ' JOIN (SELECT *, COUNT(S_ID) FROM Site GROUP BY S_Nom, S_Alti HAVING COUNT(S_Nom) > 1 ) b'
+            sqlReq += ' ON a.S_Nom = b.S_Nom'
+            sqlReq += ' ORDER BY a.S_Nom'
+            break;        
+          default:
+            sqlReq = 'SELECT * FROM Site ORDER BY S_Nom'
+            break;
+        }
+        const stmSites = db.prepare(sqlReq).all()
         const dataTableOption = {
         data: stmSites, 
         autoWidth : false,
@@ -251,9 +293,12 @@ function tableStandard() {
             }        
         } );
         table.row(':eq(0)').select();    // Sélectionne la première lmigne
-        $('#table_id').removeClass('d-none')
+        if (table.data().count() > 0) {
+          $('#table_id').removeClass('d-none')
+          $('#mapid').removeClass('d-none')
+        }
     } else {
-        displayStatus('Database connection failed')
+        displayStatus(i18n.gettext('Database connection failed'))
     }
 }    // End of tableStandard
 
@@ -350,7 +395,7 @@ function updateComment(siteId, currComment, rowIndex){
           manageComment(siteId, newComment, rowIndex)
         } catch (error) {
           log.error('Error during site comment update '+error)
-          displayStatus('Error during site comment update')
+          displayStatus(i18n.gettext('Error during site comment update'))
         }
       }
     }
@@ -425,7 +470,7 @@ function manageComment(siteId, currComment, rowIndex) {
             $('#inputcomment').hide()           
           } catch (error) {
             log.error('Error during site comment update '+error)
-            displayStatus('Error during site comment update')
+            displayStatus(i18n.gettext('Error during site comment update'))
           }
         }
       };
@@ -491,11 +536,61 @@ function deleteSite() {
       rowDel.remove().draw()
     })
   }
-  
+}
+function exportTable() {
+  let arrData = new Array();
+  table.rows( {search:'applied'}).every( function ( rowIdx, tableLoop, rowLoop ) {
+    let data = this.data();
+    let lineData = {
+        "Nom": data.S_Nom,
+        "Lat": data.S_Latitude,
+        "Long": data.S_Longitude,
+        "Alt": data.S_Alti,
+        "Type": data.S_Type,
+        "Orientation": data.S_Orientation,
+        "CP": data.S_CP,
+        "Ville": data.S_Localite,
+        "Pays": data.S_Pays,
+        "Commentaire": data.S_Commentaire
+      }
+      arrData.push(lineData)
+    console.log(lineData.Nom+' '+lineData.Ville)
+  })
+  let jsonData = JSON.stringify(arrData)
+  const exportResult = ipcRenderer.sendSync('save-json',jsonData)
+  if (exportResult.indexOf('Error') !== -1) {
+    displayStatus(exportResult)      
+  } else {
+    let msg = i18n.gettext('List saved in')
+    msg += ' -> '+exportResult
+    msg += '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+    displayStatus(msg)
+  }  
+}
+
+function importSites() {
+  const repJsonFiles = ipcRenderer.sendSync('open-file','')
+  if (repJsonFiles !== undefined && repJsonFiles != null) {
+      let content = fs.readFileSync(repJsonFiles[0], 'utf8')
+      const arrSites = JSON.parse(content) 
+      if (arrSites.length > 0) {
+          let nbInserted = dbadd.importSites(arrSites)
+          alert(i18n.gettext('imported sites')+' : '+nbInserted)
+      } else {
+          alert(i18n.gettext('File decoding problem'))
+      }          
+  }
+}
+
+
+function displayDuplicates() {
+  const stmtCount = db.prepare('SELECT COUNT(*) FROM Site')
+  const countSites = stmtCount.get()
+  if (countSites['COUNT(*)'] > 0) tableStandard('dup')
 }
 
 function displayStatus(content) {
-    document.getElementById('status').innerHTML = i18n.gettext(content)
+    document.getElementById('status').innerHTML = content
     $('#status').show(); 
   }
 
@@ -505,10 +600,8 @@ function displayStatus(content) {
 
   function translateLabels() {
     document.getElementById("mnu_new").innerHTML = i18n.gettext('New')
-    document.getElementById("mnu-util").innerHTML = i18n.gettext('Utilities')
     document.getElementById("mnu-dupli").innerHTML = i18n.gettext('Duplicates')
-    document.getElementById("mnu-clean").innerHTML = i18n.gettext('Cleaning')
-    document.getElementById("mnu_download").innerHTML = i18n.gettext('Download')
+    document.getElementById("mnu_down").innerHTML = i18n.gettext('Download')
     document.getElementById("mnu_import").innerHTML = i18n.gettext('Import')
     document.getElementById("mnu_export").innerHTML = i18n.gettext('Export')
   }
