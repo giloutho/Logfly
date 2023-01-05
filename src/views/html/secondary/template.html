@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <title>Logfly</title>
+    <link rel="stylesheet" href="../../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+       <!-- if necessary remove datatables references -->
+    <link rel="stylesheet" href="../../../../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="../../../../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
+    <link rel="stylesheet" href="../../../../node_modules/bootstrap-select/dist/css/bootstrap-select.css" />      
+    <link rel="stylesheet" href="../../../assets/css/home.css">
+    <!-- if necessary some specifics css will be added like leaflet.css -->
+</head>
+
+<body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>
+        let $ = require('jquery');
+        // jQuery datatables script
+        const dtbs = require('datatables.net-bs4')()   
+        const dtselect = require( 'datatables.net-select-bs4' )() 
+        const conmenu = require('jquery-contextmenu')    
+    </script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>  
+    <script src="../../../lang/gettext.js" type="text/javascript"></script>
+    <div class="wrapper">
+        <div id="content">
+            <!-- Main page content -->
+            <div>
+                <h1>Hello Gil</h1>
+                <h2>A good template</h2>
+            </div>
+        </div>
+        <!-- End of main page content -->
+    </div>   
+    <!-- End of page content -->
+    <script type="text/javascript">
+        var i18n = window.i18n();
+    </script>  
+    <script src="../../../views/js/secondary/template.js" type="text/javascript"></script>
+</body>
