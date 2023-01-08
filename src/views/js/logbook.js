@@ -733,7 +733,7 @@ function readIgc(igcID, dbGlider) {
       try {
         const stmt = db.prepare(req)
         const selIgc = stmt.get(igcID)
-        if (selIgc.V_IGC === undefined || selIgc.V_IGC == "" ) {
+        if (selIgc.V_IGC === undefined || selIgc.V_IGC == "" || selIgc.V_IGC == null) {
           mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
         } else {
           currIgcText = selIgc.V_IGC
