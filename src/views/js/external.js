@@ -1,5 +1,4 @@
 var {ipcRenderer} = require('electron')
-const L = require('leaflet')
 var i18n = require('../../lang/gettext.js')()
 var Mustache = require('mustache')
 const fs = require('fs')
@@ -8,16 +7,23 @@ const log = require('electron-log');
 var Store = require('electron-store')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 var store = new Store()
+const tiles = require('../../leaflet/tiles.js')
+const L = tiles.leaf
+const baseMaps = tiles.baseMaps
+let mapPm
+
 let menuFill = require('../../views/tpl/sidebar.js')
+
+
+let currLang
+let track
+let currIgcText
+
+const btnSelect = document.getElementById('sel-track')
 let btnMenu = document.getElementById('toggleMenu')
 const btnFullmap = document.getElementById('fullmap')
 let btnFlyxc = document.getElementById('flyxc')
 
-let currLang
-let mapPm
-let track
-let currIgcText
-let btnSelect = document.getElementById('sel-track')
 iniForm()
 
 function iniForm() {
@@ -65,7 +71,7 @@ btnFullmap.addEventListener('click', (event) => {
       if (track.fixes.length> 0) {    
         // functionnal code
         displayWait()
-        let disp_map = ipcRenderer.send('display-map', track)   // process-main/maps/fullmap-display.js
+        let disp_map = ipcRenderer.send('display-maplog', track)   // process-main/maps/fullmaplog-disp.js
       } else {
         log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
         let err_title = i18n.gettext("Program error")
@@ -102,36 +108,8 @@ function igcDisplay() {
       mapPm.remove();
     }
     mapPm = L.map('mapid').setView([0, 0], 5)
-    const osmlayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
-    const OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 16,
-        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-    });
-    var ignlayer = L.tileLayer('https://wxs.ign.fr/{ignApiKey}/geoportail/wmts?'+
-    '&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
-    '&LAYER={ignLayer}&STYLE={style}&FORMAT={format}'+
-    '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}',
-    {
-      ignApiKey: 'pratique',
-      ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
-      style: 'normal',
-      format: 'image/png',
-      service: 'WMTS',
-    });
-    let mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
-    let fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
-    const baseMaps = {
-      "OSM": osmlayer,
-      "OpenTopo" : OpenTopoMap,
-      "IGN" : ignlayer,
-      "MTK" : mtklayer,
-      "4UMaps" : fouryoulayer,
-    };
-    
     L.control.layers(baseMaps).addTo(mapPm)
-    osmlayer.addTo(mapPm)   // default is osm
+    baseMaps.OSM.addTo(mapPm)   // default is osm
 
     const geojsonLayer = L.geoJson(mapTrack.trackjson,{ style: mapTrack.trackOptions}).addTo(mapPm)
     mapPm.fitBounds(geojsonLayer.getBounds());
