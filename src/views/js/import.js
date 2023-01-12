@@ -10,6 +10,7 @@ const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
 const dbadd = require('../../utils/db/db-add.js')
 let db = require('better-sqlite3')(store.get('dbFullPath'))
+const moment = require('moment')
 
 const btnMenu = document.getElementById('toggleMenu')
 // status messages
@@ -71,7 +72,7 @@ function iniForm() {
     })
     document.getElementById('imp-gps').innerHTML = i18n.gettext('GPS import')
     document.getElementById('imp-disk').innerHTML = i18n.gettext('Disk import')
-    document.getElementById('imp-manu').innerHTML = i18n.gettext('Manual import')
+    document.getElementById('imp-manu').innerHTML = i18n.gettext('Flight without GPS track')
     btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
     btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
     btnFlytec20.addEventListener('click',(event) => {serialGpsCall('Flytec20')})
@@ -91,15 +92,6 @@ function iniForm() {
     btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
     btnDisk.addEventListener('click', (event) => {callDisk()})
     btnManu.addEventListener('click', (event) => {callManu()})
-    // Manual import translation
-    document.getElementById('lb-manu-title').innerHTML = i18n.gettext('Manual import')
-    document.getElementById('lb-manu-date').innerHTML = i18n.gettext('Date')
-    document.getElementById('lb-manu-time').innerHTML = i18n.gettext('Take-off time')
-    document.getElementById('lb-manu-duration').innerHTML = i18n.gettext('Duration')
-    document.getElementById('lb-manu-glider').innerHTML = i18n.gettext('Glider')
-    document.getElementById('lb-manu-tkoff').innerHTML = i18n.gettext('Take off')
-    document.getElementById('lb-manu-comment').innerHTML = i18n.gettext('Comment')
-
 }
 
 // Calls up the relevant page 
@@ -201,19 +193,25 @@ function callDisk() {
 
 function callManu() {
   clearForm()
-  // I hesitated between putting these functions at initialization iniForm() or here
-  // Few users use this function so we don't overload the initialization iniForm()
-  // Prepare list of gliders
-  selectGlider =  document.getElementById('sel-glider')
-  const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
-  let nbGliders = 0
-  for (const gl of GliderSet.iterate()) {
-    nbGliders++
-    let newOption = document.createElement("option")
-    newOption.value= nbGliders.toString()
-    newOption.innerHTML= (gl.V_Engin)
-    selectGlider.appendChild(newOption);
-  }   
+  const formattedToday = moment().format('YYYY-MM-DD')
+  let flightData = {
+    type : 'edit',
+    id : 0,
+    row : 0,
+    date : formattedToday,
+    time : '12:00',
+    sqlDate : formattedToday+' 12:00',
+    duree : '00:30',
+    strduree : '',
+    lat : 0.00,
+    lon : 0.00,
+    alti : 0,
+    nom : '',
+    pays : '',
+    glider : '',
+    comment :''
+  }
+  const callList = ipcRenderer.send('display-flight-form', flightData)   // process-main/modal-win/flight-form.js
 }
 
 function callDiskImport(selectedPath, statusContent) {
@@ -651,7 +649,7 @@ function updateLogbook() {
 }
   
 function clearForm() {
-  $('#div_form').show()   
+ // $('#div_form').show()   
   $('#div_table').hide()
   $('#status').hide()
 }
