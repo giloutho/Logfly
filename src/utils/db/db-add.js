@@ -102,5 +102,17 @@ function importSites(arrSites) {
     return nbInsert
 }
 
+function importFlights(arrFlights) {
+    let nbInsert = 0
+    if (db.open) {        
+        const stmt = db.prepare('INSERT INTO Vol (V_Date, V_Duree, V_sDuree, V_LatDeco, V_LongDeco, V_AltDeco, V_Site, V_Pays, V_Commentaire, UTC, V_Engin) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+        arrFlights.forEach(flight => {                
+            const addFlight = stmt.run(flight.sqlDate, flight.duree, flight.sduree, flight.lat, flight.long, flight.alt, flight.site, flight.pays, flight.comment, flight.utc, flight.engin)
+            nbInsert++              
+        })
+    }
+    return nbInsert
+}
 module.exports.addFlight = addFlight
 module.exports.importSites = importSites
+module.exports.importFlights = importFlights
