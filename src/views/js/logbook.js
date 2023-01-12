@@ -7,6 +7,7 @@ const Store = require('electron-store')
 const log = require('electron-log')
 const sharp = require('sharp')
 let webOk = require('internet-available')
+const moment = require('moment')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 
 let store = new Store()
@@ -29,6 +30,7 @@ const btnFullmap = document.getElementById('fullmap')
 let btnScoring = document.getElementById('scoring')
 let btnFlyxc = document.getElementById('flyxc')
 let currLang
+let noGpsFlight = false
 
 iniForm()
 
@@ -98,7 +100,14 @@ function iniForm() {
                 exportIgc()
                 break
               case "Merge" : 
-                break                
+                break   
+              case "Dupli" : 
+                if (noGpsFlight) {
+                  updateFlight()
+                } else {
+                  alert(i18n.gettext('This flight is not modifiable'))
+                }              
+                break   
             }
         },
         items: {
@@ -108,12 +117,23 @@ function iniForm() {
             "Day": {name: i18n.gettext("Photo of the day")},
             "Delete": {name: i18n.gettext("Delete")},
             "Igc": {name: i18n.gettext("Export IGC")},
-            "Merge": {name: i18n.gettext("Merge flights")}
+            "Merge": {name: i18n.gettext("Merge flights")},
+            "Dupli": {name: i18n.gettext("Edit/Duplicate")}
         }
     });
 });
   
 }
+
+ipcRenderer.on('back_flightform', (_, updateFlight) => { 
+  table.cell({row:updateFlight.row, column:1}).data(updateFlight.date)
+  table.cell({row:updateFlight.row, column:2}).data(updateFlight.time)  
+  table.cell({row:updateFlight.row, column:3}).data(updateFlight.strduree)
+  table.cell({row:updateFlight.row, column:4}).data(updateFlight.nom)
+  table.cell({row:updateFlight.row, column:5}).data(updateFlight.glider)
+  table.cell({row:updateFlight.row, column:6}).data(updateFlight.comment)
+  tableSelection(updateFlight.id)
+})
 
 tableStandard()
 
@@ -460,6 +480,37 @@ function deleteFlights() {
   
 }
 
+function updateFlight() {
+  let rows = table.rows('.selected');
+  if(rows.data().length > 0 && db.open) {
+    table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
+      let flightId = table.cell(this, 7).data()      
+      const stmt = db.prepare('SELECT * FROM Vol WHERE V_ID = ?')
+      const selFlight = stmt.get(flightId)     
+      let duration = moment.duration(selFlight.V_Duree, 'seconds')
+      let flightData = {
+        type : 'edit',
+        row : rowIdx,
+        id : flightId,
+        date : moment(selFlight.V_Date, 'YYYY-MM-DD hh:mm:ss').format('YYYY-MM-DD'),
+        time : moment(selFlight.V_Date, 'YYYY-MM-DD hh:mm:ss').format('HH:mm'),
+        sqlDate : selFlight.V_Date,
+        duree : moment.utc(duration._milliseconds).format('HH:mm'),
+        strduree : selFlight.V_sDuree,
+        lat : selFlight.V_LatDeco,
+        lon : selFlight.V_LongDeco,
+        alti : selFlight.V_AltDeco,
+        nom : selFlight.V_Site,
+        pays : selFlight.V_Pays,
+        glider : selFlight.V_Engin,
+        comment : selFlight.V_Commentaire
+      }
+      console.log(flightData.nom)
+      const callList = ipcRenderer.send('display-flight-form', flightData)   // process-main/modal-win/flight-form.js
+    })
+  }
+}
+
 function tableSelection(idFlight) {  
   table.rows().every (function (rowIdx, tableLoop, rowLoop) {
     if (this.data().V_ID === idFlight) {    
@@ -734,11 +785,14 @@ function readIgc(igcID, dbGlider) {
         const stmt = db.prepare(req)
         const selIgc = stmt.get(igcID)
         if (selIgc.V_IGC === undefined || selIgc.V_IGC == "" || selIgc.V_IGC == null) {
+          noGpsFlight = true
           mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
         } else {
+          noGpsFlight = false
           currIgcText = selIgc.V_IGC
           igcDisplay(currIgcText, dbGlider)
         }
+        console.log('noGpsFlight '+noGpsFlight)
       } catch (err) {
         displayStatus('Database error')        
       }
