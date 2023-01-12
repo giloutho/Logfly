@@ -313,6 +313,7 @@ $('#table_id').on( 'search.dt', function () {
 
 function displayMap(selectedSite) {
     if (mapPm != null) {
+      console.log('remove')
         mapPm.off();
         mapPm.remove();
       }

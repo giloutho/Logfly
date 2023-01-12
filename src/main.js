@@ -158,7 +158,11 @@ function openWindow(pageName) {
      //   mainWindow.webContents.openDevTools(); 
         break;
     case "overview":
-      mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'));
+      // original code
+      //mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'))
+      // debugging and development
+      mainWindow.loadFile(path.join(__dirname, './views/html/secondary/nogpsflight.html'))
+      mainWindow.webContents.openDevTools()
       break;      
     case "infos":
       mainWindow.loadFile(path.join(__dirname, './views/html/information.html'));
@@ -177,6 +181,7 @@ function openWindow(pageName) {
       break;          
     case "sites":
         mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
+       mainWindow.webContents.openDevTools(); 
         break;
     case "wayp":
       mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'));
@@ -193,6 +198,7 @@ function openWindow(pageName) {
       break;          
     case "utils":
       mainWindow.loadFile(path.join(__dirname, './views/html/utils.html'));
+      mainWindow.webContents.openDevTools();  
       break;         
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
@@ -230,7 +236,7 @@ function checkInfo() {
             if (releaseInfo.release > currVersion || releaseInfo.message !== undefined )  {
                 openWindow('infos')
             } else {
-              openWindow('import')
+              openWindow('logbook')
             }
           } catch (error) {
             openWindow('logbook')
