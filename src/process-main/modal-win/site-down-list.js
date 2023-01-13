@@ -53,7 +53,7 @@ function downloadList() {
             contextIsolation: false, 
         }              
     })
-    win.webContents.openDevTools();
+   // win.webContents.openDevTools();
     process.platform === "win32" && win.removeMenu()
     win.on('close', () => {
         win = null 

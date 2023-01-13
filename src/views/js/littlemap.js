@@ -20,7 +20,7 @@ try {
         i18n.setLocale(currLang);
     }
   } catch (error) {
-      log.error('[problem.js] Error while loading the language file')
+      log.error('[littlemap.js] Error while loading the language file')
   }  
 let btnClose = document.getElementById('bt-close')
 btnClose.innerHTML = i18n.gettext('Close')
