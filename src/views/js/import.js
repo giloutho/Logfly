@@ -76,6 +76,7 @@ function iniForm() {
     btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
     btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
     btnFlytec20.addEventListener('click',(event) => {serialGpsCall('Flytec20')})
+    btnFlytec15.addEventListener('click',(event) => {serialGpsCall('Flytec15')})
     btnOudie.addEventListener('click',(event) => {callUsbGps('oudie')})
     btnSkytrax2.addEventListener('click',(event) => {callUsbGps('sky2')})
     btnSkytrax3.addEventListener('click',(event) => {callUsbGps('sky3')})
@@ -350,8 +351,6 @@ function displayOneFlight(flightPath, flightIndex) {
   // we only need flightindex for gpsdump, for usb, we send 9999
   $('#table-content').removeClass('d-block')
   $('#table-content').addClass('d-none')
-
-  console.log(flightPath)
   displayWaiting('one')
   let igcFile = ipcRenderer.send('displayoneflight', flightPath, flightIndex)    
 }

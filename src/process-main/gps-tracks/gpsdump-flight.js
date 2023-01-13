@@ -12,6 +12,7 @@ function getGpsdumpFlight(gpsParam, flightIndex) {
     // gpsParam contains parameters for GpsDump
     // something like -giq,-cu.usbserial-14140,FlymasterSD
     // First one is gps type, second serial port
+    console.log('flightIndex : '+flightIndex+' gpsParam : '+gpsParam)
     let data
     const execFileSync = require('child_process').execFileSync
     const gpsDumpPath = path.join(path.dirname(__dirname), '../../ext_resources',gpsDumpParams[specOS].gpsdump)
@@ -32,8 +33,10 @@ function getGpsdumpFlight(gpsParam, flightIndex) {
       const paramGPS = gpsParamArray[0]
       const paramPort = gpsParamArray[1]
       const gpsModel = gpsParamArray[2]
+      
       // console.log(gpsParamArray)
       // app.quit()
+      
       const wNoWin = '/win=0'  
       const wExit = '/exit'  
       switch (gpsModel) {
@@ -58,6 +61,7 @@ function getGpsdumpFlight(gpsParam, flightIndex) {
           if (specOS != 'win') {
             flightIndex +=1
           }
+          console.log('flightIndex in Flytec15 : '+flightIndex)
           paramFlightIndex = gpsDumpParams[specOS].track+flightIndex.toString()               
           break    
       }

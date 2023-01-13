@@ -259,7 +259,7 @@ function flightlistFlytec(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
           flight['date'] = flDate[1]
           flight['takeoff'] = flDate[2]
           flight['duration'] = flDate[4]
-          flight['gpsdump'] = gpsdumpGPS+','+gpsdumpPort
+          flight['gpsdump'] = gpsdumpGPS+','+gpsdumpPort+','+gpsModel
           flightList.flights.push(flight)     
         } else {
           flightList.otherlines.push('Line '+i.toString()+' '+lines[i])
