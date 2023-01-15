@@ -134,6 +134,10 @@ function downloadRelease() {
             break;            
         case 'linux':
             console.log(releaseInfo.linux)
+            document.getElementById('msg-mac1').innerHTML = i18n.gettext('When the download is finished, in the File Manager, double click on logfly6.deb')  
+            document.getElementById("drag-mac").src='../../assets/img/drag_linux.jpg'
+            document.getElementById('msg-mac2').innerHTML = i18n.gettext('Wait until the installation is complete')
+            ipcRenderer.send('dl-file-progress', releaseInfo.win)
             break;   
     }
 }
