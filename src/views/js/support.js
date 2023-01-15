@@ -1,4 +1,4 @@
-const {ipcRenderer} = require('electron')
+const {ipcRenderer, net} = require('electron')
 const fs = require('fs')
 const path = require('path');
 const log = require('electron-log');
@@ -46,12 +46,13 @@ function iniForm() {
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     const navOptions = {
-        logfile : i18n.gettext('Log file'),
+        logfile : i18n.gettext('Log files'),
         maindisplay : i18n.gettext('Main log display'),
         mainclear : i18n.gettext('Main log clear'),
         rendererdisplay : i18n.gettext('Renderer display'),
         rendererclear : i18n.gettext('Renderer clear'),
         systemreport : i18n.gettext('System report'),
+        infos : i18n.gettext('Infos'),
         sendmail : i18n.gettext('Send an e-mail'),
         sendlogbook : i18n.gettext('Send logbook')
       };    
@@ -76,6 +77,11 @@ function iniForm() {
     btnSystem.addEventListener('click',(event) => {
       fnSystemDisplay()
     }) 
+
+    document.getElementById('infos').addEventListener('click',(event) => {
+      callPage('infos')
+    }) 
+
     const btnMail = document.getElementById('email')
     btnMail.addEventListener('click',(event) => {
       fnMailDisplay()
