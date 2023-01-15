@@ -168,7 +168,6 @@ function iniForm() {
     // pour la suite voir https://stackoverflow.com/questions/53954508/jquery-inputmask-latitude-longitude-validation-and-masking
     // avec les "definitions"
     btnCancel.addEventListener('click',(event)=>{
-        alert('on envoie')
         ipcRenderer.sendTo(originWindow, "back_siteform", '')
         window.close()
     })  
