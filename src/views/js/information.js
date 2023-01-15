@@ -6,7 +6,6 @@ const fs = require('fs')
 const path = require('path');
 const log = require('electron-log');
 var Store = require('electron-store')
-const internetAvailable = require('internet-available')
 var store = new Store()
 let menuFill = require('../../views/tpl/sidebar.js')
 const { event } = require('jquery')
@@ -40,11 +39,11 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    ipcRenderer.send("ask-infos");    // main.js
     btnDownload.innerHTML = i18n.gettext('Download')
     btnDownload.addEventListener('click',(event) => {
         downloadRelease()
     })
+    ipcRenderer.send("ask-infos");    // main.js
 }
 
 // Calls up the relevant page 

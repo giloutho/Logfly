@@ -1,7 +1,7 @@
 const {ipcMain, BrowserWindow, net} = require('electron')
 const fs = require('fs')
 const path = require('path')
-const internetAvailable = require('internet-available')
+const { isInternetAvailable, InternetAvailabilityService } = require('is-internet-available')
 const log = require('electron-log')
 
 ipcMain.on('display-sites-down', (event, currSite) => {
@@ -11,31 +11,35 @@ ipcMain.on('display-sites-down', (event, currSite) => {
 
 function downloadList() {   
     const url = 'http://logfly.org/download/sites/json/sites_list.json'
-    internetAvailable().then(() => {
-      const request = net.request({
-        method: 'GET',
-        url : url,
-      })
-      request.on("response", (response) => {
-        const data = [];
-        response.on("data", (chunk) => {
-          data.push(chunk);
-        })
-        response.on("end", () => {
-          const json = Buffer.concat(data).toString()
-          try {
-            openWindow(json)
-          } catch (error) {
-            console.log(error)
-          }
-        })
-      });
+    const service = new InternetAvailabilityService({
+      authority: 'https://www.logfly.org',
+      rate: 1000, // the wait time between checks
+    })
     
-      request.end();
-    }).catch(() => {
-        console.log("No internet ou web response");
-        // Not great, but waiting for better
-        //openWindow('logbook')
+    service.on('status', (status) => {
+      if (status) {
+        const request = net.request({
+          method: 'GET',
+          url : url,
+        })
+        request.on("response", (response) => {
+          const data = [];
+          response.on("data", (chunk) => {
+            data.push(chunk);
+          })
+          response.on("end", () => {
+            const json = Buffer.concat(data).toString()
+            try {
+              openWindow(json)
+            } catch (error) {
+              console.log(error)
+            }
+          })
+        });      
+        request.end()
+      } else {
+        log.error('logfly.org is now unavailable')
+      }
     })
   }
 
