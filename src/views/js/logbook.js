@@ -6,7 +6,6 @@ const fs = require('fs')
 const Store = require('electron-store')
 const log = require('electron-log')
 const sharp = require('sharp')
-let webOk = require('internet-available')
 const moment = require('moment')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 
