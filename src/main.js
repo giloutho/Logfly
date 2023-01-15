@@ -165,7 +165,7 @@ function openWindow(pageName) {
     case "infos":
       mainWindow.loadFile(path.join(__dirname, './views/html/information.html'));
       mainWindow.webContents.send('read-infos')
-      mainWindow.webContents.openDevTools(); 
+//      mainWindow.webContents.openDevTools(); 
       break;            
     case "import":
       mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
@@ -232,7 +232,7 @@ function checkInfo() {
           if (json.release > currVersion || json.message !== undefined )  {
                 openWindow('infos')
           } else {
-              openWindow('support')
+              openWindow('logbook')
           }         
         })
     } else {
