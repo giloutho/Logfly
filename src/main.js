@@ -2,7 +2,8 @@ const { app, BrowserWindow, Menu, ipcMain, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob')
-const internetAvailable = require('internet-available')
+const { isInternetAvailable, InternetAvailabilityService } = require('is-internet-available')
+const fetch = require('electron-fetch').default
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 
 let mainWindow = null;
@@ -159,10 +160,7 @@ function openWindow(pageName) {
         break;
     case "overview":
       // original code
-      //mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'))
-      // debugging and development
-      mainWindow.loadFile(path.join(__dirname, './views/html/secondary/nogpsflight.html'))
-      mainWindow.webContents.openDevTools()
+      mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'))      
       break;      
     case "infos":
       mainWindow.loadFile(path.join(__dirname, './views/html/information.html'));
@@ -198,13 +196,14 @@ function openWindow(pageName) {
       break;          
     case "utils":
       mainWindow.loadFile(path.join(__dirname, './views/html/utils.html'));
-      mainWindow.webContents.openDevTools();  
+   //   mainWindow.webContents.openDevTools();  
       break;         
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
           break;                     
     case "support":
       mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
+      mainWindow.webContents.openDevTools();
       break;   
     case "flyxc":
       mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
@@ -216,40 +215,31 @@ function openWindow(pageName) {
 }
 
 function checkInfo() {
-  const url = 'http://logfly.org/download/logfly6/release.json'
-    internetAvailable().then(() => {
-      const request = net.request({
-        method: 'GET',
-        url : url,
-      })
-    //  const request = net.request(url);
-      request.on("response", (response) => {
-        const data = [];
-        response.on("data", (chunk) => {
-          data.push(chunk);
-        });
-        response.on("end", () => {
-          const json = Buffer.concat(data).toString()
-          try {
-            const currVersion = app.getVersion() 
-            releaseInfo = JSON.parse(json);
-            if (releaseInfo.release > currVersion || releaseInfo.message !== undefined )  {
+  const url = 'https://logfly.org/download/logfly6/release.json'  
+
+  const service = new InternetAvailabilityService({
+    authority: 'https://www.logfly.org',
+    rate: 1000, // the wait time between checks
+  })
+  
+  service.on('status', (status) => {
+    if (status) {
+      fetch(url,{ useSessionCookies: false })
+      .then(res => res.json())
+      .then(json => {
+          const currVersion = app.getVersion() 
+          releaseInfo = json
+          if (json.release > currVersion || json.message !== undefined )  {
                 openWindow('infos')
-            } else {
-              openWindow('logbook')
-            }
-          } catch (error) {
-            openWindow('logbook')
-          }
+          } else {
+              openWindow('support')
+          }         
         })
-      });
-    
-      request.end();
-    }).catch(() => {
-        console.log("No internet ou web response");
-        // Not great, but waiting for better
-        openWindow('logbook')
-    })
+    } else {
+      console.log('logfly.org is now unavailable');
+      openWindow('logbook')
+    }
+  })
 }
 
 // Require each JS file in the main-process dir
