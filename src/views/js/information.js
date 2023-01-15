@@ -111,22 +111,26 @@ function downloadRelease() {
     $('#div-progress').addClass('d-block')
     $('#div-msg-mac').removeClass('d-none')
     $('#div-msg-mac').addClass('d-block')
-    document.getElementById('msg-mac1').innerHTML = 'When the download is finished, in the finder, double click on Logfly6.dmg'  
-    document.getElementById("drag-mac").src='../../assets/img/drag_mac.jpg'
-    document.getElementById('msg-mac2').innerHTML = 'Drag the Logfly icon to the Applications icon'  
     switch (currOS) {
         case 'mac':
+            document.getElementById('msg-mac1').innerHTML = i18n.gettext('When the download is finished, in the finder, double click on Logfly6.dmg')
+            document.getElementById("drag-mac").src='../../assets/img/drag_mac.jpg'
+            document.getElementById('msg-mac2').innerHTML = i18n.gettext('Drag the Logfly icon to the Applications icon')
             const cpuCore = os.cpus()
             if (cpuCore[0].model.includes("Apple")) {
                 console.log('Go pour '+releaseInfo.macapple)
                 ipcRenderer.send('dl-file-progress', releaseInfo.macapple)
             } else {
-                console.log('Processeur Intel')
-                console.log(releaseInfo.macintel)
+                console.log('Go pour '+releaseInfo.macintel)
+                ipcRenderer.send('dl-file-progress', releaseInfo.macintel)
             }
             break;
         case 'win':
             console.log(releaseInfo.win)
+            document.getElementById('msg-mac1').innerHTML = i18n.gettext('When the download is finished, in the File Explorer, double click on Logfly_Install.exe')  
+            document.getElementById("drag-mac").src='../../assets/img/drag_win.jpg'
+            document.getElementById('msg-mac2').innerHTML = i18n.gettext('Wait until the installation is complete')
+            ipcRenderer.send('dl-file-progress', releaseInfo.win)
             break;            
         case 'linux':
             console.log(releaseInfo.linux)
