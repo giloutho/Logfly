@@ -174,9 +174,23 @@ function askFlightList(gpsModel) {
           flightlistFlymaster(data,modelGPS,paramGPS,paramPort)                            
           break      
         case 'Flytec15':
-          flightlistFlytec(data,modelGPS,paramGPS,paramPort)              
+          switch (specOS) {
+            case 'win':
+              flightlistFlymaster(data,modelGPS,paramGPS,paramPort)
+              break
+            case 'mac32':
+              // A vérifier
+              flightlistFlymaster(data,modelGPS,paramGPS,paramPort)
+              break            
+            case 'mac64':
+              flightlistFlytec(data,modelGPS,paramGPS,paramPort) 
+              break
+            case 'linux':
+              flightlistFlytec(data,modelGPS,paramGPS,paramPort) 
+              break
+          }         
           break    
-          }
+      }
     } else {
       flightList.error = true
       flightList.otherlines.push('no response from GPSDump for '+gpsDumpPath)
