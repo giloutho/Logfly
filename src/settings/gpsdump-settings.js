@@ -5,7 +5,7 @@ let gpsdumpName = {
     'mac32' : 'gpsdumpMac32_54',
     'mac64' : 'gpsdumpMac64_14',
     'win' : 'GpsDump542.exe',
-    'linux' : 'gpsdumpLin64_3'    
+    'linux' : 'gpsdumpLin64_28' 
 }         
 
 function getParam() {  
@@ -57,6 +57,11 @@ function getParam() {
   return gpsParameters
 }
 
+function getGpsdumpNames() {
+  return gpsdumpName
+}
+
 module.exports.getParam = getParam
+module.exports.getGpsdumpNames = getGpsdumpNames
 
 
