@@ -3,12 +3,12 @@ const fs = require('fs')
 const path = require('path');
 const log = require('electron-log');
 const i18n = require('../../lang/gettext.js')()
-const gpsDumpFiles = require('../../settings/gpsdump-name.js')
 const Mustache = require('mustache')
 const Store = require('electron-store')
 const store = new Store()
-
 const currOS = store.get('currOS')
+const gpsDumpFiles = require('../../settings/gpsdump-settings.js')
+const gpsDumpNames = gpsDumpFiles.getGpsdumpNames()
 const homedir = require('os').homedir()
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
@@ -19,7 +19,6 @@ let renderDisplay = 'render'
 let mainDisplay = 'main'
 let loadLangTime
 let currLang 
-let gpsDumpNames = gpsDumpFiles.getNames()
 
 iniForm()         
 
