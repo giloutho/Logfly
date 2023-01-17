@@ -67,6 +67,7 @@ function readOnPorts(gpsCom) {
 
 function askFlightList(gpsModel) {
   const execFileSync = require('child_process').execFileSync
+  const spawn = require('child_process').spawnSync
   let gpsDumpPath
   let data
   let paramGPS
@@ -132,9 +133,27 @@ function askFlightList(gpsModel) {
             data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
             break
         case 'linux':
-            // A définir sur le modèle mac -> paramPort = gpsModel.port.replace('/dev/tty','-cu')
+            let subPort = "ca0";
+            if (gpsModel.port.length > 8) subPort = gpsModel.port.substring(0,9)
+            switch (subPort) {
+                case "/dev/ttyA":
+                    paramPort = gpsModel.port.replace("/dev/ttyACM","-ca") 
+                    break;
+                case "/dev/ttyS":
+                    paramPort = gpsModel.port.replace("/dev/ttyS","-c")  
+                    break;       
+                case "/dev/ttyU":
+                    paramPort = gpsModel.port.replace("/dev/ttyUSB","-cu") 
+                    break;                     
+                default :
+                  paramPort = gpsModel.port
+                break; 
+            }                
             log.info(path.basename(gpsDumpPath)+' '+paramGPS+' '+paramPort+' '+paramFile+' '+paramList)
-            data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
+            const rawData = spawn(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
+            // voir https://dzone.com/articles/understanding-execfile-spawn-exec-and-fork-in-node
+            data = rawData.stdout.toString()
+            console.log('data : '+data)
             break
       }
     } catch (err) {
@@ -201,6 +220,11 @@ function flightlistFlymaster(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
       flightList.model = gpsModel
     }
     let gpsdumpOrder = gpsdumpGPS+','+gpsdumpPort+','+typeGPS
+    console.log('flightlistFlymaster '+gpsdumpOrder)
+    for (let index = 0; index < lines.length; index++) {
+      console.log(lines[index])
+      
+    }
     if (lines.length > 0) {
       switch (specOS) {
         case 'win':
@@ -213,6 +237,8 @@ function flightlistFlymaster(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
             mac64Decoding(lines, gpsdumpOrder)
             break
         case 'linux':
+            // the screen output is the same as for the Mac version
+            mac64Decoding(lines, gpsdumpOrder)
             break
       }
     }
@@ -246,19 +272,24 @@ function flightlistFlytec(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
         // We don't decode id line -> Line 2 6015, SW 1.3.07, S/N 1068
         flightList.model = 'Flytec 6015 / Brau IQ basic'
       }
-      // excellent site for regex testing : https://www.regextester.com/      
-      let regexDateHours = /;([^;]*);([^;]*);([^;]*);([^;]*);/
+      // excellent site for regex testing : https://www.regextester.com/     
+      // Ci dessous une ligne obtenue dans le terminal sous Linux avec la version 28
+      //     28; 19.03.30; 09:03:04;        2; 0
+      // on a enlevé le point virgule de départ pour essai concluant sous Linux
+      let regexDateHours = /([^;]*);([^;]*);([^;]*);([^;]*);/
       for (let i = 0; i < lines.length; i++) {
+        console.log(i+' '+lines[i])
         if (lines[i].match(regexDateHours)) {
+          //console.log(i+' '+lines[i])
           let flDate = regexDateHours.exec(lines[i])
           let flight = {}
           // If a flight is "new", this means that it must be added to the logbook
           // By default, all the flights are to be added to the logbook.  
           // A check in the logbook is made by dblog.checkFlightList
           flight['new'] = true
-          flight['date'] = flDate[1]
-          flight['takeoff'] = flDate[2]
-          flight['duration'] = flDate[4]
+          flight['date'] = flDate[2]
+          flight['takeoff'] = flDate[3]
+          flight['duration'] = ''  // apparemment on ne ramène plus la durée flDate[4]
           flight['gpsdump'] = gpsdumpGPS+','+gpsdumpPort+','+gpsModel
           flightList.flights.push(flight)     
         } else {
