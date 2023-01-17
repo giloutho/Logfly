@@ -202,7 +202,7 @@ function openWindow(pageName) {
           break;                     
     case "support":
       mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
-    //  mainWindow.webContents.openDevTools();
+     // mainWindow.webContents.openDevTools();
       break;   
     case "flyxc":
       mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
