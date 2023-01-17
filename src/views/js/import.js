@@ -329,8 +329,16 @@ function callFlightList(gpsCom, gpsModel) {
         if (flightList.flights.length > 0) {          
           tableFromGpsDump(flightList.flights, flightList.model)
         } else {
-          log.error('['+flightList.model+' callFlihtList] returned an empty flightList.flights array')
-          let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;flightList.flights array is empty'
+          let errorMsg = '['+flightList.model+' callFlihtList] returned an empty flightList.flights array'
+          if (flightList.otherlines.length > 0) {
+            errorMsg += '<br>'
+            for (let index = 0; index < flightList.otherlines.length; index++) {
+              errorMsg += flightList.otherlines[index]+'<br>'              
+            }
+          }
+          log.error(errorMsg)
+          //let statusContent = '<strong>'+flightList.model+' : </strong>&nbsp;&nbsp;&nbsp;flightList.flights array is empty'
+          let statusContent = errorMsg
           displayStatus(statusContent,false)  
         }
       } else {
@@ -665,9 +673,9 @@ function clearTable() {
 
 function displayStatus(content,updateDisplay) {
     hideWaiting()
-    let htmlButton = '<button type="button" class="btn btn-outline-info mr-4" id="bt-selection" onclick="uncheckTable()">'+i18n.gettext('Unselect')+'</button>'
-    statusContent.innerHTML = htmlButton+content
     if (updateDisplay) {      
+      let htmlButton = '<button type="button" class="btn btn-outline-info mr-4" id="bt-selection" onclick="uncheckTable()">'+i18n.gettext('Unselect')+'</button>'
+      statusContent.innerHTML = htmlButton+content
       let statusAlert = document.getElementById('status');
       let btnUpdate = document.createElement("input");
       btnUpdate.type = "button";
@@ -678,6 +686,8 @@ function displayStatus(content,updateDisplay) {
         updateLogbook() 
       };
       statusAlert.appendChild(btnUpdate);
+    } else {
+      statusContent.innerHTML = content
     }
     $('#status').show();
 }
