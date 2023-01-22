@@ -87,7 +87,7 @@ btnFullmap.addEventListener('click', (event) => {
 
 
 function igcDisplay() {
-    let demoPath = './ext_resources/demo.igc'
+    const demoPath = path.join(path.dirname(__dirname), '../../ext_resources','demo.igc')
     currIgcText = fs.readFileSync(demoPath, 'utf8')    
     try {
       track = ipcRenderer.sendSync('read-igc', currIgcText)  // process-main/igc/igc-read.js.js
