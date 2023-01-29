@@ -38,8 +38,16 @@
                     <div class="col-auto my-1 align-self-center">
                         <img id="img-lang" />
                     </div>                                                                           
-                </div>                                  
+                </div>     
                 <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-sel-lang"></label>
+                    </div> 
+                    <div class="col-sm-2 my-1">     
+                        <select class="custom-select mr-sm-2" id="sel-lang"></select>                                 
+                    </div>                                  
+                </div>                                      
+                <div class="row top-buffer">
                     <div class="col-sm-4 my-1">                                    
                         <label id="lg-working-path"></label>
                     </div>
@@ -52,6 +60,14 @@
                 </div>     
                 <div class="row">
                     <div class="col-sm-4 my-1">                                    
+                        <label id="lg-choose-working"></label>
+                    </div>                                     
+                    <div class="col-auto my-1 align-self-center">
+                        <button type="button" class="btn btn-outline-info" id="bt-choose-working"></button>
+                    </div>
+                </div>                   
+                <div class="row top-buffer">
+                    <div class="col-sm-4 my-1">                                    
                         <label id="lg-folder-log"></label>
                     </div>                                    
                     <div class="col-sm-6 my-1">                                    
@@ -60,8 +76,16 @@
                     <div class="col-auto my-1 align-self-center">
                         <img id="img-log-path" />
                     </div>                                                                           
-                </div>    
+                </div>   
                 <div class="row">
+                    <div class="col-sm-4 my-1">                                    
+                        <label id="lg-choose-dbpath"></label>
+                    </div>                                     
+                    <div class="col-auto my-1 align-self-center">
+                        <button type="button" class="btn btn-outline-info" id="bt-choose-dbpath"></button>
+                    </div>
+                </div>                      
+                <div class="row top-buffer">
                     <div class="col-sm-4 my-1">                                    
                         <label id="lg-dbname"></label>
                     </div>                                    
@@ -71,53 +95,18 @@
                     <div class="col-auto my-1 align-self-center">
                         <img id="img-dbname" />
                     </div>                                                                          
-                </div>                    
+                </div>  
                 <div class="row">
                     <div class="col-sm-4 my-1">                                    
                         <label id="lg-dbfullpath"></label>
                     </div>                                    
                     <div class="col-sm-6 my-1">                                    
                         <input type="text" class="form-control" id="tx-dbfullpath" disabled="">
-                    </div>                                 
-                </div> 
-                  <!---  End of the first section --> 
-                <div class="row"> <div class="span12"> </br></div></div>
-                <div class="row">
-                    <div class="col text-center">
-                      <button type="button" class="btn btn-secondary btn-lg" disabled id="bt-start"></button>
-                    </div>
-                  </div> 
-                <div class="row"> <div class="span12"> </br></div></div>     
-                <!---  Second section -->                           
-                <div class="row">
-                    <div class="col-sm-4 my-1"> 
-                        <h4 id="lg_change" ></h4>
-                    </div>
-                </div>   
-                <div class="row">
-                    <div class="col-sm-4 my-1">                                    
-                        <label id="lg-sel-lang"></label>
-                    </div> 
-                    <div class="col-sm-2 my-1">     
-                        <select class="custom-select mr-sm-2" id="sel-lang"></select>                                 
-                    </div>                                  
-                </div>                       
-                <div class="row">
-                    <div class="col-sm-4 my-1">                                    
-                        <label id="lg-choose-working"></label>
-                    </div>                                     
+                    </div>  
                     <div class="col-auto my-1 align-self-center">
-                        <button type="button" class="btn btn-outline-info" id="bt-choose-working"></button>
-                    </div>
-                </div>           
-                <div class="row">
-                    <div class="col-sm-4 my-1">                                    
-                        <label id="lg-choose-dbpath"></label>
-                    </div>                                     
-                    <div class="col-auto my-1 align-self-center">
-                        <button type="button" class="btn btn-outline-info" id="bt-choose-dbpath"></button>
-                    </div>
-                </div>                                                                                           
+                        <img id="img-full-pathdb" />
+                    </div>                                                    
+                </div>                 
                 <div class="row">
                     <div class="col-sm-4 my-1">                                    
                         <label id="lg-sel-logbook"></label>
@@ -129,7 +118,7 @@
                     <div class="col-auto my-1 align-self-center">
                         <img id="img-select" />
                     </div>                      
-                </div>      
+                </div> 
                 <div class="row">
                     <div class="col-sm-4 my-1">                                    
                         <label id="lg-create-logbook"></label>
@@ -148,7 +137,22 @@
                     <div class="col-auto my-1 align-self-center">
                         <button type="button" class="btn btn-outline-info" id="bt-repatriate"></button>
                     </div>              
-                </div>                                                               
+                </div>                                                      
+                  <!---  End of the first section --> 
+                <div class="row"> <div class="span12"> </br></div></div>
+                <div class="row">
+                    <div class="col text-center">
+                      <button type="button" class="btn btn-warning btn-lg" disabled id="bt-start"></button>
+                    </div>
+                  </div> 
+                <div class="row"> <div class="span12"> </br></div></div>   
+                <div class="row"> <div class="span12"> </br></div></div> 
+                <div class="row"> <div class="span12"> </br></div></div> 
+                <div class="row">
+                    <div class="col text-center">
+                      <button type="button" class="btn btn-info d-none" id="bt-log5"></button>
+                    </div>
+                </div>                                                                                                                                                                                                               
             </form>        
       </div>
     </div>
