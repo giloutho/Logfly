@@ -14,6 +14,7 @@ function checkSettings (appPath, progVersion) {
         if (fs.existsSync((store.path))) {
             // Updating environment variables
             getEnv()
+            console.log('dbfullPath '+store.get('dbFullPath'))
             return dbbasic.testDb(store.get('dbFullPath'))
         } else {
             iniSettings()   
@@ -49,7 +50,7 @@ function getEnv(modeProd) {
                 } else {
                     specOS = 'mac64'
                 }
-              } else {
+              } else {lace
                 specOS = 'mac64'
               }
             }
@@ -95,17 +96,27 @@ function getEnv(modeProd) {
             const properties = propertiesReader(logfly5Path);
             // console.log(`Path db : ${properties.get('pathdb')} dbName : ${properties.get('dbName')}`)
             const store = new Store()
-            store.set('dbName',properties.get('dbname'))           
-            store.set('pathsyride',properties.get('pathsyride'))            
-            store.set('pathdb',properties.get('pathdb'))
+            store.set('dbName',properties.get('dbname'))      
+            // On Windows, path arrive with double slashes 
+            // C\:\\Users\\Thinkpad\\Documents\\Logfly
+            // store.set put an extra slash
+            // we must remove one from original propertie
+            let cleanPath = properties.get('pathsyride').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")
+            store.set('pathsyride',cleanPath)          
+            cleanPath = properties.get('pathdb').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")
+            store.set('pathdb',cleanPath)
             store.set('urlvisu','https://flyxc.app/?track=')
             store.set('urllogflyigc',"http://www.logfly.org/Visu/")   
             store.set('urllogfly','http://www.logfly.org')            
             store.set('finderlong',properties.get('finderlong'))
             store.set('finderlat',properties.get('finderlat'))
-            store.set('pathWork',properties.get('pathw'))
-            store.set('dbFullPath',properties.get('fullpathdb'))
-            store.set('pathimport',properties.get('pathimport'))
+            cleanPath = properties.get('pathw').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")
+            store.set('pathWork',cleanPath)
+            console.log(properties.get('fullpathdb'))
+            cleanPath = properties.get('fullpathdb').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")    
+            store.set('dbFullPath',cleanPath)
+            cleanPath = properties.get('pathimport').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")
+            store.set('pathimport', cleanPath)
             store.set('defpilot',properties.get('defaultpilote'))
             store.set('defglider',properties.get('defaultvoile'))
             store.set('pilotmail',properties.get('pilotemail'))
