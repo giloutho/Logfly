@@ -196,7 +196,7 @@ function callManu() {
   clearForm()
   const formattedToday = moment().format('YYYY-MM-DD')
   let flightData = {
-    type : 'edit',
+    type : 'new',
     id : 0,
     row : 0,
     date : formattedToday,
