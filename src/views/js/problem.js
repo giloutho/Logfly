@@ -8,20 +8,8 @@ const dbbasic = require('../../utils/db/db-basic.js')
 const { event } = require('jquery')
 const store = new Store()
 let dbList = null
-let currLang 
-
-try {    
-    currLang = store.get('lang')
-    if (currLang != undefined && currLang != 'en') {
-        currLangFile = currLang+'.json'
-        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
-        let langjson = JSON.parse(content)
-        i18n.setMessages('messages', currLang, langjson)
-        i18n.setLocale(currLang)
-    }
-  } catch (error) {
-      log.error('[problem.js] Error while loading the language file')
-  }   
+let currLang
+  
 let statusMsg = document.getElementById('status')
 let btnStart = document.getElementById('bt-start')
 let selectLang = document.getElementById('sel-lang')
@@ -29,6 +17,7 @@ let btnWorkPath = document.getElementById('bt-choose-working')
 let btnDbPath = document.getElementById('bt-choose-dbpath')
 let btnCreateLogbook = document.getElementById('bt-create-logbook')
 let btnRepatriate = document.getElementById('bt-repatriate')
+let btnLog5 = document.getElementById('bt-log5')
 
 
 /**
@@ -100,6 +89,22 @@ btnStart.addEventListener('click', (event) => {
     ipcRenderer.send('changeWindow', 'logbook')    // main.js
 })
 
+btnLog5.addEventListener('click', (event) => {
+    const settingsLog5 = require('../../settings/settings-log5.js')
+    const log5Parameters = settingsLog5.getLog5Settings()
+    if (log5Parameters.found) {
+        // currLang is updated by fillLanguage
+        fillLanguage(log5Parameters.lang)
+        document.getElementById('tx-work-path').value = log5Parameters.pathWork
+        document.getElementById('tx-log-path').value = log5Parameters.pathdb
+        document.getElementById('tx-dbname').value = log5Parameters.dbname   
+        document.getElementById('tx-dbfullpath').value = log5Parameters.dbFullPath      
+        checkSettings()
+    } else {
+        alert(i18n.gettext('File not found'))
+    }
+})
+
 $('#sel-lang').on('change', function() {
     let langIdx = selectLang.selectedIndex
     let choosedLang 
@@ -141,16 +146,13 @@ $('#sel-lang').on('change', function() {
  */
 $('#sel-logbook').on('change', function() {
     if (dbList.length > 0) {
-      //  store.set('dbFullPath',path.join(store.get('pathdb'),dbList[this.value]))
-      //  alert(store.get('dbFullPath'))
         let msgConfirm = dbList[this.value]+' '+i18n.gettext('will become the current logbook')+' ?'
         let confirmChange = confirm(msgConfirm)
         if (confirmChange) changeLogBook(dbList[this.value])      
     }
 })
 
-fillLanguage()
-displayLabels()
+fillLanguage(store.get('lang'))
 displaySettings()
 checkSettings()
 
@@ -159,7 +161,7 @@ function displayLabels() {
     statusMsg.innerHTML = '<h4>'+i18n.gettext('Logfly could not start')+'</h4>'
     // first section
     document.getElementById('lg_settings').innerHTML = i18n.gettext('Checking stored settings')
-    document.getElementById('lg-lang').innerHTML = i18n.gettext('Selected language')
+    document.getElementById('lg-lang').innerHTML = '<b>'+i18n.gettext('Language selected in the settings')+'</b>'
     if (currLang != undefined && currLang != '') { 
         switch (currLang) {
             case 'de' :
@@ -178,19 +180,19 @@ function displayLabels() {
     } else {
         document.getElementById('tx-lang').value = 'not set'  
     } 
-    document.getElementById('lg-working-path').innerHTML = i18n.gettext('Working folder path')
-    document.getElementById('lg-folder-log').innerHTML = i18n.gettext('Logbook(s) folder path')
-    document.getElementById('lg-dbname').innerHTML = i18n.gettext('Current logbook')
-    document.getElementById('lg-dbfullpath').innerHTML = i18n.gettext('Full path of the logbook')
+    document.getElementById('lg-working-path').innerHTML = '<b>'+i18n.gettext('Working folder path in the settings')+'</b>'
+    document.getElementById('lg-folder-log').innerHTML = '<b>'+i18n.gettext('Logbook(s) folder path in the settings')+'</b>'
+    document.getElementById('lg-dbname').innerHTML = '<b>'+i18n.gettext('Current logbook registered in the settings')+'</b>'
+    document.getElementById('lg-dbfullpath').innerHTML = '<b>'+i18n.gettext('Full path of the logbook in the settings')+'</b>'
     // second section
     btnStart.innerHTML = i18n.gettext('Change settings to start')
-    document.getElementById('lg_change').innerHTML = i18n.gettext('Changing settings')
-    document.getElementById('lg-sel-lang').innerHTML = i18n.gettext('Select a language')
+    btnLog5.innerHTML = i18n.gettext('Reload Logfly5 settings')
+    document.getElementById('lg-sel-lang').innerHTML = i18n.gettext('Select or change the language')
     document.getElementById('lg-choose-working').innerHTML = i18n.gettext('Change the path of the working folder')
     document.getElementById('bt-choose-working').innerHTML = i18n.gettext('Select')
     document.getElementById('lg-choose-dbpath').innerHTML = i18n.gettext('Change the path of the logbook(s) folder')
     btnDbPath.innerHTML = i18n.gettext('Select')
-    document.getElementById('lg-sel-logbook').innerHTML = i18n.gettext('Select a logbook in the chosen folder')
+    document.getElementById('lg-sel-logbook').innerHTML = i18n.gettext('Select/change the logbook in the chosen folder')
     document.getElementById('lg-create-logbook').innerHTML = i18n.gettext('Create a newlogbook')
     btnCreateLogbook.innerHTML = i18n.gettext('OK')
     document.getElementById('tx-create-logbook').placeholder = i18n.gettext('Enter a name and click Ok')
@@ -232,6 +234,7 @@ function checkSettings() {
         let language = document.getElementById('tx-lang').value 
         if (arrLang.includes(language.trim())) startScoring += 1
     }    
+    console.log('score lg '+startScoring)
     let pathWork = document.getElementById('tx-work-path').value
     if (fs.existsSync(pathWork)) {
         startScoring += 1
@@ -250,10 +253,13 @@ function checkSettings() {
             if (dbbasic.testDb(dbFullPath)) {
                 startScoring += 1
                 document.getElementById("img-dbname").src='../../assets/img/valid.png'   
+                document.getElementById('tx-dbfullpath').value = dbFullPath
+                document.getElementById("img-full-pathdb").src='../../assets/img/valid.png' 
                 fillSelect(pathDb, dbName)
             } else {
                 document.getElementById('tx-dbname').value = ''
                 document.getElementById("img-dbname").src='../../assets/img/close.png'  
+                document.getElementById("img-full-pathdb").src='../../assets/img/close.png'
                 fillSelect(pathDb, '')
             }
         } else {
@@ -261,15 +267,16 @@ function checkSettings() {
         }
     } else {
         document.getElementById("img-log-path").src='../../assets/img/close.png'
+        document.getElementById("img-dbname").src='../../assets/img/close.png'
+        document.getElementById("img-full-pathdb").src='../../assets/img/close.png'
     }
-
 
     if (startScoring == 4) {
         statusMsg.classList.remove('alert-danger')
         statusMsg.classList.add('alert-success')
         statusMsg.innerHTML = '<h4>'+i18n.gettext('Logfly can start')+'</h4>'
         btnStart.innerHTML = i18n.gettext('Validate the changes and start')
-        btnStart.classList.remove('btn-secondary')
+        btnStart.classList.remove('btn-warning')
         btnStart.classList.add('btn-success')
         btnStart.classList.add('active')
         btnStart.disabled = false 
@@ -280,7 +287,8 @@ function checkSettings() {
         btnStart.innerHTML = i18n.gettext('Change settings to start')
         btnStart.classList.remove('btn-success')
         btnStart.classList.add('btn-secondary')  
-        btnStart.disabled = true     
+        btnStart.disabled = true   
+        $('#bt-log5').removeClass('d-none')  
     }   
 }
 
@@ -289,8 +297,21 @@ function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName)    // main.js
 }
 
-function fillLanguage() {
-    let currLang = store.get('lang')   
+function  fillLanguage(selLang) {
+    try {    
+        if (selLang != undefined && selLang != 'en') {
+            selLangFile = selLang+'.json'
+            let content = fs.readFileSync(path.join(__dirname, '../../lang/',selLangFile))
+            let langjson = JSON.parse(content)
+            i18n.setMessages('messages', selLang, langjson)
+            i18n.setLocale(selLang)
+            currLang = selLang
+        }
+    } catch (error) {
+            alert('['+selLang+'] language file not found')
+            log.error('[problem.js] Error while loading the language file')
+            currLang = 'en'
+    }   
     const arrLang = ['Deutsche','English','Français', 'Italiano'] 
     arrLang.unshift(i18n.gettext('Select'))
     let selIndex = 0
@@ -298,15 +319,19 @@ function fillLanguage() {
         switch (currLang) {
             case 'de' :
                 selIndex = 1
+                document.getElementById('tx-lang').value = 'Deutsche'
                 break
             case 'en' :
                 selIndex = 2
+                document.getElementById('tx-lang').value = 'English'
                 break        
             case 'fr' :
                 selIndex = 3
+                document.getElementById('tx-lang').value = 'Français'
                 break
             case 'it' :
                 selIndex = 4
+                document.getElementById('tx-lang').value = 'Italiano'
                 break                                                
         }     
     }
@@ -315,6 +340,7 @@ function fillLanguage() {
         $("#sel-lang").append('<option value=' + i + '>' +arrLang[i] + '</option>')
     }
     selectLang.selectedIndex = selIndex
+    displayLabels()
 }
 
 function fillSelect(dirpath, selectCurrent) {
