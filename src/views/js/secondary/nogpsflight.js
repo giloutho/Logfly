@@ -45,17 +45,27 @@ ipcRenderer.on('current-flight', (event, currFlight) => {
     if (currFlight.nom != '' && currFlight.nom != null) {
         if (db.open) {  
             const stmt = db.prepare('SELECT * FROM Site WHERE S_Nom = ? AND S_Type = \'D\'')
-            const selSite = stmt.get(currFlight.nom)   
-            flightSite.id = selSite.S_ID
-            flightSite.nom = selSite.S_Nom
-            flightSite.pays = selSite.S_Pays,
-            flightSite.alti = selSite.S_Alti
-            flightSite.lat = selSite.S_Latitude
-            flightSite.lon = selSite.S_Longitude
-            document.getElementById('sel-site').innerHTML = flightSite.nom+' '+flightSite.pays+' '+flightSite.alti+'m'            
+            const selSite = stmt.get(currFlight.nom) 
+            if (selSite != undefined) {
+                flightSite.id = selSite.S_ID
+                flightSite.nom = selSite.S_Nom
+                flightSite.pays = selSite.S_Pays
+                flightSite.alti = selSite.S_Alti
+                flightSite.lat = selSite.S_Latitude
+                flightSite.lon = selSite.S_Longitude
+                document.getElementById('sel-site').innerHTML = flightSite.nom+' '+flightSite.pays+' '+flightSite.alti+'m' 
+                document.querySelector('#site-list-inp').value = currFlight.nom
+            } else {
+                flightSite.id = 0
+                flightSite.nom = currFlight.nom
+                flightSite.pays = ''
+                flightSite.alti = ''
+                flightSite.lat = 0
+                flightSite.lon = 0
+                document.getElementById('sel-site').innerHTML = flightSite.nom+' '+i18n.gettext('Not found') 
+            }        
         }
     }
-    document.querySelector('#site-list-inp').value = currFlight.nom
     document.getElementById('tx-comment').innerHTML = currFlight.comment
 })
 
@@ -93,27 +103,32 @@ function iniForm() {
 }
 
 ipcRenderer.on('back_siteform', (_, updateSite) => { 
-    // combobox update
-    flightSite.id = updateSite.id
-    flightSite.nom = updateSite.nom
-    flightSite.pays = updateSite.pays
-    flightSite.alti = updateSite.alti
-    flightSite.lat = updateSite.lat
-    flightSite.lon = updateSite.long
-    const fullName = updateSite.nom+' '+updateSite.localite
-    let option = $('<option data-value="'+updateSite.id+'"  value="'+fullName+'"></option>')
-    $('#site-list').append(option)     
-    document.getElementById("site-list-inp").value = fullName
+    if (updateSite != null)  {
+        // combobox update
+        flightSite.id = updateSite.id
+        flightSite.nom = updateSite.nom
+        flightSite.pays = updateSite.pays
+        flightSite.alti = updateSite.alti
+        flightSite.lat = updateSite.lat
+        flightSite.lon = updateSite.long
+        const fullName = updateSite.nom+' '+updateSite.localite
+        let option = $('<option data-value="'+updateSite.id+'"  value="'+fullName+'"></option>')
+        $('#site-list').append(option)     
+        document.getElementById("site-list-inp").value = fullName
+        document.getElementById('sel-site').innerHTML = flightSite.nom+' '+flightSite.pays+' '+flightSite.alti+'m' 
+    }
   })
 
+// Confirmation to update db
 ipcRenderer.on('confirmation-dialog', (event, response) => {
     if (response) {
         if (flightDataRec.date == inputDate.value && flightData.time == inputTime.value) {
             alert(i18n.gettext('A flight at the same date and time was recorded'))
         } else {
-            flightData.date = inputDate.value
-            flightData.time = inputTime.value
             flightData.sqlDate = inputDate.value+' '+inputTime.value+':00'
+            // in logbook date is displayed as DD-MM-YYYY
+            flightData.date = moment(inputDate.value).format('DD-MM-YYYY')
+            flightData.time = inputTime.value
             let durMilli = moment.duration(inputDuration.value)
             flightData.duree = Math.floor(durMilli.asSeconds())
             flightData.strduree = moment(inputDuration.value,'HH:mm').format('HH[h]mm[mn]')
