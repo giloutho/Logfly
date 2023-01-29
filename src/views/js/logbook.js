@@ -57,13 +57,13 @@ function iniForm() {
       document.getElementById('target-sidebar').innerHTML = rendered
   })
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
-  document.getElementById('bt-search').innerHTML = i18n.gettext('Search')
   document.getElementById('fullmap').innerHTML = i18n.gettext('Full screen map')
   document.getElementById('scoring').innerHTML = i18n.gettext('Scoring')
   document.getElementById('dropdownMenuButton').innerHTML = i18n.gettext('Sites')
   document.getElementById('site-rename').innerHTML = i18n.gettext('Rename site')
   document.getElementById('site-form').innerHTML = i18n.gettext('Site form')
   document.getElementById('site-change').innerHTML = i18n.gettext('Change site')
+  document.getElementById('tx-search').placeholder = i18n.gettext('Search')+'...'
 
   $(function(){
     $('#table_id').contextMenu({
@@ -262,7 +262,13 @@ if (db.open) {
         { title : 'Id', data: 'V_ID' }    
     ],      
     columnDefs : [
-        { "width": "3%", "targets": 0 },
+        { "width": "3%", "targets": 0, "bSortable": false },
+        // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
+        // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
+        // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
+        // { "width": "6%", "targets": 2, "orderData": 1 },
+        // { "width": "14%", "targets": 1, "bSortable": false},
+        // { "width": "6%", "targets": 2, "bSortable": false },
         { "width": "14%", "targets": 1 },
         { "width": "6%", "targets": 2 },
         { "width": "8%", "targets": 3 },
@@ -273,10 +279,11 @@ if (db.open) {
     ],      
     bInfo : false,          // hide "Showing 1 to ...  row selected"
     lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
-    searching : false,      // hide search abilities in table
+    //searching : false,      // hide search abilities in table
     ordering: false,        // Sinon la table est triée et écrase le tri sql
     pageLength: 12,         // ce sera à calculer avec la hauteur de la fenêtre
     pagingType : 'full',
+    dom: 'lrtip',
     language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
         paginate: {
         first: '<<',
@@ -295,6 +302,9 @@ if (db.open) {
     },      
     }
     table = $('#table_id').DataTable(dataTableOption )
+    $('#tx-search').on( 'keyup', function () {
+      table.search( this.value ).draw();
+    })
     table.on( 'select', function ( e, dt, type, indexes ) {
         if ( type === 'row' ) {
           //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
