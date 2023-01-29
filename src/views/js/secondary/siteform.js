@@ -168,7 +168,7 @@ function iniForm() {
     // pour la suite voir https://stackoverflow.com/questions/53954508/jquery-inputmask-latitude-longitude-validation-and-masking
     // avec les "definitions"
     btnCancel.addEventListener('click',(event)=>{
-        ipcRenderer.sendTo(originWindow, "back_siteform", '')
+        ipcRenderer.sendTo(originWindow, "back_siteform", null)
         window.close()
     })  
     btnOk.addEventListener('click',(event)=>{validFields()}) 
@@ -368,7 +368,11 @@ function validFields() {
                     editSite.typeSite = "A"
                 }
                 editSite.orient= txOrient.value.toUpperCase()
-                editSite.alti= txAlt.value
+                if (txAlt.value == '') {
+                    editSite.alti= '0'
+                } else {
+                    editSite.alti= txAlt.value
+                }                
                 editSite.comment= document.getElementById('tx-comment').value
                 const updateDate = new Date()
                 editSite.update = updateDate.getFullYear()+'-'+String((updateDate.getMonth()+1)).padStart(2, '0')+'-'+String(updateDate.getDate()).padStart(2, '0') 
