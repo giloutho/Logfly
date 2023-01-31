@@ -234,7 +234,7 @@ if (db.open) {
     // on récupére la valeur avec counFlights['COUNT(*)']
     msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`);
     //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
-    let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire,'
+    let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Duree,'
     reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
     reqSQL += 'FROM Vol ORDER BY V_Date DESC'
     const flstmt = db.prepare(reqSQL).all()    
@@ -259,7 +259,8 @@ if (db.open) {
         { title : 'Site', data: 'V_Site' },
         { title : i18n.gettext('Glider'), data: 'V_Engin' },     
         { title : 'Comment', data: 'V_Commentaire' },  
-        { title : 'Id', data: 'V_ID' }    
+        { title : 'Id', data: 'V_ID' },
+        { title : 'Seconds', data: 'V_Duree' }  
     ],      
     columnDefs : [
         { "width": "3%", "targets": 0, "bSortable": false },
@@ -276,6 +277,7 @@ if (db.open) {
         { "width": "28%", "targets": 5 },
         { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
         { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
+        { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
     ],      
     bInfo : false,          // hide "Showing 1 to ...  row selected"
     lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -299,11 +301,12 @@ if (db.open) {
       if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
         $(row).addClass('tableredline');
       }
-    },      
+    },
     }
     table = $('#table_id').DataTable(dataTableOption )
     $('#tx-search').on( 'keyup', function () {
-      table.search( this.value ).draw();
+      table.search( this.value ).draw()
+      sumRowFiltered()
     })
     table.on( 'select', function ( e, dt, type, indexes ) {
         if ( type === 'row' ) {
@@ -563,6 +566,17 @@ function gliderHours(flGlider) {
   }
 }
 
+function sumRowFiltered() {
+  let rows = $("#table_id").dataTable().$('tr', {"filter":"applied"})
+  let sumSecs = 0
+  for (let i = 0; i < rows.length; i++) {
+    sumSecs += table.cell(i, 8).data()
+  }
+  const duration = moment.duration(sumSecs,'seconds')
+  const formatted = moment.utc(duration.asMilliseconds()).format("H[h]m[m]");
+  console.log('duree : '+sumSecs+' '+formatted)
+}
+
 /**
  * 
  * @param {*} flightId 
@@ -801,7 +815,6 @@ function readIgc(igcID, dbGlider) {
           currIgcText = selIgc.V_IGC
           igcDisplay(currIgcText, dbGlider)
         }
-        console.log('noGpsFlight '+noGpsFlight)
       } catch (err) {
         displayStatus('Database error')        
       }
