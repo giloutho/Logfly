@@ -306,7 +306,7 @@ function  fillLanguage(selLang) {
             i18n.setMessages('messages', selLang, langjson)
             i18n.setLocale(selLang)
             currLang = selLang
-        }
+        } else if (selLang == 'en') currLang = 'en'
     } catch (error) {
             alert('['+selLang+'] language file not found')
             log.error('[problem.js] Error while loading the language file')
