@@ -188,6 +188,7 @@ function validFields() {
     }
 }
 
+// Function called by "onchange" in html code
 function updateSelSite(elem) {
     if (db.open) {
         let idSite = $('#site-list [value="' + elem.value + '"]').data('value')
