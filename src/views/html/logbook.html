@@ -34,19 +34,11 @@
         <div id="content">
 
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-              <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
-                <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
-                <span class="navbar-text mx-3" id="db-state"></span>
-                <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp 
-                      pour comprendre les possibilités immenses de cette navbar 
-                -->
-                <nav class="navbar navbar-light bg-light justify-content-between">
-                  <form class="form-inline">
-                    <input class="form-control mr-sm-2" type="search" id="tx-search" style="text-transform: uppercase" aria-label="Search">
-                  </form>
-                </nav>
-            </div>
+          <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
+          <span class="navbar-text mx-3" id="db-state"></span>
+          <form class="form-inline">
+            <input class="form-control mr-sm-2" type="search" id="tx-search" style="text-transform: uppercase" aria-label="Search">
+          </form>
         </nav>           
          
         <!---- from https://www.wowthemes.net/bootstrap-4-split-screen-layout/
@@ -74,12 +66,6 @@
                 <button class="btn btn-outline-secondary" id="fullmap">Full screen map</button>
                 <button class="btn btn-outline-secondary" id="scoring">Scoring</button>
                 <button class="btn btn-outline-secondary" id="flyxc">FlyXC</button>
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">Sites</button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" id="site-rename" href="#"></a>
-                    <a class="dropdown-item" id="site-form" href="#"></a>
-                    <a class="dropdown-item" id="site-change" href="#"></a>
-                </div>
               </div>
             </div>     
           </div>
