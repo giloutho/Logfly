@@ -175,7 +175,8 @@ function openWindow(pageName) {
       mainWindow.loadFile(path.join(__dirname, './views/html/external.html'));
       break;              
     case "stat":
-      mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'));
+    //  mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'));
+      mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
       break;          
     case "sites":
         mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
