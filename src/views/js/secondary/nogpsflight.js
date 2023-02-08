@@ -159,13 +159,18 @@ ipcRenderer.on('confirmation-dialog', (event, response) => {
                     alert(i18n.gettext('Inserting in the flights file failed'))
                     log.error('[nogpsflight.js] writing error in the database')
                 }               
-            }            
+            }
+            $('#div-recorded').removeClass('d-none')
+            document.getElementById('lb-recorded').innerHTML = i18n.gettext('Flight')+' : '+inputDate.value+' '+inputTime.value+' '+i18n.gettext('saved')            
         }
     }
 })
 
 function validFields() {
-    if (flightSite.id == 0) {
+    const gliderName = document.querySelector('#glider-list-inp').value
+    if (gliderName == "") {
+        alert(i18n.gettext('No glider selected'))
+    } else if (flightSite.id == 0) {
         alert(i18n.gettext('No site selected'))
     } else {
         let fulldate
@@ -234,6 +239,7 @@ function addNewSite() {
     document.getElementById('lb-manu-tkoff').innerHTML = i18n.gettext('Take off')
     document.getElementById('lb-manu-comment').innerHTML = i18n.gettext('Comment')
     btnOk.innerHTML = i18n.gettext('Save')
-    btnCancel.innerHTML = i18n.gettext('Close')
+   // btnCancel.innerHTML = i18n.gettext('Close')
+    document.getElementById('bt-cancel').innerHTML  = i18n.gettext('Close')
     document.getElementById('sel-site').innerHTML = i18n.gettext('No site selected')
   }
