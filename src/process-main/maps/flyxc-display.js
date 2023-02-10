@@ -11,7 +11,7 @@ ipcMain.on('display-flyxc', (event, igcUrl) => {
 })
 
 function openWindow() {
-    const flyxcHtmlPath = path.join('file://', __dirname, '../../views/html/flyxc.html')
+    const flyxcHtmlPath = path.join('file://', __dirname, '../../views/html/secondary/flyxc.html')
     let win = new BrowserWindow({ 
         width: 1024,
         height: 620,
