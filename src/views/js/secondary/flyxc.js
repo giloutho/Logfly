@@ -16,7 +16,5 @@ btnClose.addEventListener('click',(event) => {
  * NE PAS RECUPERER, écrire en dur
  */
 let srcPath = store.get('urlvisu')+store.get('urllogflyigc')+store.get('igcVisu')
-console.log('mod : https://flyxc.app/?track=http://logfly.org/Visu/20220712112212_885.igc')
-console.log('cal : '+srcPath)
+console.log(srcPath)
 document.getElementById('webframe').src = srcPath
-
