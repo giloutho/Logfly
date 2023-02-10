@@ -7,6 +7,7 @@ const Store = require('electron-store')
 const log = require('electron-log')
 const sharp = require('sharp')
 const moment = require('moment')
+const momentDurationFormatSetup = require('moment-duration-format')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 const dbupdate = require('../../utils/db/db-update.js')
 let store = new Store()
@@ -570,14 +571,18 @@ function gliderHours(flGlider) {
 }
 
 function sumRowFiltered() {
-  let rows = $("#table_id").dataTable().$('tr', {"filter":"applied"})
+  $('#lb-search').removeClass('d-none')
   let sumSecs = 0
-  for (let i = 0; i < rows.length; i++) {
-    sumSecs += table.cell(i, 8).data()
-  }
-  const duration = moment.duration(sumSecs,'seconds')
-  const formatted = moment.utc(duration.asMilliseconds()).format("H[h]m[m]")
-  console.log('duree : '+sumSecs+' '+formatted)
+  let nbFiltered = 0
+  table.rows({filter: 'applied'}).every( function ( rowIdx, tableLoop, rowLoop ) {
+    let data = this.data()
+    nbFiltered++
+    sumSecs += data.V_Duree
+  })
+  const duration = moment.duration(sumSecs,'seconds').format("h [h] m [mn]")
+  const result = i18n.gettext('Flights')+' : '+nbFiltered+' - '+i18n.gettext('Duration')+' : '+duration
+  document.getElementById('res-search').innerHTML = result
+  $('#lb-search').removeClass('d-none')
 }
 
 /**
