@@ -12,7 +12,7 @@ ipcMain.on('win-waiting', (event) => {
 })
 
 function openWindow(event) {
-  const modalPath = path.join('file://', __dirname, '../../views/html/waiting-or.html')
+  const modalPath = path.join('file://', __dirname, '../../views/html/secondary/waiting-or.html')
   let win = new BrowserWindow({ 
     width: 350,
     height: 300,

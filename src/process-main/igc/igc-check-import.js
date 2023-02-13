@@ -15,7 +15,7 @@ ipcMain.on('check-import', (event, arrayIGC) => {
 
 function openWindow(event,arrayIGC) {
   console.log('OpenWindow run...')
-  const modalPath = path.join('file://', __dirname, '../../views/html/waiting-or.html')
+  const modalPath = path.join('file://', __dirname, '../../views/html/secondary/waiting-or.html')
   let win = new BrowserWindow({ 
     width: 300,
     height: 300,
