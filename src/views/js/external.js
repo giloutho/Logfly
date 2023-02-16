@@ -1,13 +1,15 @@
-var {ipcRenderer} = require('electron')
-var i18n = require('../../lang/gettext.js')()
-var Mustache = require('mustache')
+const {ipcRenderer} = require('electron')
+const i18n = require('../../lang/gettext.js')()
+const Mustache = require('mustache')
 const fs = require('fs')
-const path = require('path');
-const log = require('electron-log');
-var Store = require('electron-store')
+const path = require('path')
+const log = require('electron-log')
+const Store = require('electron-store')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
-var store = new Store()
+const store = new Store()
 const tiles = require('../../leaflet/tiles.js')
+const moment = require('moment')
+const momentDurationFormatSetup = require('moment-duration-format')
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
 let mapPm
@@ -45,11 +47,65 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
+    document.getElementById('lg-track-name').innerHTML = i18n.gettext('File name')
+    document.getElementById('lg-track-path').innerHTML = i18n.gettext('Path')
+    document.getElementById('lg-date').innerHTML = i18n.gettext('Date')
+    document.getElementById('lg-duration').innerHTML = i18n.gettext('Duration')
+    document.getElementById('lg-points').innerHTML = i18n.gettext('Points')
     btnSelect.innerHTML = i18n.gettext('Select a track')
-    document.getElementById('tx_1').innerHTML = i18n.gettext('External track')
-    document.getElementById('tx_2').innerHTML = i18n.gettext('Coming soon')+'...'
-    document.getElementById('tx_3').innerHTML = i18n.gettext('You can play with this demo track around the Mont Blanc') 
-    igcDisplay()
+    btnSelect.addEventListener('click', (event) => {callDisk()})
+}
+
+function callDisk() {
+  const selectedFile = ipcRenderer.sendSync('open-file2','')
+  if(selectedFile.fullPath != null) {
+    if (selectedFile.fileExt == 'IGC') {
+      displayIgc(selectedFile)
+    } else if (selectedFile.fileExt == 'GPX') {
+      displayGpx(selectedFile)
+    } else {
+      alert(i18n.gettext('Invalid Track'))
+    }
+  }  
+}
+
+function displayGpx(trackFile) {
+  hideStatus()
+  const trackPath = trackFile.fullPath
+  const gpxString = fs.readFileSync(trackPath, 'utf8') 
+  try {
+    track = ipcRenderer.sendSync('read-gpx', gpxString)  // process-main/gpx/gpx-read.js.js
+    if (track.fixes.length> 0) {
+      updateInfos(trackFile)
+      mapIgc(track)
+    } else {
+      displayStatus(track.info.parsingError)
+    }        
+  } catch (error) {
+    displayStatus('Error '+' : '+error)      
+  }  
+}
+
+function displayIgc(trackFile) {
+  hideStatus()
+  const trackPath = trackFile.fullPath
+  const igcString = fs.readFileSync(trackPath, 'utf8')  
+  try {
+    track = ipcRenderer.sendSync('read-igc', igcString)  // process-main/igc/igc-read.js.js
+    if (track.fixes.length> 0) {
+      updateInfos(trackFile)
+      mapIgc(track)
+    } else {
+      displayStatus(track.info.parsingError)
+    }        
+  } catch (error) {
+    displayStatus('Error '+' : '+error)      
+  }      
+}
+
+function updateInfos(trackFile) {
+  document.getElementById('tx-track-name').value = trackFile.fileName
+  document.getElementById('tx-track-path').value = trackFile.directoryName
 }
 
 // Calls up the relevant page 
@@ -85,23 +141,16 @@ btnFullmap.addEventListener('click', (event) => {
     displayFlyxc()
   })
 
-
-function igcDisplay() {
-    const demoPath = path.join(path.dirname(__dirname), '../../ext_resources','demo.igc')
-    currIgcText = fs.readFileSync(demoPath, 'utf8')    
-    try {
-      track = ipcRenderer.sendSync('read-igc', currIgcText)  // process-main/igc/igc-read.js.js
-      if (track.fixes.length> 0) {
-        mapIgc(track)
-      } else {
-        displayStatus(track.info.parsingError)
-      }        
-    } catch (error) {
-      displayStatus('Error '+' : '+error)      
-    }      
-  }
-
   function mapIgc(track) {
+    // update left infos
+    document.getElementById('tx-date').value = track.info.date 
+    const duration = moment.duration(track.stat.duration,'seconds').format("h[h]m[mn]")
+    document.getElementById('tx-duration').value = duration
+    document.getElementById('tx-points').value = track.fixes.length
+    $('#div-infos').removeClass('d-none')
+    $('#div-map').removeClass('d-none')
+
+    // build map
     const mapTrack = elemMap.buildElements(track)
     if (mapPm != null) {
       mapPm.off();
@@ -145,20 +194,19 @@ function igcDisplay() {
 
   function displayFlyxc() {
     if (track !== undefined && track.fixes.length> 0) {  
-      let resUpload = ipcRenderer.sendSync('upload-igc', currIgcText)  // process-main/igc/igc-read.js.js
-      if (resUpload == null) {
-        displayStatus('Download failed')
-        log.error('[displayFlyxc] Download failed')
+      let resUpload = ipcRenderer.sendSync('upload-igc', track.igcData)  // process-main/igc/igc-read.js.js
+      if (resUpload.includes('OK')) {
+        // response is OK:20220711135317_882.igc
+        let igcUrl = resUpload.replace( /^\D+/g, '') // replace all leading non-digits with nothing
+       //     store.set('igcVisu',igcUrl)
+        let disp_flyxc = ipcRenderer.send('display-flyxc', igcUrl)   // process-main/maps/flyxc-display.js
       } else {
-        if (resUpload.includes('OK')) {
-          // response is OK:20220711135317_882.igc
-          let igcUrl = resUpload.replace( /^\D+/g, ''); // replace all leading non-digits with nothing
-     //     store.set('igcVisu',igcUrl)
-          let disp_flyxc = ipcRenderer.send('display-flyxc', igcUrl)   // process-main/maps/flyxc-display.js
+        displayStatus('Download failed')
+        if (resUpload == null) {
+          log.error('[displayFlyxc] Download failed')
         } else {
-          log.error('[displayFlyxc] '+resUpload)
-          displayStatus(resUpload)
-        }
+            log.error('[displayFlyxc] '+resUpload)
+        }      
       }
     }
   }
@@ -168,14 +216,17 @@ function igcDisplay() {
     $('#status').show(); 
   }
 
+  function hideStatus() {
+    if ($('#status').show().is(":visible")) $('#status').hide()  
+  }
+
   function displayWait() {
-    $('#div_text').removeClass('d-block')
-    $('#div_text').addClass('d-none')
+    $('#div-infos').addClass('d-none')
     $('#div_waiting').addClass('d-block')
   }
 
   ipcRenderer.on('remove-waiting-gif', (event, result) => {
+    $('#div-infos').removeClass('d-none')
     $('#div_waiting').removeClass('d-block')
     $('#div_waiting').addClass('d-none')
-    $('#div_text').addClass('d-block')
   })

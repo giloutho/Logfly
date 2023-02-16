@@ -41,21 +41,69 @@
             <!-- Main page content -->
             <div class="alert alert-info collapse" role="alert" id="status"></div> 
             <div class="d-md-flex h-md-100 align-items-start top-buffer">
-                <div class="col-md-7 ">
+                <div class="col-md-4" id="div-text">
                     <div id="div_waiting" class="d-none">
                         <img src="../../assets/img/waiting-mauve.gif" class="mx-auto d-block" alt=""></img>
                         <h3 id="txt-download" style="color:#EA72FC;text-align: center;">Downloading digital elevation data</h3>
                     </div>
-                    <div class="d-block" id="div_text">
-                        <p></p>
-                        <h1 id="tx_1">No flights...</h1>
-                        <p></p>       
-                        <p></p>
-                        <h2 id="tx_2">demo</h2>             
-                        <p style="margin-top:200px"><h2 id="tx_3">demo</h2></p>
+                    <div class="d-none" id="div-infos">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-9 pr-1">
+                                  <label id="lg-track-name">Track name</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-9 my-1">                                    
+                                    <input type="text" class="form-control" id="tx-track-name" disabled="" value="">
+                                </div>
+                            </div>   
+                            <div class="row top-buffer">
+                                <div class="col-md-12 pr-1">
+                                    <label id="lg-track-path">Path track</label>
+                                </div>
+                            </div>         
+                            <div class="row">
+                                <div class="col-sm-12 my-1">                                    
+                                    <input type="text" class="form-control" id="tx-track-path" disabled="" value="">
+                                </div>  
+                            </div>   
+                            <div class="row top-buffer">
+                                <div class="col-md-4 pr-1">
+                                  <label id="lg-date">Date</label>
+                                </div>                                                                                        
+                            </div>    
+                              <div class="row">
+                                <div class="col-sm-4 my-1">     
+                                    <input type="text" class="form-control" id="tx-date" disabled="" value="">        
+                                </div>  
+                            </div>         
+                            <div class="row top-buffer">
+                                <div class="col-md-4 pr-1">
+                                    <label id="lg-duration">Duration</label>
+                                </div> 
+                                <div class="col-md-3 pr-1"></div>                                                                                          
+                            </div>    
+                              <div class="row">
+                                <div class="col-sm-3 my-1">     
+                                    <input type="text" class="form-control" id="tx-duration" disabled="" value="">                               
+                                </div>  
+                            </div>             
+                            <div class="row top-buffer">
+                                <div class="col-md-4 pr-1">
+                                    <label id="lg-points">Poipoi</label>
+                                </div> 
+                                <div class="col-md-3 pr-1"></div>                                                                                          
+                            </div>    
+                              <div class="row">
+                                <div class="col-sm-3 my-1">     
+                                    <input type="text" class="form-control" id="tx-points" disabled="" value="">                               
+                                </div>  
+                            </div>                                                                                                                                                                                                               
+                        </form>
                     </div>
                 </div>
-                <div class="col-md-5 ">
+                <div class="col-md-8 d-none" id="div-map">
                   <!--- Second half content here --->
                   <div id="mapid" class="map"></div>
                   <div class="col text-center top-buffer">
