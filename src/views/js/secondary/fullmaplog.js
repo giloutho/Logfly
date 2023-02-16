@@ -18,7 +18,7 @@ const baseMaps = tiles.baseMaps
 
 const Highcharts = require('highcharts');
 const myMeasure = require('../../../leaflet/measure.js')
-const useGoogle = require('../../../leaflet/google-leaflet.js')
+//const useGoogle = require('../../../leaflet/google-leaflet.js')
 const layerTree = require('leaflet.control.layers.tree')
 const awesomeMarker = require('../../../leaflet/leaflet.awesome-markers.min.js')
 const mapSidebar = require('../../../leaflet/sidebar-tabless.js')
@@ -318,6 +318,9 @@ function createPopThermal(feature, layer) {
   
 }
 
+/* 
+* a priori not used
+*/
 function openNav() {
   // https://stackoverflow.com/questions/4787527/how-to-find-the-width-of-a-div-using-vannilla-javascript
   // http://jsfiddle.net/juxy42ev/    -> Toggle sidebar
@@ -328,7 +331,7 @@ function openNav() {
   document.getElementById("graphe").style.marginLeft = "260px";
   document.getElementById('graphe').style.width = screenWidth - 260 + 'px';
   hgChart.reflow();
-  $('.leaflet-control-layers-selector')[9].click();
+  $('.leaflet-control-layers-selector')[9].click();   // see line 722 index is modified for 8 and 9
   $('.leaflet-control-layers-selector')[10].click();
 }
 
@@ -719,8 +722,8 @@ function fillSidebarButtons() {
 
 // Display Thermals
 function openPathway() {
-  $('.leaflet-control-layers-selector')[10].click();
-  $('.leaflet-control-layers-selector')[11].click();
+  $('.leaflet-control-layers-selector')[8].click();
+  $('.leaflet-control-layers-selector')[9].click();
   sidebar.open('pathway')
 }
 
