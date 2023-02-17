@@ -71,6 +71,7 @@
     "geo-tz": "^7.0.1",
     "gettext.js": "^1.1.1",
     "glob": "^7.2.0",
+    "gpxparser": "^3.0.8",
     "highcharts": "^10.0.0",
     "iana-tz-data": "^2019.1.0",
     "igc-parser": "^1.1.0",
