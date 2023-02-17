@@ -1,13 +1,32 @@
 const {ipcMain} = require('electron')
 const { dialog } = require('electron')
 const fs = require('fs')
+const path = require('path')
 
 ipcMain.on('open-file', (event, arg) => { 
+  let resultPath = {
+    fullPath : null,
+    directoryName : '',
+    fileName : '',
+    fileExt : ''
+  }
   let filePath = dialog.showOpenDialogSync({
       defaultPath : arg,
       properties: ['openFile']
-    });
-    event.returnValue = filePath  
+    })
+    if (filePath !== undefined && filePath != null) {
+      resultPath.fullPath = filePath[0]
+      const pathParts = filePath[0].split(path.sep)
+      const fileName = pathParts.pop()
+      resultPath.directoryName = pathParts.join(path.sep)
+      if ( fileName.includes('.') &&  fileName.lastIndexOf('.')!= 0) {
+        // if fileName do not contain "." or starts with "." then it is not a valid file
+        const rawExt = fileName.substring(fileName.lastIndexOf('.') + 1)
+        resultPath.fileExt = rawExt.toUpperCase()
+      }
+      resultPath.fileName = fileName
+    }
+    event.returnValue = resultPath
 })
 
 ipcMain.on('choose-img', (event, arg) => {
