@@ -57,7 +57,7 @@ function iniForm() {
 }
 
 function callDisk() {
-  const selectedFile = ipcRenderer.sendSync('open-file2','')
+  const selectedFile = ipcRenderer.sendSync('open-file','')
   if(selectedFile.fullPath != null) {
     if (selectedFile.fileExt == 'IGC') {
       displayIgc(selectedFile)

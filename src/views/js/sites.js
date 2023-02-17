@@ -570,13 +570,14 @@ function exportTable() {
 }
 
 function importSites() {
-  const repJsonFiles = ipcRenderer.sendSync('open-file','')
-  if (repJsonFiles !== undefined && repJsonFiles != null) {
-      let content = fs.readFileSync(repJsonFiles[0], 'utf8')
+  const selectedFile = ipcRenderer.sendSync('open-file','')
+  if(selectedFile.fullPath != null) {
+      let content = fs.readFileSync(selectedFile.fullPath, 'utf8')
       const arrSites = JSON.parse(content) 
       if (arrSites.length > 0) {
           let nbInserted = dbadd.importSites(arrSites)
           alert(i18n.gettext('imported sites')+' : '+nbInserted)
+          tableStandard('all')
       } else {
           alert(i18n.gettext('File decoding problem'))
       }          

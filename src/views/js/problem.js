@@ -70,9 +70,9 @@ btnCreateLogbook.addEventListener('click', (event) => {
 })
 
 btnRepatriate.addEventListener('click', (event) => {
-    const repLogbook = ipcRenderer.sendSync('open-file','')
-    if (repLogbook !== undefined && repLogbook != null) {
-        copyLogbook(repLogbook[0])
+    const selectedFile = ipcRenderer.sendSync('open-file','')
+    if(selectedFile.fullPath != null) {
+        copyLogbook(selectedFile.fullPath)
     }
 })
 

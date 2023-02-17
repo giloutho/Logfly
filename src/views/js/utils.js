@@ -68,11 +68,9 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 function loadCsv() {
-    const csvFiles = ipcRenderer.sendSync('open-file','')
-    if (csvFiles !== undefined && csvFiles != null) {    
-        //const csvPath = '/Users/gil/Documents/Logfly/Export/xavier.csv'
-        //const csvPath = '/Users/gil/Documents/Logfly/Export/logflygi.csv'
-        let content = fs.readFileSync(csvFiles[0], 'utf8')
+    const selectedFile = ipcRenderer.sendSync('open-file','')
+    if(selectedFile.fullPath != null) {
+        let content = fs.readFileSync(selectedFile.fullPath, 'utf8')
         let arrData = CSVToArray(content,';')
         if (arrData.length > 0) {
             const regexDuree = /^([0-1]?[0-9]|2[0-3])h([0-5]?[0-9])mn$/     
