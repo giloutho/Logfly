@@ -361,15 +361,15 @@ function photoDecoding(flightId, rowIndex) {
     const dbImage = stmt.get(flightId)
     const strImage = dbImage.V_Photos
 
-    let src = 'data:image/pngbase64,'+strImage
+    let src = 'data:image/png;base64,'+strImage
     // We want to get image width and height from the base64 string
     let i = new Image() 
     i.onload = function(){
       let winWidth = i.width
       let winHeight = i.height+30
-      // Using a string variable eg  winSize = '"width:'+winWidth+'pxheight: '+winHeight+'px"' does not work
+      // Using a string variable eg  winSize = '"width:'+winWidth+'px;height: '+winHeight+'px;"' does not work
       // templte litteral is working https://stackoverflow.com/questions/52112894/pass-a-variable-into-setattribute-method
-      document.getElementById('modalwin').setAttribute("style",`width:${winWidth}pxheight: ${winHeight}px`)
+      document.getElementById('modalwin').setAttribute("style",`width:${winWidth}px;height: ${winHeight}px;`)
     }                                                         
     i.src = src 
     // https://stackoverflow.com/questions/49536873/display-image-on-single-bootstrap-modal
