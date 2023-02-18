@@ -12,10 +12,7 @@
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
-  "author": {
-    "name": "giloutho",
-    "email": "gilouthomas@gmail.com"
-  },
+  "author": "Contact <contact@logfly.org>",
   "license": "MIT",
   "config": {
     "forge": {
@@ -104,5 +101,16 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
     "electron": "17.1.2",
     "electron-rebuild": "^3.2.7"
-  }
+  },
+  "directories": {
+    "doc": "doc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giloutho/Logfly.git"
+  },
+  "bugs": {
+    "url": "https://github.com/giloutho/Logfly/issues"
+  },
+  "homepage": "https://github.com/giloutho/Logfly#readme"
 }
