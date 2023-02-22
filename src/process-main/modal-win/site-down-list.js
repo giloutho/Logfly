@@ -1,7 +1,6 @@
 const {ipcMain, BrowserWindow, net} = require('electron')
 const fs = require('fs')
 const path = require('path')
-const { isInternetAvailable, InternetAvailabilityService } = require('is-internet-available')
 const log = require('electron-log')
 
 ipcMain.on('display-sites-down', (event, currSite) => {
@@ -9,39 +8,29 @@ ipcMain.on('display-sites-down', (event, currSite) => {
     //openWindow(event,currSite)    
 })
 
+// The internet connection is checked before calling this function
 function downloadList() {   
     const url = 'http://logfly.org/download/sites/json/sites_list.json'
-    const service = new InternetAvailabilityService({
-      authority: 'https://www.logfly.org',
-      rate: 1000, // the wait time between checks
+    const request = net.request({
+      method: 'GET',
+      url : url,
     })
-    
-    service.on('status', (status) => {
-      if (status) {
-        const request = net.request({
-          method: 'GET',
-          url : url,
-        })
-        request.on("response", (response) => {
-          const data = [];
-          response.on("data", (chunk) => {
-            data.push(chunk);
-          })
-          response.on("end", () => {
-            const json = Buffer.concat(data).toString()
-            try {
-              openWindow(json)
-            } catch (error) {
-              console.log(error)
-            }
-          })
-        });      
-        request.end()
-      } else {
-        log.error('logfly.org is now unavailable')
-      }
-    })
-  }
+    request.on("response", (response) => {
+      const data = [];
+      response.on("data", (chunk) => {
+        data.push(chunk);
+      })
+      response.on("end", () => {
+        const json = Buffer.concat(data).toString()
+        try {
+          openWindow(json)
+        } catch (error) {
+          console.log(error)
+        }
+      })
+    });      
+    request.end()                   
+}
 
   function openWindow(sitesJson) {
     const siteHtmlPath = path.join('file://', __dirname, '../../views/html/secondary/downsites.html')
