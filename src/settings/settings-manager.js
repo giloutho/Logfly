@@ -14,7 +14,6 @@ function checkSettings (appPath, progVersion) {
         if (fs.existsSync((store.path))) {
             // Updating environment variables
             getEnv()
-            console.log('dbfullPath '+store.get('dbFullPath'))
             return dbbasic.testDb(store.get('dbFullPath'))
         } else {
             iniSettings()   
@@ -111,8 +110,7 @@ function getEnv(modeProd) {
             store.set('finderlong',properties.get('finderlong'))
             store.set('finderlat',properties.get('finderlat'))
             cleanPath = properties.get('pathw').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")
-            store.set('pathWork',cleanPath)
-            console.log(properties.get('fullpathdb'))
+            store.set('pathWork',cleanPath)            
             cleanPath = properties.get('fullpathdb').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")    
             store.set('dbFullPath',cleanPath)
             cleanPath = properties.get('pathimport').replace(/\t/g,"t").replace(/\\:/g,":").replace(/\\\\/g,"\\")
