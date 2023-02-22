@@ -1,9 +1,8 @@
-const { app, BrowserWindow, Menu, ipcMain, net } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, net } = require('electron')
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob')
-const { isInternetAvailable, InternetAvailabilityService } = require('is-internet-available')
-const fetch = require('electron-fetch').default
+const checkInternetConnected = require('check-internet-connected')
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 
 let mainWindow = null;
@@ -108,7 +107,13 @@ const winTemplate = [
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
     if (startOk) {
-      checkInfo()
+      checkInternetConnected()
+        .then((result) => {
+          checkInfo()
+        })
+        .catch((ex) => {
+          openWindow('logbook')
+        })      
     } else {
       openWindow('problem')
     }
@@ -146,7 +151,7 @@ ipcMain.on("changeWindow", function(event, arg) {
 ipcMain.on('hide-waiting-gif', function(event, arg) {
   console.log('hide waiting reçu')
   mainWindow.webContents.send('remove-waiting-gif')
-});
+})
 
 ipcMain.on('ask-infos', function(event, arg) {
   mainWindow.webContents.send('read-infos', releaseInfo)
@@ -214,32 +219,39 @@ function openWindow(pageName) {
   } 
 }
 
+/**
+ * From https://www.geeksforgeeks.org/http-rest-api-calls-in-electronjs/
+ * and json solution in https://stackoverflow.com/questions/71221278/in-an-electron-application-i-am-successfully-making-an-http-get-request-from-an
+ */
 function checkInfo() {
-  const url = 'https://logfly.org/download/logfly6/release.json'  
-
-  const service = new InternetAvailabilityService({
-    authority: 'https://www.logfly.org',
-    rate: 1000, // the wait time between checks
-  })
-  
-  service.on('status', (status) => {
-    if (status) {
-      fetch(url,{ useSessionCookies: false })
-      .then(res => res.json())
-      .then(json => {
-          const currVersion = app.getVersion() 
+  const request = net.request({
+      method: 'GET',
+      url: 'https://logfly.org/download/logfly6/release.php'
+    })
+    request.on('response', (response) => {
+      if (response.statusCode == 200) {
+        let buffers = [];
+        response.on('data', (chunk) => {
+          buffers.push(chunk);
+        })
+        response.on('end', () => {
+          let responseBodyBuffer = Buffer.concat(buffers);
+          let json = JSON.parse(responseBodyBuffer.toString());
           releaseInfo = json
-          if (json.release > currVersion || json.message !== undefined )  {
-                openWindow('infos')
+          const currVersion = app.getVersion() 
+          console.log('currVersion '+currVersion+' json.version '+releaseInfo.version)
+          if (json.version > currVersion || json.message !== undefined )  {
+            openWindow('infos')
           } else {
               openWindow('logbook')
-          }         
+          }             
         })
-    } else {
-      console.log('logfly.org is now unavailable');
-      openWindow('logbook')
-    }
-  })
+      } else {
+        console.log('logfly.org is now unavailable');
+        openWindow('logbook')
+      }
+    })
+  request.end()
 }
 
 // Require each JS file in the main-process dir
