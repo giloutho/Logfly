@@ -51,7 +51,11 @@ function iniForm() {
     })
 
     document.getElementById("mnu_down").addEventListener('click',(event)=>{
-      const callList = ipcRenderer.send('display-sites-down', '')   // process-main/modal-win/site-down-list.js
+      if (navigator.onLine) {
+        const callList = ipcRenderer.send('display-sites-down', '')   // process-main/modal-win/site-down-list.js
+      } else {
+        alert(i18n.gettext('No Internet connection'))
+      }
     })
 
     document.getElementById("mnu_import").addEventListener('click',(event)=>{
@@ -292,10 +296,10 @@ function tableStandard(setData) {
                 }                
             }        
         } );
-        table.row(':eq(0)').select();    // Sélectionne la première lmigne
         if (table.data().count() > 0) {
           $('#table_id').removeClass('d-none')
           $('#mapid').removeClass('d-none')
+          table.row(':eq(0)').select();    // Sélectionne la première lmigne
         }
     } else {
         displayStatus(i18n.gettext('Database connection failed'))
