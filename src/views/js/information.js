@@ -43,7 +43,7 @@ function iniForm() {
     btnDownload.addEventListener('click',(event) => {
         downloadRelease()
     })
-    ipcRenderer.send("ask-infos");    // main.js
+   ipcRenderer.send("ask-infos");    // main.js
 }
 
 // Calls up the relevant page 
@@ -62,17 +62,18 @@ btnMenu.addEventListener('click', (event) => {
 
 ipcRenderer.on('read-infos', (event, result) => {
     releaseInfo = result
+    console.log({result})
     const currVersion = store.get('version')
-    if (releaseInfo.release !== undefined) {
-        if (releaseInfo.release > currVersion) {
+    if (releaseInfo.version !== undefined) {
+        if (releaseInfo.version > currVersion) {
             infoTitle.innerHTML = i18n.gettext('An update is available')        
-            infoTextFr.innerHTML = releaseInfo.date+'<br>      6.'+currVersion+'  ==>  6.'+releaseInfo.release
+            infoTextFr.innerHTML = releaseInfo.date+'<br>      '+currVersion+'  ==>  '+releaseInfo.version
             infoTextEn.innerHTML = releaseInfo.info
             $('#div-downl').removeClass('d-none')
             $('#div-downl').addClass('d-block')     
         } else {
             infoTitle.innerHTML = i18n.gettext('Your version is up to date')        
-            infoTextFr.innerHTML = i18n.gettext('Installed')+'  ==>  6.'+currVersion+'<br>'+i18n.gettext('Available')+'  ==>  6.'+releaseInfo.release 
+            infoTextFr.innerHTML = i18n.gettext('Installed')+'  ==>  '+currVersion+'<br>'+i18n.gettext('Available')+'  ==>  '+releaseInfo.version
         }   
     } else if ((releaseInfo.message !== undefined)) {
         infoTitle.innerHTML = i18n.gettext('Important message')
