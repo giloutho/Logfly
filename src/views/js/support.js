@@ -159,7 +159,7 @@ function fnRenderDisplay() {
 
 function fnSystemDisplay() {
   let customReport = []
-  customReport.push(['Logfly 6 version',store.get('version')])
+  customReport.push(['Logfly version',store.get('version')])
   customReport.push(['OS',store.get('currOS')])
   customReport.push(['Version',store.get('osVersion')])
   customReport.push(['System Locale',store.get('locale')])
