@@ -261,6 +261,26 @@ function fnMailDisplay() {
   $('#div_system').hide()   
   $('#div_mail').show()
   $('#div_logbook').hide()
+  const currLang = store.get('lang')
+  if (currLang != undefined && currLang != '') { 
+    switch (currLang) {
+        case 'de' :
+            document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_de.html'
+            break
+        case 'en' :
+            document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_en.html'
+            break        
+        case 'fr' :
+            document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_fr.html'
+            break
+        case 'it' :
+          document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_it.html'
+            break  
+        default :
+          document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_en.html' 
+          break
+    }  
+  }  
 }
 
 function fnLogbookDisplay() {
