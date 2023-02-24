@@ -256,6 +256,7 @@ function fnSystemDisplay() {
   $('#div_logbook').hide()
 }
 
+// Display contact form of logfly.org
 function fnMailDisplay() {
   $('#div_tablelog').hide()
   $('#div_system').hide()   
