@@ -53,7 +53,6 @@ function iniForm() {
         systemreport : i18n.gettext('System report'),
         infos : i18n.gettext('Infos'),
         sendmail : i18n.gettext('Send an e-mail'),
-        sendlogbook : i18n.gettext('Send logbook')
       };    
     let templateNav = document.getElementById('navtemplate').innerHTML;
     let navRendered = Mustache.render(templateNav, navOptions)
@@ -84,11 +83,7 @@ function iniForm() {
     const btnMail = document.getElementById('email')
     btnMail.addEventListener('click',(event) => {
       fnMailDisplay()
-    })     
-    const btnLogbook = document.getElementById('logbook')
-    btnLogbook.addEventListener('click',(event) => {
-      fnLogbookDisplay()
-    })         
+    })             
 }
 
 // Calls up the relevant page 
@@ -287,13 +282,6 @@ function fnMailDisplay() {
   //document.getElementById('webframe').src = urlForm 
   // https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javascript
   document.getElementById('webframe').contentWindow.location.replace(urlForm)
-}
-
-function fnLogbookDisplay() {
-  $('#div_tablelog').hide()
-  $('#div_system').hide()   
-  $('#div_mail').hide()
-  $('#div_logbook').show()
 }
 
 function fnClearLog() {
