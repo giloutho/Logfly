@@ -262,26 +262,31 @@ function fnMailDisplay() {
   $('#div_system').hide()   
   $('#div_mail').show()
   $('#div_logbook').hide()
+  let urlForm
   const currLang = store.get('lang')
   if (currLang != undefined && currLang != '') { 
     switch (currLang) {
         case 'de' :
-            document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_de.html'
+            urlForm = 'https://www.logfly.org/contact/support_de.html'
             break
         case 'en' :
-            document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_en.html'
+            urlForm = 'https://www.logfly.org/contact/support_en.html'
             break        
         case 'fr' :
-            document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_fr.html'
+            urlForm = 'https://www.logfly.org/contact/support_fr.html'
             break
         case 'it' :
-          document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_it.html'
+          urlForm = 'https://www.logfly.org/contact/support_it.html'
             break  
         default :
-          document.getElementById('webframe').src = 'https://www.logfly.org/contact/support_en.html' 
+          urlForm = 'https://www.logfly.org/contact/support_en.html' 
           break
     }  
   }  
+  // The following code did not allow to send a second message
+  //document.getElementById('webframe').src = urlForm 
+  // https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javascript
+  document.getElementById('webframe').contentWindow.location.replace(urlForm)
 }
 
 function fnLogbookDisplay() {
