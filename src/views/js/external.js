@@ -74,7 +74,10 @@ function displayGpx(trackFile) {
   const trackPath = trackFile.fullPath
   const gpxString = fs.readFileSync(trackPath, 'utf8') 
   try {
-    track = ipcRenderer.sendSync('read-gpx', gpxString)  // process-main/gpx/gpx-read.js.js
+    // gpx-read.js calls first gpx-to-igc
+    // if gpx-to-igc returns a valid igc string, gps-read calls IGCDecoder
+    // and finally returns a valid track 
+    track = ipcRenderer.sendSync('read-gpx', gpxString)  // process-main/gpx/gpx-read.js
     if (track.fixes.length> 0) {
       updateInfos(trackFile)
       mapIgc(track)
