@@ -188,9 +188,9 @@ class IGCDecoder {
     }
 	
     this.stat.duration = flTime // Flight time computed in seconds 
-		this.stat.interval = Math.round(this.stat.duration/this.fixes.length)
-		console.log('flTime : '+flTime+' Calcul intervalle : '+this.stat.duration+' / '+this.fixes.length+'  interval : '+this.stat.interval)
-		console.log('Time 2 : '+this.GeoJSON.features[0]['properties']['coordTimes'][2]);
+	this.stat.interval = Math.round(this.stat.duration/this.fixes.length)
+		// console.log('flTime : '+flTime+' Calcul intervalle : '+this.stat.duration+' / '+this.fixes.length+'  interval : '+this.stat.interval)
+		// console.log('Time 2 : '+this.GeoJSON.features[0]['properties']['coordTimes'][2]);
 		// const arrayHour = this.GeoJSON.features[0]['properties']['coordTimes'].map(hour => hour);
 		// console.log(arrayHour)
 
