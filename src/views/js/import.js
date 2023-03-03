@@ -47,7 +47,7 @@ iniForm()
 
 ipcRenderer.on('gpsdump-fone', (event, result) => {
   hideWaiting() 
-  $('#table-content').addClass('d-block')  
+//  $('#table-content').addClass('d-block')  
   if (result != null) alert(result)      
 })  
 
@@ -109,6 +109,13 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
+
+
+/**
+ *
+ *
+ * @param {*} typeGPS
+ */
 function callUsbGps(typeGPS) {
   let gpsStatus
   switch (typeGPS) {
@@ -155,7 +162,11 @@ function callUsbGps(typeGPS) {
   displayWaiting('many')
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
       if (logResult != null) {     
-          callDiskImport(logResult,gpsStatus)  
+        if (typeGPS != 'reverlog') {
+          callUsbImport(logResult,gpsStatus)  
+        } else {
+          callDiskGpxIgc(logResult,gpsStatus)          
+        }
       } else {
           let errorMsg
           clearTable()
@@ -169,13 +180,19 @@ function callUsbGps(typeGPS) {
   })     
 }
 
+
+
+/**
+ *
+ *
+ */
 function callSyride() {
   const syrideSetting = store.get('pathsyride')
   log.info('[Import Syride] from '+syrideSetting)
   const syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
   if (syridePath.parapentepath != null) {
     const gpsStatus = '<strong>Syride : </strong>'  
-    callDiskImport(syridePath.parapentepath,gpsStatus)  
+    callUsbImport(syridePath.parapentepath,gpsStatus)  
   } else {
     clearTable()
     const errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
@@ -188,7 +205,7 @@ function callDisk() {
   const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
   if (selectedPath != null) {
     const importStatus = selectedPath+' : '
-    callDiskImport(selectedPath,importStatus)
+    callDiskGpxIgc(selectedPath,importStatus)
   }
 }
 
@@ -215,13 +232,19 @@ function callManu() {
   const callList = ipcRenderer.send('display-flight-form', flightData)   // process-main/modal-win/flight-form.js
 }
 
-function callDiskImport(selectedPath, statusContent) {
+
+/**
+ *
+ *
+ * @param {*} selectedPath
+ * @param {*} statusContent
+ */
+function callUsbImport(selectedPath, statusContent) {
     try {    
       clearTable()
       displayWaiting('many')
       log.info('[Import disk] for '+selectedPath)
-      // main/gps-tracks/disk-import.js
-      const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath)
+      const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath) // in -> main/gps-tracks/disk-import.js
       if (searchDisk.igcForImport.length > 0) {
           let nbInsert = 0
           searchDisk.igcForImport.forEach(element => {
@@ -250,8 +273,55 @@ function callDiskImport(selectedPath, statusContent) {
       }  
     } catch (error) {
         displayStatus(error,false)
-        log.error('[callDiskImport] '+error)    
+        log.error('[callUsbImport] '+error)    
     }
+}
+
+function callDiskGpxIgc(selectedPath, statusContent) {
+  try {    
+    clearTable()
+    displayWaiting('many')
+    log.info('[Import disk] for '+selectedPath)
+    // main/gps-tracks/disk-import.js
+    let searchIgc = ipcRenderer.sendSync('disk-import',selectedPath) // in -> main/gps-tracks/disk-import.js
+    console.log('Igc : '+searchIgc.igcForImport.length)
+    const searchGpx = ipcRenderer.sendSync('disk-gpx',selectedPath)
+    if (searchGpx.igcForImport.length > 0) {
+      for (let index = 0; index < searchGpx.igcForImport.length; index++) {
+        searchIgc.igcForImport.push(searchGpx.igcForImport[index])
+        searchIgc.totalIGC++        
+      }
+    }
+    if (searchIgc.igcForImport.length > 0) {
+        let nbInsert = 0
+        searchIgc.igcForImport.forEach(element => {
+          if (element.forImport === true ) {
+            nbInsert++
+          }
+        });
+        // 
+        searchIgc.igcForImport.sort((a, b) => {
+          let da = a.dateStart,
+              db = b.dateStart;
+          return db - da;
+        });
+        // result display
+        statusContent += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
+        statusContent += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
+        statusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
+        currStatusContent = statusContent
+        statusContent += nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        displayStatus(statusContent,true)
+        tableStandard(searchIgc.igcForImport)          
+    } else {
+      statusContent += ' '+'No tracks decoded'
+      displayStatus(statusContent,false)
+      log.info('disk-import.js : zero igc files decoded');
+    }  
+  } catch (error) {
+      displayStatus(error,false)
+      log.error('[callDiskGpxIgc] '+error)    
+  }
 }
 
 function serialGpsCall(gpsModel) {
@@ -357,9 +427,12 @@ function callFlightList(gpsCom, gpsModel) {
 function displayOneFlight(flightPath, flightIndex) {
   // We wat the same function for Gpsdump and usb gps. 
   // we only need flightindex for gpsdump, for usb, we send 9999
-  $('#table-content').removeClass('d-block')
-  $('#table-content').addClass('d-none')
+  // $('#table-content').removeClass('d-block')
+  // $('#table-content').addClass('d-none')
   displayWaiting('one')
+  // call process-main/gps-tracks/getoneflight.js
+  // map will be displayed in a modal window
+  // come back is managed with ipcRenderer.on('gpsdump-fone')
   let igcFile = ipcRenderer.send('displayoneflight', flightPath, flightIndex)    
 }
 
@@ -508,7 +581,8 @@ function updateStatus() {
 
 function tableStandard(igcForImport) {
     if ( $.fn.dataTable.isDataTable( '#tableimp_id' ) ) {
-      $('#tableimp_id').DataTable().clear().destroy()
+      console.log('destroy')
+      $('#tableimp_id').DataTable().clear().destroy(true)
     }   
     currTypeGps = 'disk'
     let dataTableOption = {
@@ -595,10 +669,18 @@ function tableStandard(igcForImport) {
     })
   // example from https://datatables.net/examples/ajax/null_data_source.html
   $('#tableimp_id').on( 'click', 'button', function () {
+    //$('#tableimp_id').off( 'click' )
     let dtRow = table.row( $(this).parents('tr') ).data();
     let rowIndex = table.row( $(this).parents('tr') ).index()
-  //  alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['path']);
-    displayOneFlight(dtRow['path'], 9999)
+    // alert( 'Index '+rowIndex+'   '+dtRow['date']+"' ' "+dtRow['path']);
+    // code original
+    // displayOneFlight(dtRow['path'], 9999)
+    console.log('rowindex '+rowIndex)
+   // console.log({dtRow})
+    // nouveau code
+   // const igcString = igcForImport[rowIndex].igcFile    
+    const igcString = dtRow.igcFile  
+    displayOneFlight(igcString, 9999)
   } );      
   $('#tableimp_id').removeClass('d-none')
 }
@@ -656,16 +738,19 @@ function updateLogbook() {
 }
   
 function clearForm() {
- // $('#div_form').show()   
   $('#div_table').hide()
   $('#status').hide()
 }
 
 function clearTable() {
-  $('#div_form').hide()   
   $('#div_table').show()
   if ($.fn.DataTable.isDataTable('#tableimp_id')) {
-    $('#tableimp_id').DataTable().clear().destroy()
+    // It's necessary to remove the listener that has already been attached to the DataTable
+    // otherwise, on the second filling of the table, the map was displayed twice
+    // on the third, three times, etc... etc...
+    // solution -> https://datatables.net/reference/api/off()#:~:text=This%20off()%20method%20is,only%20a%20single%20event%20listener.
+    $('#tableimp_id').off( 'click' )
+    $('#tableimp_id').DataTable().destroy()
     $('#tableimp_id').addClass('d-none')
   } 
   $('#status').hide()
@@ -693,6 +778,8 @@ function displayStatus(content,updateDisplay) {
 }
 
 function displayWaiting(typeMsg) {
+    $('#table-content').removeClass('d-block')
+    $('#table-content').addClass('d-none')
     let msg
     switch (typeMsg) {
       case 'one':
@@ -707,10 +794,13 @@ function displayWaiting(typeMsg) {
     }    
     const rendered = Mustache.render(waitTpl, { typeimport : msg });
     document.getElementById('div_waiting').innerHTML = rendered
+    $('#div_waiting').removeClass('d-none')
     $('#div_waiting').addClass('m-5 pb-5 d-block')
 }
 
 function hideWaiting() {
     $('#div_waiting').removeClass('d-block')
     $('#div_waiting').addClass('d-none')
+    $('#table-content').removeClass('d-none')
+    $('#table-content').addClass('d-block')  
 }
