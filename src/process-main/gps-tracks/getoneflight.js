@@ -15,17 +15,17 @@ ipcMain.on('displayoneflight', (event, gpsParam, flightIndex) => {
     // for usb, we send 9999, flight file path is in gpsParam
     let flightFilePath
     let igcString
-    if (flightIndex == 9999) {
-        flightFilePath = gpsParam
-    } else {
-        flightFilePath = gpsdumpOne.getGpsdumpFlight(gpsParam, flightIndex)
-    }
     try {
-        if (flightFilePath.includes('Error')) {  
-            event.sender.send('gpsdump-fone',flightFilePath) 
+        if (flightIndex == 9999) {
+            igcString = gpsParam
         } else {
-            igcString = fs.readFileSync(flightFilePath, 'utf8')
+            flightFilePath = gpsdumpOne.getGpsdumpFlight(gpsParam, flightIndex)        
+            if (flightFilePath.includes('Error')) {  
+                event.sender.send('gpsdump-fone',flightFilePath) 
+            } else {
+                igcString = fs.readFileSync(flightFilePath, 'utf8')
             // Il ne faut que que le openWindow fasse partie du try catch de lecture du fichier 
+            }
         }
     } catch (err) {
       log.error('Error reading flight file : '+err)
