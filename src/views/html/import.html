@@ -75,14 +75,15 @@
             <!-- Main page content -->
             <div class="container-fluid">
                 <div class="alert alert-info collapse" role="alert" id="status"></div>  
+                <div id="div_waiting" class="d-none">
+                  <script id="wait-template" type="x-tmpl-mustache">
+                      <img src="../../assets/img/waiting-mauve.gif" class="mx-auto d-block" alt=""></img>
+                      <br><h3 id="txt-download" style="color:#EA72FC;text-align: center;">{{typeimport}}</h3>
+                  </script>
+              </div>                
                 <div id="accordionDiv"> 
                   <div id="div_table" style="display:none">
-                    <div id="div_waiting" class="d-none">
-                        <script id="wait-template" type="x-tmpl-mustache">
-                            <img src="../../assets/img/waiting-mauve.gif" class="mx-auto d-block" alt=""></img>
-                            <br><h3 id="txt-download" style="color:#EA72FC;text-align: center;">{{typeimport}}</h3>
-                        </script>
-                    </div>
+
                     <div id="table-content">
                       <!-- Cette table servira à TOUS les imports : disk, usb et serie -->
                       <table id="tableimp_id" class="table table-striped table-bordered d-none" style="width:100%;">
