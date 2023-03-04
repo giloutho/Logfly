@@ -40,6 +40,7 @@ function iniForm() {
   if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights') 
 
   try {    
+    document.title = 'Logfly '+store.get('version')
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
@@ -227,116 +228,120 @@ function afficheFlyxc() {
 
 
 function tableStandard() {
-let msgdbstate  
-if ($.fn.DataTable.isDataTable('#table_id')) {
-    $('#table_id').DataTable().clear().destroy()
-}
-if (db.open) {
-    const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
-    let countFlights = stmt.get()
-    // on récupére la valeur avec counFlights['COUNT(*)']
-    msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`)
-    //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
-    let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Duree,'
-    reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
-    reqSQL += 'FROM Vol ORDER BY V_Date DESC'
-    const flstmt = db.prepare(reqSQL).all()    
-    const dataTableOption = {
-    data: flstmt, 
-    autoWidth : false,
-    columns: [
-        {
-          title : '',
-          data: 'Photo',
-          render: function(data, type, row) {
-            if (data == 'Yes') {
-              return '<img src="../../assets/img/Camera.png" alt=""></img>'
-            } 
-            return data
-          },          
-          className: "dt-body-center text-center"
-        },       
-        { title : i18n.gettext('Date'), data: 'Day' },
-        { title : i18n.gettext('Time'), data: 'Hour' },
-        { title : 'Duration', data: 'V_sDuree' },
-        { title : 'Site', data: 'V_Site' },
-        { title : i18n.gettext('Glider'), data: 'V_Engin' },     
-        { title : 'Comment', data: 'V_Commentaire' },  
-        { title : 'Id', data: 'V_ID' },
-        { title : 'Seconds', data: 'V_Duree' }  
-    ],      
-    columnDefs : [
-        { "width": "3%", "targets": 0, "bSortable": false },
-        // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
-        // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
-        // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
-        // { "width": "6%", "targets": 2, "orderData": 1 },
-        // { "width": "14%", "targets": 1, "bSortable": false},
-        // { "width": "6%", "targets": 2, "bSortable": false },
-        { "width": "14%", "targets": 1 },
-        { "width": "6%", "targets": 2 },
-        { "width": "8%", "targets": 3 },
-        { "width": "30%", className: "text-nowrap", "targets": 4 },
-        { "width": "28%", "targets": 5 },
-        { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
-        { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
-        { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
-    ],      
-    bInfo : false,          // hide "Showing 1 to ...  row selected"
-    lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
-    //searching : false,      // hide search abilities in table
-    ordering: false,        // Sinon la table est triée et écrase le tri sql
-    pageLength: 12,         // ce sera à calculer avec la hauteur de la fenêtre
-    pagingType : 'full',
-    dom: 'lrtip',
-    language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
-        paginate: {
-        first: '<<',
-        last: '>>',
-        next: '>', // or '→'
-        previous: '<' // or '←' 
-        }
-    },     
-    select: true,            // Activation du plugin select
-    // Line coloring if there is a comment. 
-    // Finally, I don't really like
-    'createdRow': function( row, data, dataIndex ) {
-      if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
-        $(row).addClass('tableredline')
-      }
-    },
-    }
-    table = $('#table_id').DataTable(dataTableOption )
-    $('#tx-search').on( 'keyup', function () {
-      table.search( this.value ).draw()
-      table.row(':eq(0)', { page: 'current' }).select()
-      sumRowFiltered()
-    })
-    table.on( 'select', function ( e, dt, type, indexes ) {
-        if ( type === 'row' ) {
-          //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
-          // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
-          currIdFlight = dt.row(indexes).data().V_ID
-          let currComment = dt.row(indexes).data().V_Commentaire
-          if (currComment != null && currComment !='') {
-            currIdFlight = dt.row(indexes).data().V_ID
-            flDate = dt.row(indexes).data().Day
-            flTime = dt.row(indexes).data().Hour         
-            manageComment(currIdFlight,currComment, flDate, flTime,indexes)
-          } else {
-            $('#inputcomment').hide()
+  let msgdbstate  
+  if ($.fn.DataTable.isDataTable('#table_id')) {
+      $('#table_id').DataTable().clear().destroy()
+  }
+  try {    
+    if (db.open) {
+        const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
+        let countFlights = stmt.get()
+        // on récupére la valeur avec counFlights['COUNT(*)']
+        msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`)
+        //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
+        let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Duree,'
+        reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
+        reqSQL += 'FROM Vol ORDER BY V_Date DESC'
+        const flstmt = db.prepare(reqSQL).all()    
+        const dataTableOption = {
+        data: flstmt, 
+        autoWidth : false,
+        columns: [
+            {
+              title : '',
+              data: 'Photo',
+              render: function(data, type, row) {
+                if (data == 'Yes') {
+                  return '<img src="../../assets/img/Camera.png" alt=""></img>'
+                } 
+                return data
+              },          
+              className: "dt-body-center text-center"
+            },       
+            { title : i18n.gettext('Date'), data: 'Day' },
+            { title : i18n.gettext('Time'), data: 'Hour' },
+            { title : 'Duration', data: 'V_sDuree' },
+            { title : 'Site', data: 'V_Site' },
+            { title : i18n.gettext('Glider'), data: 'V_Engin' },     
+            { title : 'Comment', data: 'V_Commentaire' },  
+            { title : 'Id', data: 'V_ID' },
+            { title : 'Seconds', data: 'V_Duree' }  
+        ],      
+        columnDefs : [
+            { "width": "3%", "targets": 0, "bSortable": false },
+            // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
+            // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
+            // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
+            // { "width": "6%", "targets": 2, "orderData": 1 },
+            // { "width": "14%", "targets": 1, "bSortable": false},
+            // { "width": "6%", "targets": 2, "bSortable": false },
+            { "width": "14%", "targets": 1 },
+            { "width": "6%", "targets": 2 },
+            { "width": "8%", "targets": 3 },
+            { "width": "30%", className: "text-nowrap", "targets": 4 },
+            { "width": "28%", "targets": 5 },
+            { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
+            { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
+            { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
+        ],      
+        bInfo : false,          // hide "Showing 1 to ...  row selected"
+        lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
+        //searching : false,      // hide search abilities in table
+        ordering: false,        // Sinon la table est triée et écrase le tri sql
+        pageLength: 12,         // ce sera à calculer avec la hauteur de la fenêtre
+        pagingType : 'full',
+        dom: 'lrtip',
+        language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
+            paginate: {
+            first: '<<',
+            last: '>>',
+            next: '>', // or '→'
+            previous: '<' // or '←' 
+            }
+        },     
+        select: true,            // Activation du plugin select
+        // Line coloring if there is a comment. 
+        // Finally, I don't really like
+        'createdRow': function( row, data, dataIndex ) {
+          if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
+            $(row).addClass('tableredline')
           }
-          $('#inputdata').hide()
-          currIdFlight = dt.row(indexes).data().V_ID
-          currGlider = dt.row(indexes).data().V_Engin
-          readIgc(currIdFlight, currGlider)
-        }        
-    } )
-    table.row(':eq(0)').select()    // Sélectionne la première lmigne
-    $('#table_id').removeClass('d-none')
-} else {
-    msgdbstate = 'db connection error'
-}
+        },
+        }
+        table = $('#table_id').DataTable(dataTableOption )
+        $('#tx-search').on( 'keyup', function () {
+          table.search( this.value ).draw()
+          table.row(':eq(0)', { page: 'current' }).select()
+          sumRowFiltered()
+        })
+        table.on( 'select', function ( e, dt, type, indexes ) {
+            if ( type === 'row' ) {
+              //console.log('e : '+e+' dt : '+dt+' type : '+type+' indexes :'+indexes)
+              // from https://datatables.net/forums/discussion/comment/122884/#Comment_122884
+              currIdFlight = dt.row(indexes).data().V_ID
+              let currComment = dt.row(indexes).data().V_Commentaire
+              if (currComment != null && currComment !='') {
+                currIdFlight = dt.row(indexes).data().V_ID
+                flDate = dt.row(indexes).data().Day
+                flTime = dt.row(indexes).data().Hour         
+                manageComment(currIdFlight,currComment, flDate, flTime,indexes)
+              } else {
+                $('#inputcomment').hide()
+              }
+              $('#inputdata').hide()
+              currIdFlight = dt.row(indexes).data().V_ID
+              currGlider = dt.row(indexes).data().V_Engin
+              readIgc(currIdFlight, currGlider)
+            }        
+        } )
+        table.row(':eq(0)').select()    // Sélectionne la première lmigne
+        $('#table_id').removeClass('d-none')
+    } else {
+        msgdbstate = 'db connection error'
+    }
+  } catch (error) {
+    alert(error)
+  }    
 }    // End of tableStandard
 
 // To select the first row at each page change
