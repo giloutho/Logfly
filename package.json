@@ -72,6 +72,7 @@
     "highcharts": "^10.0.0",
     "iana-tz-data": "^2019.1.0",
     "igc-parser": "^1.1.0",
+    "igc-xc-score": "^1.7.0",
     "inputmask": "^5.0.7",
     "jquery": "^3.6.0",
     "jquery-contextmenu": "^2.9.2",
