@@ -166,6 +166,7 @@ function openWindow(pageName) {
     case "overview":
       // original code
       mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'))      
+      mainWindow.webContents.openDevTools();
       break;      
     case "infos":
       mainWindow.loadFile(path.join(__dirname, './views/html/information.html'));

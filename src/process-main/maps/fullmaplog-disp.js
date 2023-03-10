@@ -68,7 +68,7 @@ function openFenetre(event,track) {
         }              
     })
     win.maximize()
-   // win.webContents.openDevTools();
+  //  win.webContents.openDevTools();
    process.platform === "win32" && win.removeMenu()
  //  process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate([]))
     win.on('close', () => {

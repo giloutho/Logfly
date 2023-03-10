@@ -22,13 +22,14 @@ function openWindow(event,arrayIGC) {
     frame: false 
   })
   win.loadURL(modalPath)
+  win.show()
   //win.webContents.on('did-finish-load', function() {
   // it seems to be better with ready-to-show event
   // https://www.electronjs.org/docs/api/browser-window#%C3%A0-laide-de-l%C3%A9v%C3%A9nement-ready-to-show
  // win.once('did-finish-load', () => {
   win.webContents.on('did-finish-load', function() {
     console.log('Ready-to-show')
-    win.show()
+    //win.show()
     runTestIgc(arrayIGC,function(checkedIGC) {
       event.sender.send('igc-checked-import', checkedIGC)
       win.close()
