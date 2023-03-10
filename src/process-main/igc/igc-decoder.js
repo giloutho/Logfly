@@ -69,8 +69,9 @@ class IGCDecoder {
 				},
 			}]
 		}
-		this.params = []; 			// all points with complete data : spedd, vario etc...
+		this.params = [] 			// all points with complete data : spedd, vario etc...
     	this.igcData = igcString
+		this.xcscore = null
   	}
 
   // pour l'instant extracalculations et filter ne sont pas utilisés A VIRER et ménage c'est qd on songeait à fusionner avec igc-anayzer
