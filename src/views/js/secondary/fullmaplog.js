@@ -3,8 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const log = require('electron-log')
 const Store = require('electron-store')
-const store = new Store();
-
+const store = new Store()
 const dblog = require('../../../utils/db/db-search.js')
 const pieGnerator = require('../../../utils/graphic/pie-generator.js')
 
@@ -16,13 +15,12 @@ const tiles = require('../../../leaflet/tiles.js')
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
 
-const Highcharts = require('highcharts');
+const Highcharts = require('highcharts')
 const myMeasure = require('../../../leaflet/measure.js')
 //const useGoogle = require('../../../leaflet/google-leaflet.js')
 const layerTree = require('leaflet.control.layers.tree')
 const awesomeMarker = require('../../../leaflet/leaflet.awesome-markers.min.js')
 const mapSidebar = require('../../../leaflet/sidebar-tabless.js')
-
 
 const btnClose = document.getElementById('bt-close')
 const btnInfos  = document.getElementById('bt-infos')
@@ -34,6 +32,11 @@ let sidebar
 let endLatlng 
 let startLatlng
 let sidebarState
+let currLeague
+let map
+let layerControl
+let scoreGroup
+let geoScore
 
 iniForm()
 
@@ -46,6 +49,31 @@ ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
   const winLabel = mainTrack.info.date+' '+i18n.gettext('Glider')+' : '+mainTrack.info.gliderType.trim()
   document.getElementById('wintitle').innerHTML = winLabel
   buildMap()
+  $( "#mnu-scoring a" ).on( "click", function() {
+    const selLeague =  $( this ).text()
+    $('button[data-toggle="dropdown"]').text(selLeague)
+    runXcScore(selLeague)
+  })
+  if (mainTrack.xcscore != null) displayScoring()
+})
+
+function runXcScore(selScoring) {
+  if (mainTrack.fixes.length> 0) {
+    currLeague = selScoring
+    const argsScoring = {
+        igcString : mainTrack.igcData,
+        league : selScoring
+    }
+  $('#waiting-spin').removeClass('d-none')
+  ipcRenderer.send('ask-xc-score', argsScoring)
+  }
+}
+
+ipcRenderer.on('xc-score-result', (_, result) => {
+  $('#waiting-spin').addClass('d-none')
+  console.log('retour')
+  mainTrack.xcscore = result
+  displayScoring()
 })
 
 function buildMap() {
@@ -141,18 +169,20 @@ function buildMap() {
   const GlidesGroup = new L.LayerGroup();
   GlidesGroup.addLayer(geoGlides);
 
-  let mAisrpaces = i18n.gettext('Airspaces');
-  let mTrack = i18n.gettext('Track');
-  let mThermal = i18n.gettext('Thermals');
-  let mTrans = i18n.gettext('Transitions');
-  const Affichage = {
+  let mAisrpaces = i18n.gettext('Airspaces')
+  let mTrack = i18n.gettext('Track')
+  let mThermal = i18n.gettext('Thermals')
+  let mTrans = i18n.gettext('Transitions')
+  let mScore = i18n.gettext('Score')
+
+  let Affichage = {
     [mAisrpaces] : openaip_cached_basemap,  
     [mTrack] : tracksGroup,
     [mThermal] : thermalGroup,
     [mTrans]: GlidesGroup,
-  };
+  }
 
-  L.control.layers(baseMaps,Affichage).addTo(map);
+  layerControl = new L.control.layers(baseMaps,Affichage).addTo(map);
   
   const StartIcon = new L.Icon({
     iconUrl: '../../../leaflet/images/windsock22.png',
@@ -293,7 +323,7 @@ function buildMap() {
 // j'imagine que je l'avais placé pour attendre la création de la carte
   //setTimeout(function(){ map.fitBounds(geojsonLayer.getBounds()); }, 1000);
   // on supprime pour l'instant, on y va sans timeout
-  map.fitBounds(geojsonLayer.getBounds());
+  map.fitBounds(geojsonLayer.getBounds())
 }
 
 function createPopThermal(feature, layer) {
@@ -439,6 +469,13 @@ function buildSidePanels()
     pane: fillSidebarInfo()
   })    
 
+  sidebar.addPanel({
+    id:   'score',
+    tab:  '<i class="fa fa-gear"></i>',
+    title: i18n.gettext('Score'),
+    pane: fillSidebarScoring()
+  })     
+
   sidebar.on('closing', function(e) {
     sidebarState = false
     btnInfos.innerHTML = i18n.gettext('Show analysis')
@@ -508,6 +545,49 @@ function fillSidebarInfo() {
   return htmlText
 }
 
+function fillSidebarScoring() {
+  let htmlText = fillSidebarButtons()
+  htmlText += '<br><br>'
+  htmlText += '<div style="margin-top: 20px;">'
+
+  htmlText += '<div class="d-flex align-items-center">'
+  //htmlText += '     <button type="button" class="btn-success btn-sm mr-3" onclick="ask_scoring()">'+i18n.gettext('Scoring')+'</button>'
+  htmlText += '     <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="dd-scoring">score</button>'                      
+  htmlText += '     <div class="dropdown-menu" id="mnu-scoring">'
+  htmlText += '         <a class="dropdown-item" href="#">FFVL</a>'
+  htmlText += '         <a class="dropdown-item" href="#">XContest</a>'
+  htmlText += '         <a class="dropdown-item" href="#">FAI</a>'
+  htmlText += '         <a class="dropdown-item" href="#">FAI-Cylinders</a>'
+  htmlText += '         <a class="dropdown-item" href="#">FAI-OAR</a>'
+  htmlText += '         <a class="dropdown-item" href="#">FAI-OAR2</a>'
+  htmlText += '         <a class="dropdown-item" href="#">XCLeague</a>'
+  htmlText += '     </div>'
+  //htmlText += '     <button type="button" class="btn-danger btn-sm mr-3" onclick="displayScoring()">'+i18n.gettext('Scoring')+'</button>'
+  htmlText += '     <div class="spinner-border text-danger ml-auto d-none" role="status" id="waiting-spin">'
+  htmlText += '        <span class="sr-only">Loading...</span>'
+  htmlText += '     </div>'
+  //htmlText += '     </div>'
+  htmlText += '</div>'
+  htmlText += '<br><br>'
+  htmlText += '<div id="score_table" class="d-none"><table>'
+  htmlText += '    <tbody>'
+  htmlText += '      <tr><td>'+i18n.gettext('League')+'</td><td id="sc-league"></td></tr>'     
+  htmlText += '      <tr><td>'+i18n.gettext('Best possible')+'</td><td id="sc-best"></td></tr>'      
+  htmlText += '      <tr><td id="sc-course"></td><td id="sc-distance"></td></tr>'  
+  htmlText += '      <tr><td>'+i18n.gettext('Multiplier')+'</td><td id="sc-multi"></td></tr>' 
+  htmlText += '      <tr><td id ="sc-leg1"></td><td id="sc-legd1"></td></tr>' 
+  htmlText += '      <tr><td id ="sc-leg2"></td><td id="sc-legd2"></td></tr>' 
+  htmlText += '      <tr><td id ="sc-leg3"></td><td id="sc-legd3"></td></tr>' 
+  htmlText += '      <tr><td id ="sc-leg4"></td><td id="sc-legd4"></td></tr>' 
+  htmlText += '      <tr><td id ="sc-leg5"></td><td id="sc-legd5"></td></tr>' 
+  htmlText += '    </tbody>'
+  htmlText += '  </table></div>'
+
+  return htmlText  
+}
+
+
+
 
 function fillSidebarSummary() {
   
@@ -556,7 +636,7 @@ function fillSidebarSummary() {
     efficiencyColor = '66FF66'
     htmlIcon = '<i class="fa fa-thumbs-up" aria-hidden="true"></i>'
   } else if (anaTrack.avgThermalEffi > 49) {
-    efficiencyColor = 'FFFF00'   
+    efficiencyColor = '00C0F4'   
     htmlIcon = '<i class="fa fa-hand-peace-o" aria-hidden="true"></i>' 
   } else {
     efficiencyColor = 'FF6600'
@@ -709,16 +789,132 @@ function fillSidebarPathway() {
   return htmlText
 }
 
+function ask_scoring() {
+  alert('coucou')
+}
+
+function changeScoring() {
+  map.removeLayer(geoScore)
+  const currColor = getColor()
+  geoScore =  L.geoJson(mainTrack.xcscore,{ 
+    style: function(feature) {
+      return {
+        stroke: true,
+        color: currColor,
+        weight: 4
+      };
+    },
+    onEachFeature: onEachFeature
+  })
+  scoreGroup.addLayer(geoScore)
+  displayScoring()
+}
+
+function displayScoring() {
+  if(map.hasLayer(scoreGroup)){
+    map.removeLayer(scoreGroup)
+  } 
+  const result = JSON.parse(JSON.stringify(mainTrack.xcscore))
+  currLeague = result.league
+  document.getElementById("sc-league").innerHTML = result.league
+  document.getElementById("sc-best").innerHTML = result.score+' pts'
+  document.getElementById("sc-course").innerHTML = result.course
+  document.getElementById("sc-distance").innerHTML = result.distance+' km'
+  document.getElementById("sc-multi").innerHTML = result.multiplier
+  const scoreLegs = result.legs
+  for (let i = 0; i < scoreLegs.length; i++) {
+    const leg = scoreLegs[i]
+    switch (i) {
+      case 0:
+        document.getElementById("sc-leg1").innerHTML = leg.name
+        document.getElementById("sc-legd1").innerHTML = leg.d+' km'
+        break;
+      case 1:
+        document.getElementById("sc-leg2").innerHTML = leg.name
+        document.getElementById("sc-legd2").innerHTML = leg.d+' km'
+        break;
+      case 2:
+        document.getElementById("sc-leg3").innerHTML = leg.name
+        document.getElementById("sc-legd3").innerHTML = leg.d+' km'
+        break;
+      case 3:
+        document.getElementById("sc-leg4").innerHTML = leg.name
+        document.getElementById("sc-legd4").innerHTML = leg.d+' km'
+      break;
+      case 4:
+        document.getElementById("sc-leg5").innerHTML = leg.name
+        document.getElementById("sc-legd5").innerHTML = leg.d+' km'
+      break;
+    }
+   }
+  $('#score_table').removeClass('d-none')
+  const currColor = getColor()
+  geoScore =  L.geoJson(mainTrack.xcscore,{ 
+      style: function(feature) {
+        return {
+          stroke: true,
+          color: currColor,
+          weight: 4
+        };
+      },
+      onEachFeature: onEachFeature
+  })
+  scoreGroup = new L.LayerGroup()
+  scoreGroup.addTo(map)
+  scoreGroup.addLayer(geoScore)
+  layerControl.addOverlay(scoreGroup, i18n.gettext('Score'));
+  sidebar.open('score');
+}
+
 function fillSidebarButtons() {
   let htmlText = '<br>'
   htmlText += '<div class="btn-toolbar pull-left">'
   htmlText += ' <button type="button" class="btn-success btn-sm mr-3" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
   htmlText += ' <button type="button" class="btn-warning btn-sm mr-3" onclick="openPathway()">'+i18n.gettext('Pathway')+'</button>'
-  htmlText += ' <button type="button" class="btn-secondary btn-sm" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
+  htmlText += ' <button type="button" class="btn-secondary btn-sm mr-3" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
+  htmlText += ' <button type="button" class="btn-primary btn-sm" onclick="sidebar.open(\'score\')">'+i18n.gettext('Score')+'</button>'
   htmlText += '</div>'
   return htmlText
 }
 
+function onEachFeature(feature, layer) {
+  // does this feature have a property named popupContent?
+  if (feature.properties && feature.properties.popupContent) {
+      layer.bindPopup(feature.properties.popupContent);
+  }
+}
+
+
+function getColor() {
+  let selColor
+  switch (currLeague) {
+    case 'FFVL':
+      selColor = 'yellow'
+      break
+    case 'XContest':
+      selColor = 'fuchsia'
+      break
+    case 'FAI':
+      selColor = 'darkorange'
+      break
+    case 'FAI-Cylinders':
+      selColor = 'skyblue'
+      break
+    case 'FAI-OAR':
+      selColor = 'yellowgreen'
+      break
+    case 'FAI-OAR2':
+      selColor = 'sienna'
+      break
+    case 'XCLeague' :
+      selColor = 'lawngreen'
+      break 
+    default:
+      selColor = 'yellow'
+      break;
+  }
+  return selColor
+}
 
 // Display Thermals
 function openPathway() {

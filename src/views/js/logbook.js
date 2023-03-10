@@ -5,12 +5,14 @@ const path = require('path')
 const fs = require('fs')
 const Store = require('electron-store')
 const log = require('electron-log')
+const { scoringRules } = require('igc-xc-score')
 const sharp = require('sharp')
 const moment = require('moment')
 const momentDurationFormatSetup = require('moment-duration-format')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 const dbupdate = require('../../utils/db/db-update.js')
 let store = new Store()
+const typeScoring = scoringRules
 let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js')
 const { Alert } = require('bootstrap')
@@ -60,8 +62,16 @@ function iniForm() {
   })
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
   document.getElementById('fullmap').innerHTML = i18n.gettext('Full screen map')
-  document.getElementById('scoring').innerHTML = i18n.gettext('Scoring')
   document.getElementById('tx-search').placeholder = i18n.gettext('Search')+'...'
+  $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
+  Object.keys(typeScoring).forEach(function(key, index) {
+    $('#mnu-scoring').append(`<a class="dropdown-item" href="#">${key}</a>`)
+  })
+  $( "#mnu-scoring a" ).on( "click", function() {
+    const selLeague =  $( this ).text()
+    $('button[data-toggle="dropdown"]').text(selLeague)    
+    runXcScore(selLeague)
+  })
 
   $(function(){
     $('#table_id').contextMenu({
@@ -138,6 +148,13 @@ ipcRenderer.on('back_flightform', (_, updateFlight) => {
   tableSelection(updateFlight.id)
 })
 
+ipcRenderer.on('xc-score-result', (_, result) => {
+  track.xcscore = result    
+  $('#waiting-spin').addClass('d-none')
+  $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
+  displayFullMap()   
+})
+
 tableStandard()
 
 // Calls up the relevant page 
@@ -152,15 +169,6 @@ btnMenu.addEventListener('click', (event) => {
       btnMenu.innerHTML = "Menu On"
   }
   $('#sidebar').toggleClass('active')
-})
-
-btnScoring.addEventListener('click', (event) => {  
-  console.log('clic scoring')
-  //$('#div_table').removeClass('d-block')
-  $('#div_global').addClass('d-none')
-  displayStatus('Pas de vol...')
- // $('#div_waiting').addClass('d-block')
- // hideStatus()
 })
 
 btnFlyxc.addEventListener('click', (event) => { 
@@ -185,6 +193,10 @@ btnFlyxc.addEventListener('click', (event) => {
 
 
 btnFullmap.addEventListener('click', (event) => {  
+  displayFullMap()  
+})  
+
+function displayFullMap() {
   if (track !== undefined)  {
     if (track.fixes.length> 0) {    
       // functionnal code
@@ -199,8 +211,26 @@ btnFullmap.addEventListener('click', (event) => {
       let err_content = i18n.gettext("Decoding problem in track file")
       ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
     } 
+  }   
+}
+
+function runXcScore(selScoring) { 
+  $('#waiting-spin').removeClass('d-none')
+  try {
+    if (track.fixes.length> 0) {
+      const argsScoring = {
+          igcString : track.igcData,
+          league : selScoring
+      }
+    // si on envoit avec ipcRenderer.sendSync, la div-waiting n'est pas affichée
+    ipcRenderer.send('ask-xc-score', argsScoring)   
+    } else {
+      alert(error)
+    }        
+  } catch (error) {
+    alert(error)      
   }     
-})  
+}
 
 function displayFlyxc() {
   if (track !== undefined && track.fixes.length> 0) {  

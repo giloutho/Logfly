@@ -10,6 +10,8 @@ const store = new Store()
 const tiles = require('../../leaflet/tiles.js')
 const moment = require('moment')
 const momentDurationFormatSetup = require('moment-duration-format')
+const { scoringRules } = require('igc-xc-score')
+const typeScoring = scoringRules
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
 let mapPm
@@ -25,6 +27,13 @@ const btnSelect = document.getElementById('sel-track')
 let btnMenu = document.getElementById('toggleMenu')
 const btnFullmap = document.getElementById('fullmap')
 let btnFlyxc = document.getElementById('flyxc')
+
+ipcRenderer.on('xc-score-result', (_, result) => {
+  track.xcscore = result    
+  $('#waiting-spin').addClass('d-none')
+  $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
+  displayFullMap(track)   
+})
 
 iniForm()
 
@@ -54,6 +63,15 @@ function iniForm() {
     document.getElementById('lg-points').innerHTML = i18n.gettext('Points')
     btnSelect.innerHTML = i18n.gettext('Select a track')
     btnSelect.addEventListener('click', (event) => {callDisk()})
+    $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
+    Object.keys(typeScoring).forEach(function(key, index) {
+      $('#mnu-scoring').append(`<a class="dropdown-item" href="#">${key}</a>`)
+    })
+    $( "#mnu-scoring a" ).on( "click", function() {
+      const selLeague =  $( this ).text()
+      $('button[data-toggle="dropdown"]').text(selLeague)    
+      runXcScore(selLeague)
+    })
 }
 
 function callDisk() {
@@ -213,6 +231,34 @@ btnFullmap.addEventListener('click', (event) => {
       }
     }
   }
+
+  function runXcScore(selScoring) { 
+    $('#waiting-spin').removeClass('d-none')
+    try {
+      if (track.fixes.length> 0) {
+        const argsScoring = {
+            igcString : track.igcData,
+            league : selScoring
+        }
+      // si on envoit avec ipcRenderer.sendSync, la div-waiting n'est pas affichée
+      ipcRenderer.send('ask-xc-score', argsScoring)   
+      } else {
+        alert(error)
+      }        
+    } catch (error) {
+      alert(error)      
+    }     
+  }
+
+function displayFullMap(track) {
+    if (track !== undefined)  {
+        if (track.fixes.length> 0) {    
+          let disp_map = ipcRenderer.send('display-maplog', track)   // process-main/maps/fullmaplog-disp.js
+        } else {
+          alert('Error  '+track.info.parsingError)
+        } 
+      }         
+}
 
   function displayStatus(content) {
     document.getElementById('status').innerHTML = i18n.gettext(content)
