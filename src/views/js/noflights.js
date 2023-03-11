@@ -3,10 +3,12 @@ const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
 const fs = require('fs')
 const path = require('path');
-const log = require('electron-log');
+const log = require('electron-log')
 const Store = require('electron-store')
+const { scoringRules } = require('igc-xc-score')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 const store = new Store()
+const typeScoring = scoringRules
 const tiles = require('../../leaflet/tiles.js')
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
@@ -46,8 +48,24 @@ function iniForm() {
     document.getElementById('tx_1').innerHTML = i18n.gettext('There are no flights in the logbook')
     document.getElementById('tx_2').innerHTML = i18n.gettext('Use the import option to fill the logbook')
     document.getElementById('tx_3').innerHTML = i18n.gettext('You can play with this demo track around the Mont Blanc') 
+    $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
+    Object.keys(typeScoring).forEach(function(key, index) {
+      $('#mnu-scoring').append(`<a class="dropdown-item" href="#">${key}</a>`)
+    })
+    $( "#mnu-scoring a" ).on( "click", function() {
+      const selLeague =  $( this ).text()
+      $('button[data-toggle="dropdown"]').text(selLeague)    
+      runXcScore(selLeague)
+    })    
     igcDisplay()
 }
+
+ipcRenderer.on('xc-score-result', (_, result) => {
+  track.xcscore = result    
+  $('#waiting-spin').addClass('d-none')
+  $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
+  displayFullMap()   
+})
 
 // Calls up the relevant page 
 function callPage(pageName) {
@@ -64,19 +82,8 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 btnFullmap.addEventListener('click', (event) => {  
-    if (track !== undefined)  {
-      if (track.fixes.length> 0) {    
-        // functionnal code
-        displayWait()
-        let disp_map = ipcRenderer.send('display-maplog', track)   // process-main/maps/fullmap-display.js
-      } else {
-        log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
-        let err_title = i18n.gettext("Program error")
-        let err_content = i18n.gettext("Decoding problem in track file")
-        ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
-      } 
-    }     
-  })  
+  displayFullMap()   
+})  
 
   btnFlyxc.addEventListener('click', (event) => { 
     displayFlyxc()
@@ -158,6 +165,42 @@ function igcDisplay() {
         }
       }
     }
+  }
+
+  function displayFullMap() {
+    if (track !== undefined)  {
+      if (track.fixes.length> 0) {    
+        // functionnal code
+        displayWait()
+        // Code OK
+        let disp_map = ipcRenderer.send('display-maplog', track)   // process-main/maps/fullmap-display.js
+        // Just for try 29 08 22 try wit fullmap-compute
+        //let disp_map = ipcRenderer.send('compute-map', track)   // process-main/maps/fullmap-compute.js
+      } else {
+        log.error('Full map not displayed -> track decoding error  '+track.info.parsingError)
+        let err_title = i18n.gettext("Program error")
+        let err_content = i18n.gettext("Decoding problem in track file")
+        ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
+      } 
+    }   
+  }
+
+  function runXcScore(selScoring) { 
+    $('#waiting-spin').removeClass('d-none')
+    try {
+      if (track.fixes.length> 0) {
+        const argsScoring = {
+            igcString : track.igcData,
+            league : selScoring
+        }
+      // si on envoit avec ipcRenderer.sendSync, la div-waiting n'est pas affichée
+      ipcRenderer.send('ask-xc-score', argsScoring)   
+      } else {
+        alert(error)
+      }        
+    } catch (error) {
+      alert(error)      
+    }     
   }
 
   function displayStatus(content) {
