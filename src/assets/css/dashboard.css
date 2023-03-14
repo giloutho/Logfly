@@ -1,0 +1,218 @@
+html {
+    font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+h5 {
+    font-size: 1.28571429em;
+    font-weight: 700;
+    line-height: 1.2857em;
+    margin: 0;
+}
+
+.card {
+    font-size: 1em;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    border-radius: .28571429rem;
+    box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
+}
+
+.card-block {
+    font-size: 1em;
+    position: relative;
+    margin: 0;
+    padding: 1em;
+    border: none;
+    border-top: 1px solid rgba(34, 36, 38, .1);
+    box-shadow: none;
+}
+
+.card-img-top {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.card-title {
+    margin-top: 25px;
+    font-size: 1.28571429em;
+    font-weight: 700;
+    line-height: 1.2857em;
+}
+
+.card-header {
+    margin-top: 0px;
+    background: #fff;
+}
+
+.card-text {
+    clear: both;
+    margin-top: .5em;
+    color: rgba(0, 0, 0, .68);
+}
+
+.card-footer {
+    font-size: 1em;
+    position: static;
+    top: 0;
+    left: 0;
+    max-width: 100%;
+    padding: .75em 1em;
+    color: rgba(0, 0, 0, .4);
+    border-top: 1px solid rgba(0, 0, 0, .05) !important;
+    background: #fff;
+}
+
+.card-inverse .btn {
+    border: 1px solid rgba(0, 0, 0, .05);
+}
+
+.card-body .rotate {
+    z-index: 8;
+    float: right;
+    height: 100%;
+}
+
+.card-body .rotate i {
+    color: rgba(20, 20, 20, 0.15);
+    position: absolute;
+    left: 0;
+    left: auto;
+    right: 10px;
+    bottom: 0;
+    display: block;
+    -webkit-transform: rotate(-44deg);
+    -moz-transform: rotate(-44deg);
+    -o-transform: rotate(-44deg);
+    -ms-transform: rotate(-44deg);
+    transform: rotate(-44deg);
+}
+
+.profile {
+    position: absolute;
+    top: -12px;
+    display: inline-block;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 25px;
+    height: 25px;
+    margin: 0;
+    border: 1px solid #fff;
+    border-radius: 50%;
+}
+
+.profile-avatar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.profile-inline {
+    position: relative;
+    top: 0;
+    display: inline-block;
+}
+
+.profile-inline ~ .card-title {
+    display: inline-block;
+    margin-left: 4px;
+    vertical-align: top;
+}
+
+.text-bold {
+    font-weight: 700;
+}
+
+.meta {
+    font-size: 1em;
+    color: rgba(0, 0, 0, .4);
+}
+
+.meta a {
+    text-decoration: none;
+    color: rgba(0, 0, 0, .4);
+}
+
+.meta a:hover {
+    color: rgba(0, 0, 0, .87);
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+  }
+
+/* CSS-only ribbon styles    */
+.cnrflash
+{
+    /*Position correctly within container*/
+    position: absolute;
+    top: -9px;
+    right: 0px;
+    z-index: 1; /*Set overflow to hidden, to mask inner square*/
+    overflow: hidden; /*Set size and add subtle rounding  		to soften edges*/
+    width: 70px;
+    height: 70px;
+    border-radius: 3px 5px 3px 0;
+}
+.cnrflash-inner
+{
+    /*Set position, make larger then 			container and rotate 45 degrees*/
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 105px;
+    height: 105px;
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -o-transform: rotate(45deg); /* Opera */
+    -moz-transform: rotate(45deg); /* Firefox */
+    -webkit-transform: rotate(45deg); /* Safari and Chrome */
+    -webkit-transform-origin: 100% 100%; /*Purely decorative effects to add texture and stuff*/ /* Safari and Chrome */
+    -ms-transform-origin: 100% 100%;  /* IE 9 */
+    -o-transform-origin: 100% 100%; /* Opera */
+    -moz-transform-origin: 100% 100%; /* Firefox */
+    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,.1) 50%), linear-gradient(0deg, transparent 0%, rgba(1,1,1,.2) 50%);
+    background-size: 4px,auto, auto,auto;
+    background-color: #286228;
+    box-shadow: 0 3px 3px 0 rgba(1,1,1,.5), 0 1px 0 0 rgba(1,1,1,.5), inset 0 -1px 8px 0 rgba(255,255,255,.3), inset 0 -1px 0 0 rgba(255,255,255,.2);
+}
+
+.cnrflash-inner:before
+{
+    left: 1px;
+    border-bottom-color: transparent;
+    border-right-color: transparent;
+}
+.cnrflash-inner:after
+{
+    right: 0;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+}
+.cnrflash-label
+{
+    /*Make the label look nice*/
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    padding-bottom: 5px;
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(1,1,1,.8);
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+}
+
+/*
+* To make the table scrollable
+* https://stackoverflow.com/questions/39768189/scrollbar-on-bootstrap-table
+*/
+.table-responsive {
+    max-height:350px;
+}
