@@ -348,7 +348,6 @@ function fillData() {
 
 
 function fillDataGliders(currYear) {  
-  let cumCurrFlights = 0
   let cumCurrHours = 0
   $("#right-table tr").remove(); 
   let tableTitle = '<tr><th style="width: 45%">'+i18n.gettext('Glider')+'</th>'
@@ -360,18 +359,16 @@ function fillDataGliders(currYear) {
   for (const gl of GliderSet.iterate()) {
       let duration = moment.duration(gl.Dur, 'seconds')
       const hTime = duration.format('HH[h]mm[mn]')
-      cumCurrFlights += gl.Nb
       cumCurrHours += gl.Dur
       $('#right-table').append('<tr><td>'+gl.V_Engin+'</td><td style="text-align: center;">'+gl.Nb+'</td><td>'+hTime+'</td></tr>')
   }
   const cumCurrDuration = moment.duration(cumCurrHours, 'seconds')
   const cumCurrTime = cumCurrDuration.format('h[h]mm[mn]')
-  document.getElementById('cumr-flights').innerHTML = i18n.gettext('Flights')+' : '+cumCurrFlights
+  document.getElementById('cumr-flights').innerHTML = i18n.gettext('Gliders')+' : '+cumCurrGliders
   document.getElementById('cumr-hours').innerHTML = cumCurrTime
 }
 
 function fillDataSites(currYear) {
-  let cumCurrSites = 0
   let cumCurrHours = 0
   $("#right-table tr").remove(); 
   let tableTitle = '<tr><th style="width: 55%">'+i18n.gettext('Site')+'</th>'
@@ -382,7 +379,6 @@ function fillDataSites(currYear) {
   for (const si of SitesSet.iterate()) {
       let duration = moment.duration(si.Dur, 'seconds')
       const hTime = duration.format('HH[h]mm[mn]')
-      cumCurrSites += si.Nb
       cumCurrHours += si.Dur
       $('#right-table').append('<tr><td>'+si.V_Site+'</td><td style="text-align: center;">'+si.Nb+'</td><td>'+hTime+'</td></tr>');
   }
