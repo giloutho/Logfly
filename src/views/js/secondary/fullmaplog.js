@@ -6,6 +6,8 @@ const Store = require('electron-store')
 const store = new Store()
 const dblog = require('../../../utils/db/db-search.js')
 const pieGnerator = require('../../../utils/graphic/pie-generator.js')
+const configkey  = require ('../../../../config/config.js')
+const listkey = configkey.access
 
 let mainTrack
 let anaTrack
@@ -111,14 +113,14 @@ function buildMap() {
         break;   
   }    
 
-  const openaip_cached_basemap = new L.TileLayer("http://{s}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{y}.png", {
+  const openKey = listkey.openaip
+  const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/airspaces/{z}/{x}/{y}.png?apiKey=${openKey}`, {
     maxZoom: 14,
     minZoom: 4,
-    tms: true,
     detectRetina: true,
-    subdomains: '12',
     format: 'image/png',
-    transparent: true
+    transparent: true,
+    opacity: 1
   });
 
 
@@ -169,7 +171,7 @@ function buildMap() {
   const GlidesGroup = new L.LayerGroup();
   GlidesGroup.addLayer(geoGlides);
 
-  let mAisrpaces = i18n.gettext('Airspaces')
+  let mAisrpaces = i18n.gettext('openAIP')
   let mTrack = i18n.gettext('Track')
   let mThermal = i18n.gettext('Thermals')
   let mTrans = i18n.gettext('Transitions')
