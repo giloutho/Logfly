@@ -97,6 +97,9 @@ dbtest/
 #i18n folder
 i18n/
 
+#config folder
+config
+
 # lock files
 package-lock.json
 yarn.lock
