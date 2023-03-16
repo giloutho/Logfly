@@ -172,23 +172,11 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 btnFlyxc.addEventListener('click', (event) => { 
-  //ipcRenderer.send("changeWindow", 'flyxc')    
-  // webOk({
-  //   // Provide maximum execution time for the verification
-  //   timeout: 3000,
-  //   // If it tries 5 times and it fails, then it will throw no internet
-  //   retries: 3
-  // }).then(() => {
-  //   ipcRenderer.send('error-dialog',['Internet', 'Internet Ok'])  
-  // }).catch(() => {
-  //   ipcRenderer.send('error-dialog',['Internet', 'Internet non disponible'])  
-  // })
-  // ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
-  //displayStatus('Decoding problem in track file')  
-
-  displayFlyxc()
-
-//  afficheFlyxc()
+  if (noGpsFlight) {
+    alert(i18n.gettext('No track to display'))
+  } else {
+    displayFlyxc()
+  }
 })
 
 
@@ -215,21 +203,25 @@ function displayFullMap() {
 }
 
 function runXcScore(selScoring) { 
-  $('#waiting-spin').removeClass('d-none')
-  try {
-    if (track.fixes.length> 0) {
-      const argsScoring = {
-          igcString : track.igcData,
-          league : selScoring
-      }
-    // si on envoit avec ipcRenderer.sendSync, la div-waiting n'est pas affichée
-    ipcRenderer.send('ask-xc-score', argsScoring)   
-    } else {
-      alert(error)
-    }        
-  } catch (error) {
-    alert(error)      
-  }     
+  if(!noGpsFlight) {
+    $('#waiting-spin').removeClass('d-none')
+    try {
+      if (track.fixes.length> 0) {
+        const argsScoring = {
+            igcString : track.igcData,
+            league : selScoring
+        }
+      // si on envoit avec ipcRenderer.sendSync, la div-waiting n'est pas affichée
+      ipcRenderer.send('ask-xc-score', argsScoring)   
+      } else {
+        alert(error)
+      }        
+    } catch (error) {
+      alert(error)      
+    }     
+  } else {
+    alert(i18n.gettext('No track to display'))
+  }
 }
 
 function displayFlyxc() {
