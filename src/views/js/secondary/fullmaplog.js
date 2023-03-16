@@ -813,9 +813,13 @@ function changeScoring() {
 }
 
 function displayScoring() {
-  if(map.hasLayer(scoreGroup)){
+
+  // first we make if(map.hasLayer(scoreGroup)){
+  // no problems with MLac and Windows
+  // Error with Linux
+  if (typeof scoreGroup !== "undefined") {
     map.removeLayer(scoreGroup)
-  } 
+  }
   const result = JSON.parse(JSON.stringify(mainTrack.xcscore))
   currLeague = result.league
   document.getElementById("sc-league").innerHTML = result.league
