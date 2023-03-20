@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
+## [6.0.4] - 2023-03-20
+
+* GPX format supported in disk import
+* Support contact form added
+* The annual summary is functional
+* The OpenAIP airspace layer is active in fullmap
+
 ## [6.0.3] - 2023-02-23
  
 ### Added
