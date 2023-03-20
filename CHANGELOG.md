@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [6.0.4] - 2023-03-20
 
 ### Added
+* Scoring track added
 * GPX format supported in disk import
 * Support contact form added
 * The annual summary is functional
