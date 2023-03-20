@@ -6,10 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [6.0.4] - 2023-03-20
 
+### Added
 * GPX format supported in disk import
 * Support contact form added
 * The annual summary is functional
 * The OpenAIP airspace layer is active in fullmap
+### Fixed
+* Many minor bugs
 
 ## [6.0.3] - 2023-02-23
  
