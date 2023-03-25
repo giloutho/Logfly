@@ -7,8 +7,10 @@
     <meta charset="UTF-8">
     <title>Logfly</title>
     <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
-    <link rel="stylesheet" href="../../assets/css/home.css">
+    <link rel="stylesheet" href="../../assets/css/home.css">    
     <!-- if necessary some specifics css will be added like leaflet.css -->
+    <link rel="stylesheet" href="../../../node_modules/leaflet/dist/leaflet.css" />  
+    <link rel="stylesheet" href="../../../node_modules/leaflet.control.layers.tree/L.Control.Layers.Tree.css" crossorigin=""/>
 </head>
 
 <body>
@@ -24,21 +26,61 @@
             <nav class="navbar navbar-expand-lg  navbar-custom">
                 <div class="container-fluid">
                     <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
-                    <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
-                    <span class="navbar-text mx-3" id="db-state"></span>
+                    <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections
+                    <span class="navbar-text mx-3" id="db-state"></span> -->
+                    <div class="collapse navbar-collapse" id="nav-action">
+                        <ul class="nav navbar-nav ml-auto d-none" id ="ul-action">
+                            <li class="nav-item">
+                              <a class="nav-link" id="level" href="#"></a>
+                            </li>            
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="dp-floor" data-toggle="dropdown"></a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" id="f500" href="#">500</a>
+                                    <a class="dropdown-item" id="f1000" href="#">1000</a>
+                                    <a class="dropdown-item" id="f2000" href="">2000</a>
+                                    <a class="dropdown-item" id="f3000" href="">3000</a>
+                                </div>
+                            </li>                               
+                            <li class="nav-item">
+                                <a class="nav-link" id="reset" href="#"></a>
+                            </li>                                
+                            <li class="nav-item">
+                                <a class="nav-link" id="save" href="#"></a>
+                            </li>     
+                            <li class="checkbox" style="margin-top: 7px;color: #0275d8;">
+                                    <input id="checkbox1" type="checkbox">
+                                    <label for="checkbox1">
+                                        Default
+                                    </label>
+                            </li>                                                         
+                        </ul>
+                    </div>                       
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="nav navbar-nav ml-auto">
+                            <li class="nav-item">
+                              <a class="nav-link" id="sel-open" href="#"></a>
+                            </li>            
+                            <li class="nav-item">
+                                <a class="nav-link" id="last-used" href="#"></a>
+                            </li>                                
+                            <li class="nav-item">
+                                <a class="nav-link" id="bazile" href="#"></a>
+                            </li>                                
+                        </ul>
+                    </div>                    
                 </div>
             </nav>  
             <!-- End of horizontal nabar  -->
             <!-- Main page content -->
             <div>
                 <div class="container-fluid">
-                  <div class="d-block" id="div_text">
-                    <p></p>
-                    <h1 id="tx_1">1</h1>
-                    <p></p>       
-                    <p></p>
-                    <h2 id="tx_2">2</h2>             
-                </div>  
+                    <div id="mapid" class="map-full" style="margin-top: 10px;"></div>
+                    <!--
+                    <div class="form-group" style="margin-top: 10px;">
+                        <textarea class="form-control d-none" id="report-txt" rows="5"></textarea>
+                    </div>
+                    -->
                 </div>
             </div>
             <!-- End of main page content -->
