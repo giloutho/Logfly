@@ -283,6 +283,20 @@ a.article:hover {
     border-radius: 5px;
 }
 
+.info {
+    padding: 6px 8px;
+    font: 10px/12px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+  }   
+  
+  .info h6 {
+      margin: 0 0 5px;
+      color: #777;
+  }    
+
 .importred {
     background-color: lightsalmon !important;
 }
@@ -343,4 +357,11 @@ table{
 
 .dropdown-toggle::after {
     content: none;
+}
+
+.treestyle {
+    font-size: 40% !important; 
+    overflow: auto;
+    max-height: 85vh;
+    color: #38148d;
 }
