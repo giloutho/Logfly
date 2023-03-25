@@ -51,6 +51,8 @@
     }
   },
   "dependencies": {
+    "@turf/bbox": "^6.5.0",
+    "@turf/center": "^6.5.0",
     "array-smooth": "^1.0.0",
     "better-sqlite3": "^7.5.0",
     "bootstrap": "^4.6.1",
@@ -87,7 +89,6 @@
     "save": "^2.9.0",
     "serialport": "^10.4.0",
     "sharp": "^0.30.7",
-    "simplify-geojson": "^1.0.4",
     "spherical-geometry-js": "2.0.0",
     "srtm-elevation": "^2.1.0",
     "zoned-date-time": "^1.1.0"
