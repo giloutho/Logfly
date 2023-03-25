@@ -68,4 +68,3 @@ function clearStatus() {
     statusContent.innerHTML = ''
     $('#status').hide();
 }
-
