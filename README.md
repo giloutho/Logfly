@@ -6,7 +6,6 @@ Logfly is a log book which stores paragliding flights with GPS tracks or not. It
 This project is in the first phase of development. All the features of version 5 are not yet present.
 
 ### Built With
-
 * [Electron](https://www.electronjs.org/)
 * [Electron-forge](https://github.com/electron-userland/electron-forge)
 * [Better-sqlite3](https://github.com/JoshuaWise/better-sqlite3)
