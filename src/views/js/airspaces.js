@@ -14,13 +14,21 @@ const btnLast = document.getElementById('last-used')
 const btnBaz = document.getElementById('bazile')
 const btnSave = document.getElementById('save')
 const btnReset = document.getElementById('reset')
+const selFloor = document.getElementById('sel-floor')
+const checkRest = document.getElementById("ch-rest")
+const labelFile = document.getElementById("lb-file")
+const infoPanel = document.getElementById("info-panel")
+
 let currLang
+let currFileName = null
+let currPolygons
 
 const tiles = require('../../leaflet/tiles.js')
 const L = tiles.leaf
 const layerTree = require('leaflet.control.layers.tree')
 const turfbbox = require('@turf/bbox').default
 const turfcenter = require('@turf/center').default
+const turfBoolean = require('@turf/boolean-point-in-polygon').default
 const baseMaps = tiles.baseMaps
 const baseTree = [
     {
@@ -33,8 +41,11 @@ const baseTree = [
         ]
     }
 ]
+const mapSidebar = require('../../leaflet/sidebar-tabless.js')
+
 let mapOA
 let layerscontrol
+let sidebar
 
 
 iniForm()
@@ -61,15 +72,19 @@ function iniForm() {
     btnSelect.innerHTML = i18n.gettext('Select a file')
     btnSelect.addEventListener('click', (event) => {callDisk()})
     btnLast.innerHTML = i18n.gettext('Last Used')
-    btnLast.addEventListener('click', (event) => {$('#ul-action').removeClass('d-none')})
+    btnLast.addEventListener('click', (event) => {displaySubNavbar()})
     btnBaz.innerHTML = '@Bazile'
+    btnBaz.addEventListener('click', (event) => {hideSubNavbar()})
     btnSave.innerHTML = i18n.gettext('Save')
     btnReset.innerHTML = i18n.gettext('Reset')
-    btnReset.addEventListener('click', (event) => {resetMap()})
-    document.getElementById('dp-floor').innerHTML = i18n.gettext('Floor')
-
-
-
+    btnReset.addEventListener('click', (event) => {totalUpdate()})    
+    document.getElementById('lb-floor').innerHTML = i18n.gettext('Floor')
+    document.getElementById('lb-rest').innerHTML = 'E,F,G, rest'
+    $("#sel-floor").append('<option value=' + 0 + ' selected >' + i18n.gettext('All') + '</option>') 
+    for (i=500; i <= 6000; i += 500){
+        $("#sel-floor").append('<option value=' + i + '>'+i+'</option>') 
+    }
+    checkRest.checked = true
     defaultMap()
 }
 
@@ -88,12 +103,11 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 ipcRenderer.on('open-airset', (event, airPolygons) => {
-    console.log(airPolygons.airspaceSet.length+' reçus')
     if (airPolygons.airspaceSet.length > 0) {
-        //mapAirspaces(airPolygons.airspaceSet)
-     //   console.log('center lon '+airPolygons.center.long)
-     console.log(airPolygons.bbox.minlat+' '+airPolygons.bbox.minlon+' '+airPolygons.bbox.maxlat+' '+airPolygons.bbox.maxlon)
-        mapUpdate(airPolygons)
+        currPolygons = airPolygons
+        totalUpdate()        
+    } else {
+        alert(i18n.gettext('Parsing error'))
     }
 })
 
@@ -108,7 +122,7 @@ function callDisk() {
     testpath[2] = '/Users/gil/Documents/Logfly/openair/Reno.txt'
     testpath[3] = '/Users/gil/Documents/Logfly/openair/Annecy.txt'
     testpath[4] = '/Users/gil/Documents/Logfly/openair/montauban.txt'
-    testpath[5] = '/Users/gil/Documents/Logfly/openair/Bazile_2022.txt'
+    testpath[5] = '/Users/gil/Documents/Logfly/openair/Bazile_Last.txt'
     testpath[6] = '/Users/gil/Documents/Logfly/openair/160731__AIRSPACE_FRANCE_TXT_1604d.txt'
     testpath[7] = '/Users/gil/Documents/Logfly/openair/Bazile_2022_17740_Bad.txt'
     testpath[8] = '/Users/gil/Documents/Logfly/openair/Baden_B.txt'
@@ -116,6 +130,7 @@ function callDisk() {
     testpath[10] = '/Users/gil/Documents/Logfly/openair/Bazile_2022_Good.txt'
     testpath[11] = '/Users/gil/Documents/Logfly/openair/sarlat.txt'
     let idxPath = 5
+    currFileName = 'Bazile_Last'
     decodeOA(testpath[idxPath])    
 }
 
@@ -136,6 +151,14 @@ function defaultMap() {
       mapOA.remove()
     }
     mapOA = L.map('mapid').setView([51.505, -0.09], 13);
+
+    sidebar = L.control.sidebar({
+        autopan: false,       // whether to maintain the centered map point when opening the sidebar
+        closeButton: true,    // whether t add a close button to the panes
+        container: 'infobar', // the DOM container or #ID of a predefined sidebar container that should be used
+        position: 'left',     // left or right
+      }).addTo(mapOA)
+
 
     // The tree containing the layers
 
@@ -169,177 +192,79 @@ function defaultMap() {
 
 }
 
-function mapAirspaces(airspaceSet) {
-    // map is already intialized by defaultMap()
-    // Impossible to add children dynamically on the tree
-    // https://github.com/jjimenezshaw/Leaflet.Control.Layers.Tree/issues/26
-    layerscontrol.remove()
-    var thunderAttr = {attribution: '© OpenStreetMap contributors. Tiles courtesy of Andy Allan'}
-    var transport = L.tileLayer(
-        '//{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png',
-        thunderAttr
-    );
-
-    var cycle = L.tileLayer(
-        '//{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png',
-        thunderAttr
-    );
-    let newLayer = {
-        label: 'Thunder',
-        children: [
-            {label: 'Cycle', layer: cycle},
-            {label: 'Transport', layer: transport},
-        ]
-    }
-    baseTree.push(newLayer)
-    layerscontrol = L.control.layers.tree(baseTree).addTo(mapOA)
-
-    // Modify layertree
-
-    let totalGeo = {    
-        "type": "FeatureCollection",
-          "crs": { 
-            "type": "name", 
-            "properties": { 
-              "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } 
-          },
-          "features": []
-    }
-    // We build the global geojson for all the spaces    
-    for (let i = 0; i < airspaceSet.length; i++) {
-        totalGeo.features.push(airspaceSet[i].dbGeoJson)
-    }
-    // console.log((JSON.stringify(totalGeo)))
-    let Aff_Zone = new L.geoJson(totalGeo,{style:styleReg, onEachFeature : evenement})
-
-    let info = L.control({position: 'bottomleft'})
-
-    info.onAdd = function (mapOA) {
-        this._div = L.DomUtil.create('div', 'info') 
-        this.update()
-        return this._div
-    }
-  
-    info.update = function (txtLegende) {
-        if (txtLegende === undefined) { txtLegende = 'Passez la souris sur un espace'; }
-        this._div.innerHTML = txtLegende
-    }
-  
-    info.addTo(mapOA)
-
-  
-    mapOA.addLayer(Aff_Zone);
-    var boundMap = Aff_Zone.getBounds()
-    mapOA.fitBounds(boundMap,{maxZoom : 15})
-
-    function styleReg(feature){
-        return{
-            fillColor: getColor(feature.properties.Cat),
-            weight: 1,
-            opacity: 1,
-            color: 'white',
-            fillOpacity: 0.4
-        };
-    }
-
-    function getColor(a){
-        return  a>22 ? '#999999':   
-                a>21 ? '#999999':
-                a>20 ? '#FFCC00':
-                a>19 ? '#5B900A':
-                a>18 ? '#00FF00':
-                a>17 ? '#66CCFF':
-                a>16 ? '#FF9999':            
-                a>15 ? '#FF00FF':
-                a>14 ? '#000000':
-                a>13 ? '#9999CC':
-                a>12 ? '#99FFFF':
-                a>11 ? '#FFFF00':
-                a>10 ? '#19BFBF':   
-                a>9 ? '#7FBC58':
-                a>8 ? '#A47A11':
-                a>7 ? '#900A68':
-                a>6 ? '#4B0A90':
-                a>5 ? '#FFCCCC':
-                a>4 ? '#FF0000':            
-                a>3 ? '#0000FF':
-                a>2 ? '#1971BF':
-                a>1 ? '#FFCCCC':
-                a>0 ? '#FE9A2E':                                                 
-                '#9999CC'; 
-    }
-
-    function evenement(feature, layer) {
-        layer.on({
-            mouseover: highlightFeature,
-            mouseout: resetHighlight,
-            click: zoomToFeature
-            });
-    }    
-
-    function javahighlightFeature(e) {
-        var layer = e.target;
-        layer.setStyle({
-            weight: 3,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.5
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera) {
-            layer.bringToFront();
-        }        
-
-        var txtLegende = '<h6><small>'+layer.feature.properties.Name+'</small></h6>';
-        txtLegende +=  'Floor : '+ layer.feature.properties.Floor + '<br />';
-        txtLegende +=  'Ceiling : '+ layer.feature.properties.Ceiling;
-        info.update(txtLegende);            
-    }
-
-    function highlightFeature(e) {
-        var layer = e.target;
-        layer.setStyle({
-            weight: 3,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera) {
-            layer.bringToFront();
-        }        
-
-        var txtLegende = '<h6><small>'+layer.feature.properties.Name+'</small></h6>';
-        txtLegende +=  'Class : '+ layer.feature.properties.Class + '<br />';
-        txtLegende +=  'Floor : '+ layer.feature.properties.Floor + ' m<br />';
-        txtLegende +=  'Ceiling : '+ layer.feature.properties.Ceiling+' m';
-        info.update(txtLegende);
-    }
-
-    function resetHighlight(e) {
-        Aff_Zone.resetStyle(e.target);
-        info.update('Passez la souris sur un espace');
-    }    
-
-    function zoomToFeature(e) {
-        map.fitBounds(e.target.getBounds());
-    }
-}
-
-function resetMap() {
-    $('#ul-action').removeClass('d-none')
-}
-
-function mapUpdate(airPolygons) {
+function totalUpdate() {
+    labelFile.innerHTML = currFileName+' : '+currPolygons.airspaceSet.length
+    displaySubNavbar()
     // First it's necessary to sort the array of airspaces
-    let classPolygons = airPolygons.airspaceSet.sort((oaObject1, oaObject2) => {
-        if(oaObject1.class > oaObject2.class){
+    let classPolygons = currPolygons.airspaceSet.sort((oaObject1, oaObject2) => {
+        if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
             return 1;
         }else{
             return -1;
         }
     })
+    mapUpdate(classPolygons)
+}
 
+function changeFloor() {
+    const ceilingLimit = selFloor.value
+    const polygonsFloor = currPolygons.airspaceSet.filter(element => {
+        return element.floor < ceilingLimit
+    })
+   if (polygonsFloor.length > 0) {
+        // We remove all geoJson
+        mapOA.eachLayer(function(layer){
+            if (layer.hasOwnProperty('feature')) {
+                mapOA.removeLayer(layer)       
+            }        
+        }) 
+        // it's necessary to sort the new array of filtered airspaces
+        let classPolygons = polygonsFloor.sort((oaObject1, oaObject2) => {
+            if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
+                return 1;
+            }else{
+                return -1;
+            }
+        })
+        labelFile.innerHTML = currFileName+' : '+classPolygons.length
+        mapUpdate(classPolygons)
+   }
+}
+
+function changeRestricted(){
+    if (checkRest.checked === false){
+        // Airspaces E,F, G and res are removed        
+        const polygonsNoRest = currPolygons.airspaceSet.filter(element => {
+            return element.class != 'E' && element.class != 'F' && element.class != 'G'
+        })        
+        if (polygonsNoRest.length > 0) {
+            // We remove all geoJson
+            mapOA.eachLayer(function(layer){
+                if (layer.hasOwnProperty('feature')) {
+                    mapOA.removeLayer(layer)       
+                }        
+            }) 
+            // it's necessary to sort the new array of filtered airspaces
+            let classPolygons = polygonsNoRest.sort((oaObject1, oaObject2) => {
+                if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            })
+            labelFile.innerHTML = currFileName+' : '+classPolygons.length
+            mapUpdate(classPolygons)        
+        }        
+      } else {
+        console.log('checked true')
+      }    
+}
+
+function mapReset() {
+    totalUpdate()
+}
+
+function mapUpdate(classPolygons) {
     // Impossible to add children dynamically on the tree
     // https://github.com/jjimenezshaw/Leaflet.Control.Layers.Tree/issues/26
     // We must remove
@@ -365,36 +290,36 @@ function mapUpdate(airPolygons) {
             subSet.selectAllCheckbox = true
             subSet.children = []        
             refClass = classPolygons[i].class
-            console.log('refClass : '+refClass)
         }
         let layerProp =  {
             label : classPolygons[i].class+' '+classPolygons[i].name,
             layer : new L.GeoJSON(classPolygons[i].dbGeoJson, {
                 style : styleReg,
-                onEachFeature: function (feature, layer) {       
-                    layer.on('mouseover', function () {
-                        console.log({feature})
-                        this.setStyle({
-                            weight: 3,
-                            color: '#666',
-                            dashArray: '',
-                            fillOpacity: 0.7                            
-                        });
-                    });
-                    layer.on('mouseout', function () {
-                        console.log({feature})
-                        console.log({layer})
-                        console.log(feature.properties.Cat)
-                        this.setStyle({
-                            fillColor: getColor(feature.properties.Cat),
-                            weight: 1,
-                            opacity: 1,
-                            color: 'white',
-                            fillOpacity: 0.4
-                        });
-                    });
+                // onEachFeature: function (feature, layer) {       
+                //     layer.on('mouseover', function () {
+                //    //     console.log({feature})
+                //     info.update(layer.feature.properties.Name)                
+                //    console.log(layer.feature.properties.Name)
+                //         this.setStyle({
+                //             weight: 3,
+                //             color: '#666',
+                //             dashArray: '',
+                //             fillOpacity: 0.7                            
+                //         });
+                //     });
+                //     layer.on('mouseout', function () {
+                //         console.log('mouse out')
+                //         info.update('')   
+                //         this.setStyle({
+                //             fillColor: getColor(feature.properties.Cat),
+                //             weight: 1,
+                //             opacity: 1,
+                //             color: 'white',
+                //             fillOpacity: 0.4
+                //         });
+                //     });
 
-                }
+                // }
             })
         }
         subSet.children.push(layerProp)  
@@ -404,7 +329,6 @@ function mapUpdate(airPolygons) {
     if (subSet.children.length > 0) {
         overlaysTree.children.push(subSet)
     }
-    console.log({overlaysTree})
 
     layerscontrol = L.control.layers.tree(baseTree, overlaysTree,
         {
@@ -423,50 +347,37 @@ function mapUpdate(airPolygons) {
         console.log('clic onlysel')
         layerscontrol.collapseTree(true).expandSelected(true);
     })
-
-    let info = L.control({position: 'bottomleft'})
-
-    info.onAdd = function (mapOA) {
-        this._div = L.DomUtil.create('div', 'info') 
-        this.update()
-        return this._div
-    }
-  
-    info.update = function (txtLegende) {
-        if (txtLegende === undefined) { txtLegende = 'Passez la souris sur un espace'; }
-        this._div.innerHTML = txtLegende
-    }
-  
-    info.addTo(mapOA)
-  
-   // console.log('center map '+airPolygons.center.lat+' '+airPolygons.center.long)
-    //mapOA.setView([airPolygons.center.lat,airPolygons.center.long], 8)
-    // mapOA.addLayer(Aff_Zone);
-    // var boundMap = Aff_Zone.getBounds()
-    // mapOA.fitBounds(boundMap,{maxZoom : 15})
-
-    let cMin = L.latLng(airPolygons.bbox.minlat,airPolygons.bbox.minlon)
-    let cMax = L.latLng(airPolygons.bbox.maxlat,airPolygons.bbox.maxlon)
+   
+    let cMin = L.latLng(currPolygons.bbox.minlat,currPolygons.bbox.minlon)
+    let cMax = L.latLng(currPolygons.bbox.maxlat,currPolygons.bbox.maxlon)
     mapOA.fitBounds(L.latLngBounds(cMin, cMax))
 
-    mapOA.on('click',function(e){  
+    mapOA.on('click',function(e){
+        let infoPanel = ''  
 		lat = e.latlng.lat;
 		lon = e.latlng.lng;
-		//alert(lat+' '+lon)	
+        let titleText = i18n.gettext('Lat')+' : '+(Math.round(lat * 1000) / 1000).toFixed(3)+'   '+i18n.gettext('Long')+' : '+(Math.round(lon * 1000) / 1000).toFixed(3)     
+        let pointClick = [e.latlng.lng, e.latlng.lat]
         mapOA.eachLayer(function(layer){
-          //  let toto = layer.feature.properties
-          //if (('properties' in layer)) {
             if (layer.hasOwnProperty('feature')) {
-                //console.log('OK '+layer.feature.hasOwnProperty('properties'))
-                if (layer.feature.hasOwnProperty('properties')) {
-                    console.log(layer.feature.properties.Name)
-                }
+                if (turfBoolean(pointClick, layer.feature)) {
+                    infoPanel += infoLayout(layer.feature.properties)
+                  }
             }
-         // }
           
-        });
-
-    });
+        })
+        if (infoPanel != '') {
+            infoPanel = infoPanel.replace (/^/,'<br>');
+            sidebar.removePanel('summary');
+            sidebar.addPanel({
+                id:   'summary',
+                tab:  '<i class="fa fa-gear"></i>',
+                title: titleText,
+                pane: infoPanel
+              })
+            sidebar.open('summary');
+        }
+    })
 
     function styleReg(feature){
         return{
@@ -505,64 +416,23 @@ function mapUpdate(airPolygons) {
                 '#9999CC'; 
     }
 
-    function evenement(feature, layer) {
-        console.log('ev')
-        console.log({feature})
-        console.log({layer})
-        layer.on({
-            mouseover: highlightFeature,
-            mouseout: resetHighlight,
-            click: zoomToFeature
-            });
-    }    
+    function infoLayout(pProperties) {
+        //let htmlText = '<p style="text-align: center;font-size:16px;background-color: #0275d8; color: white;">'
+        let htmlText = '<p style="text-align: center;font-size:16px;background-color: '+getColor(pProperties.Cat)+'; color: white;">'
+        htmlText += i18n.gettext('Class')+' : '+pProperties.Class+'&ensp;'+pProperties.Name+'</p>'
+        htmlText += '<p style="text-align: center;"><span style="background-color: #292b2c; color: white;margin-right: 50px">&ensp;'
+        htmlText += i18n.gettext('Floor')+' : '+pProperties.Floor+' m&ensp;</span>'
+        htmlText += '<span style="background-color:  #d9534f; color: white;">&ensp;'
+        htmlText += i18n.gettext('Ceiling')+' : '+pProperties.Ceiling+'m&ensp;</span></p><br>'
+        htmlText += '<p>'+pProperties.Comment+'</p>'
 
-    function javahighlightFeature(e) {
-        var layer = e.target;
-        layer.setStyle({
-            weight: 3,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.5
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera) {
-            layer.bringToFront();
-        }        
-
-        var txtLegende = '<h6><small>'+layer.feature.properties.Name+'</small></h6>';
-        txtLegende +=  'Floor : '+ layer.feature.properties.Floor + '<br />';
-        txtLegende +=  'Ceiling : '+ layer.feature.properties.Ceiling;
-        info.update(txtLegende);            
+        return htmlText
     }
+}
 
-    function highlightFeature(e) {
-        var layer = e.target;
-        layer.setStyle({
-            weight: 3,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera) {
-            layer.bringToFront();
-        }        
-
-        var txtLegende = '<h6><small>'+layer.feature.properties.Name+'</small></h6>';
-        txtLegende +=  'Class : '+ layer.feature.properties.Class + '<br />';
-        txtLegende +=  'Floor : '+ layer.feature.properties.Floor + ' m<br />';
-        txtLegende +=  'Ceiling : '+ layer.feature.properties.Ceiling+' m';
-        info.update(txtLegende);
-    }
-
-    function resetHighlight(e) {
-        Aff_Zone.resetStyle(e.target);
-        info.update('Passez la souris sur un espace');
-    }    
-
-    function zoomToFeature(e) {
-        map.fitBounds(e.target.getBounds());
-    }
+function fillPanel(infoText) {
+    console.log('infoText '+infoText)
+    return infoText
 }
 
 function computeBbox(airspaceSet) {
@@ -582,4 +452,24 @@ function computeBbox(airspaceSet) {
     totalGeo.features = airspaceSet
     let totalbox = turfbbox(totalGeo)
     console.log({totalbox})
+}
+
+function displaySubNavbar() {
+    $('#lb-file').removeClass('d-none')
+    $('#lb-floor').removeClass('d-none')
+    $('#sel-floor').removeClass('d-none')
+    $('#lb-rest').removeClass('d-none')
+    $('#lb-checkbox').removeClass('d-none')
+    $('#reset').removeClass('d-none')
+    $('#save').removeClass('d-none')
+}
+
+function hideSubNavbar() {
+    $('#lb-file').addClass('d-none')
+    $('#lb-floor').addClass('d-none')
+    $('#sel-floor').addClass('d-none')
+    $('#lb-rest').addClass('d-none')
+    $('#lb-checkbox').addClass('d-none')
+    $('#reset').addClass('d-none')
+    $('#save').addClass('d-none')
 }
