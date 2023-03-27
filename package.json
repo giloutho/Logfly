@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@turf/bbox": "^6.5.0",
+    "@turf/boolean-point-in-polygon": "^6.5.0",
     "@turf/center": "^6.5.0",
     "array-smooth": "^1.0.0",
     "better-sqlite3": "^7.5.0",
