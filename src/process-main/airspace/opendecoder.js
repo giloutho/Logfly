@@ -2,7 +2,6 @@ const {ipcMain} = require('electron')
 // https://github.com/tbrams/OpenAirJS/blob/master/app.js
 const geometry = require('spherical-geometry-js')
 const turfbbox = require('@turf/bbox').default
-const turfcenter = require('@turf/center').default
 const moment = require('moment')
 
 // Global variables
@@ -54,7 +53,6 @@ let totalGeo = {
 ipcMain.on('read-open', (event, openRequest) => {
     const myPolygons = decodeOA(openRequest.oaText, openRequest.report)
     if(myPolygons.airspaceSet.length > 0) {
-      const geoCenter = computeCenter()
       const geobox = computeBbox()
     }
     event.sender.send('open-airset', myPolygons)

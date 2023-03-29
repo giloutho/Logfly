@@ -3,8 +3,8 @@ const {ipcRenderer, clipboard} = require('electron')
 const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
 const fs = require('fs')
-const path = require('path');
-const log = require('electron-log');
+const path = require('path')
+const log = require('electron-log')
 const Store = require('electron-store')
 const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
@@ -26,9 +26,10 @@ let currPolygons
 const tiles = require('../../leaflet/tiles.js')
 const L = tiles.leaf
 const layerTree = require('leaflet.control.layers.tree')
-const turfbbox = require('@turf/bbox').default
-const turfcenter = require('@turf/center').default
 const turfBoolean = require('@turf/boolean-point-in-polygon').default
+const turfIntersect =  require('@turf/boolean-intersects').default 
+const areaSelect = require('../../leaflet/leaflet-areaselect.js')
+const easyButton = require('leaflet-easybutton')
 const baseMaps = tiles.baseMaps
 const baseTree = [
     {
@@ -46,7 +47,7 @@ const mapSidebar = require('../../leaflet/sidebar-tabless.js')
 let mapOA
 let layerscontrol
 let sidebar
-
+let toggleSelect = null
 
 iniForm()
 
@@ -55,17 +56,17 @@ function iniForm() {
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-            let langjson = JSON.parse(content);
+            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+            let langjson = JSON.parse(content)
             i18n.setMessages('messages', currLang, langjson)
-            i18n.setLocale(currLang);
+            i18n.setLocale(currLang)
         }
       } catch (error) {
           log.error('[problem.js] Error while loading the language file')
       }  
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
-        var template = $(templates).filter('#temp-menu').html();  
+        var template = $(templates).filter('#temp-menu').html()  
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
@@ -90,16 +91,16 @@ function iniForm() {
 
 // Calls up the relevant page 
 function callPage(pageName) {
-    ipcRenderer.send("changeWindow", pageName);    // main.js
+    ipcRenderer.send("changeWindow", pageName)    // main.js
 }
 
 btnMenu.addEventListener('click', (event) => {
     if (btnMenu.innerHTML === "Menu On") {
-        btnMenu.innerHTML = "Menu Off";
+        btnMenu.innerHTML = "Menu Off"
     } else {
-        btnMenu.innerHTML = "Menu On";
+        btnMenu.innerHTML = "Menu On"
     }
-    $('#sidebar').toggleClass('active');
+    $('#sidebar').toggleClass('active')
 })
 
 ipcRenderer.on('open-airset', (event, airPolygons) => {
@@ -137,7 +138,7 @@ function callDisk() {
 function decodeOA(filename) {
     //$('#title').text(filenameOpen)
     let modeDebug = true
-    let content = fs.readFileSync(filename, 'utf8');
+    let content = fs.readFileSync(filename, 'utf8')
     let openRequest = {
     oaText : content, 
     report : false     // Mode debug with full decoding report 
@@ -150,7 +151,7 @@ function defaultMap() {
       mapOA.off()
       mapOA.remove()
     }
-    mapOA = L.map('mapid').setView([51.505, -0.09], 13);
+    mapOA = L.map('mapid').setView([51.505, -0.09], 13)
 
     sidebar = L.control.sidebar({
         autopan: false,       // whether to maintain the centered map point when opening the sidebar
@@ -162,7 +163,7 @@ function defaultMap() {
 
     // The tree containing the layers
 
-    layerscontrol = L.control.layers.tree(baseTree).addTo(mapOA);
+    layerscontrol = L.control.layers.tree(baseTree).addTo(mapOA)
 
   //  L.control.layers(baseMaps).addTo(mapOA)
     const defaultMap = store.get('map')
@@ -189,7 +190,6 @@ function defaultMap() {
         baseMaps.OSM.addTo(mapOA)        
         break     
     }
-
 }
 
 function totalUpdate() {
@@ -198,9 +198,9 @@ function totalUpdate() {
     // First it's necessary to sort the array of airspaces
     let classPolygons = currPolygons.airspaceSet.sort((oaObject1, oaObject2) => {
         if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
-            return 1;
+            return 1
         }else{
-            return -1;
+            return -1
         }
     })
     mapUpdate(classPolygons)
@@ -221,9 +221,9 @@ function changeFloor() {
         // it's necessary to sort the new array of filtered airspaces
         let classPolygons = polygonsFloor.sort((oaObject1, oaObject2) => {
             if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
-                return 1;
+                return 1
             }else{
-                return -1;
+                return -1
             }
         })
         labelFile.innerHTML = currFileName+' : '+classPolygons.length
@@ -247,9 +247,9 @@ function changeRestricted(){
             // it's necessary to sort the new array of filtered airspaces
             let classPolygons = polygonsNoRest.sort((oaObject1, oaObject2) => {
                 if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
-                    return 1;
+                    return 1
                 }else{
-                    return -1;
+                    return -1
                 }
             })
             labelFile.innerHTML = currFileName+' : '+classPolygons.length
@@ -258,6 +258,51 @@ function changeRestricted(){
       } else {
         console.log('checked true')
       }    
+}
+
+function mapArea(areaCoord) {
+    let areaGeojson = {
+        type :"Feature",
+        properties : {
+            "name": "area select"
+          },
+        geometry : {
+            type : "Polygon",
+            coordinates : areaCoord
+        } 
+    }
+    let selectPolygons = []
+    mapOA.eachLayer(function(layer){
+        if (layer.hasOwnProperty('feature')) {
+            if (turfIntersect(areaGeojson,layer.feature)) {
+                let selected = currPolygons.airspaceSet.find(e => {    
+                    if (e.dbGeoJson.properties.Name === layer.feature.properties.Name) {
+                    return e
+                }
+                })
+                selectPolygons.push(selected)                
+            }
+        
+        }
+    })
+    if (selectPolygons.length > 0) {
+        // We remove all geoJson
+        mapOA.eachLayer(function(layer){
+            if (layer.hasOwnProperty('feature')) {
+                mapOA.removeLayer(layer)       
+            }        
+        })     
+        // it's necessary to sort the new array of filtered airspaces
+        let finalPolygons = selectPolygons.sort((oaObject1, oaObject2) => {
+            if(oaObject1.class+oaObject1.name > oaObject2.class+oaObject2.name){
+                return 1
+            }else{
+                return -1
+            }
+        })
+        labelFile.innerHTML = currFileName+' : '+finalPolygons.length
+        mapUpdate(finalPolygons)
+    }      
 }
 
 function mapReset() {
@@ -340,22 +385,49 @@ function mapUpdate(classPolygons) {
             expandAll: 'Expand all',
             collapsed: false,
             selectAll : true
-        });
+        })
 
     layerscontrol.addTo(mapOA).collapseTree().expandSelected().collapseTree(true)
     L.DomEvent.on(L.DomUtil.get('onlysel'), 'click', function() {
         console.log('clic onlysel')
-        layerscontrol.collapseTree(true).expandSelected(true);
+        layerscontrol.collapseTree(true).expandSelected(true)
     })
    
+
+    let areaSelect = null
+    if (toggleSelect === null || toggleSelect === undefined) {
+        // https://github.com/cliffcloud/Leaflet.EasyButton
+        toggleSelect = L.easyButton({
+            states: [{
+                stateName: 'add-rect',
+                icon: 'fa-square',
+                title: i18n.gettext('Show the selection rectangle'),
+                onClick: function(control) {
+                    Add_Rect()
+                    control.state('remove-rect')
+                }
+            }, {
+                icon: 'fa-check',
+                stateName: 'remove-rect',
+                onClick: function(control) {
+                    Remove_Rect()
+                    control.state('add-rect')
+                },
+                title: i18n.gettext('Removes the selection rectangle')
+            }]
+            })
+        
+        toggleSelect.addTo(mapOA)
+    }
+
     let cMin = L.latLng(currPolygons.bbox.minlat,currPolygons.bbox.minlon)
     let cMax = L.latLng(currPolygons.bbox.maxlat,currPolygons.bbox.maxlon)
     mapOA.fitBounds(L.latLngBounds(cMin, cMax))
 
     mapOA.on('click',function(e){
         let infoPanel = ''  
-		lat = e.latlng.lat;
-		lon = e.latlng.lng;
+		lat = e.latlng.lat
+		lon = e.latlng.lng
         let titleText = i18n.gettext('Lat')+' : '+(Math.round(lat * 1000) / 1000).toFixed(3)+'   '+i18n.gettext('Long')+' : '+(Math.round(lon * 1000) / 1000).toFixed(3)     
         let pointClick = [e.latlng.lng, e.latlng.lat]
         mapOA.eachLayer(function(layer){
@@ -367,17 +439,33 @@ function mapUpdate(classPolygons) {
           
         })
         if (infoPanel != '') {
-            infoPanel = infoPanel.replace (/^/,'<br>');
-            sidebar.removePanel('summary');
+            infoPanel = infoPanel.replace (/^/,'<br>')
+            sidebar.removePanel('summary')
             sidebar.addPanel({
                 id:   'summary',
                 tab:  '<i class="fa fa-gear"></i>',
                 title: titleText,
                 pane: infoPanel
               })
-            sidebar.open('summary');
+            sidebar.open('summary')
         }
     })
+
+    function Add_Rect() {
+        areaSelect = L.areaSelect({width:200, height:200})
+        areaSelect.addTo(mapOA)
+    }
+
+    function Remove_Rect() {
+        let bounds = areaSelect.getBounds()
+        const corner1 = [bounds.getSouthWest().lng,bounds.getNorthEast().lat]
+        const corner2 = [bounds.getNorthEast().lng,bounds.getNorthEast().lat]
+        const corner3 = [bounds.getNorthEast().lng,bounds.getSouthWest().lat]
+        const corner4 = [bounds.getSouthWest().lng,bounds.getSouthWest().lat]        
+        const areaCoord = [[corner1,corner2,corner3,corner4,corner1]]
+        areaSelect.remove()
+        mapArea(areaCoord)
+    }    
 
     function styleReg(feature){
         return{
@@ -386,7 +474,7 @@ function mapUpdate(classPolygons) {
             opacity: 1,
             color: 'white',
             fillOpacity: 0.4
-        };
+        }
     }
 
     function getColor(a){
@@ -413,7 +501,7 @@ function mapUpdate(classPolygons) {
                 a>2 ? '#1971BF':
                 a>1 ? '#FFCCCC':
                 a>0 ? '#FE9A2E':                                                 
-                '#9999CC'; 
+                '#9999CC' 
     }
 
     function infoLayout(pProperties) {
@@ -433,25 +521,6 @@ function mapUpdate(classPolygons) {
 function fillPanel(infoText) {
     console.log('infoText '+infoText)
     return infoText
-}
-
-function computeBbox(airspaceSet) {
-    let totalGeo = {    
-        "type": "FeatureCollection",
-          "crs": { 
-            "type": "name", 
-            "properties": { 
-              "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } 
-          },
-          "features": []
-    }
-    //We build the global geojson for all the spaces    
-    for (let i = 0; i < airspaceSet.length; i++) {
-        totalGeo.features.push(airspaceSet[i].dbGeoJson)
-    }
-    totalGeo.features = airspaceSet
-    let totalbox = turfbbox(totalGeo)
-    console.log({totalbox})
 }
 
 function displaySubNavbar() {
