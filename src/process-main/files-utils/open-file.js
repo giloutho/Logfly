@@ -154,3 +154,32 @@ ipcMain.on('save-open', (event, openData) => {
     event.returnValue = 'Error : '+err
     })
 })
+
+ipcMain.on('save-gpx', (event, openData) => {
+  let resultMsg = null
+  filename = dialog.showSaveDialog(
+    { title: 'Export GPX',
+      filters: [{
+        name: 'GPX format',
+        extensions: ['gpx']
+      }]
+    }
+  )
+  .then(result => {
+      filename = result.filePath
+      console.log('filename ; '+filename)
+      if (filename === undefined || filename === '') {
+        event.returnValue = 'Error : the user clicked the btn but didn\'t created a file'        
+      }
+      fs.writeFile(filename, openData, (err) => {
+        if (err) {
+          event.returnValue = 'Error : An error ocurred with file creation ' + err.message          
+        }
+        event.returnValue = result.filePath        
+      })      
+    })
+  .catch(err => {
+    console.log(err)
+    event.returnValue = 'Error : '+err
+    })
+})
