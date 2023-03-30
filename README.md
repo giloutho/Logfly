@@ -9,6 +9,7 @@ This project is in the first phase of development. All the features of version 5
 * [Electron](https://www.electronjs.org/)
 * [Electron-forge](https://github.com/electron-userland/electron-forge)
 * [Better-sqlite3](https://github.com/JoshuaWise/better-sqlite3)
+* [Leaflet](https://github.com/Leaflet/Leaflet)
 
 ### Credits
 - [Tom Payne](https://github.com/twpayne) the first paragliding softwares developer
