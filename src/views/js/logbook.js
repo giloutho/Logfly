@@ -15,7 +15,6 @@ let store = new Store()
 const typeScoring = scoringRules
 let db = require('better-sqlite3')(store.get('dbFullPath'))
 let menuFill = require('../../views/tpl/sidebar.js')
-const { Alert } = require('bootstrap')
 let btnMenu = document.getElementById('toggleMenu')
 let inputArea = document.getElementById('inputdata')
 
@@ -111,6 +110,9 @@ function iniForm() {
               case "Igc" : 
                 exportIgc()
                 break
+              case "Gpx" : 
+                exportGpx()
+                break                
               case "Merge" : 
                 break   
               case "Dupli" : 
@@ -129,7 +131,8 @@ function iniForm() {
             "Glider": {name: i18n.gettext("Glider flight time")},
             "Day": {name: i18n.gettext("Photo of the day")},
             "Delete": {name: i18n.gettext("Delete")},
-            "Igc": {name: i18n.gettext("Export IGC")},
+            "Igc": {name: i18n.gettext("IGC export")},
+            "Gpx": {name: i18n.gettext("GPX export")},
             "Merge": {name: i18n.gettext("Merge flights")},
             "Dupli": {name: i18n.gettext("Edit/Duplicate")}
         }
@@ -920,6 +923,22 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
   }
 }
 
+function exportGpx() {
+  const togpx = require('togpx')
+  if (track.GeoJSON != undefined) {
+    try {
+      let gpxText = togpx(track.GeoJSON)
+      const exportResult = ipcRenderer.sendSync('save-gpx',gpxText)
+      if (exportResult.indexOf('Error') !== -1) {
+          alert(exportResult)      
+      } else {
+          alert(i18n.gettext('Successful operation'))
+      }        
+    } catch (error) {
+      alert(error)
+    }
+  }
+}
 
 function exportIgc() {
   if (currIgcText === undefined || currIgcText == "" ) {

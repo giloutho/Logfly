@@ -4,15 +4,19 @@ const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
 const fs = require('fs')
 const path = require('path')
+const os = require('os')
+const checkInternetConnected = require('check-internet-connected')
 const log = require('electron-log')
 const Store = require('electron-store')
 const store = new Store()
+const moment = require('moment')
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
 const btnSelect = document.getElementById('sel-open')
 const btnLast = document.getElementById('last-used')
 const btnBaz = document.getElementById('bazile')
-const btnSave = document.getElementById('save')
+const btnSaveOpen = document.getElementById('save-open')
+const btnSaveGpx = document.getElementById('save-gpx')
 const btnReset = document.getElementById('reset')
 const selFloor = document.getElementById('sel-floor')
 const checkRest = document.getElementById("ch-rest")
@@ -21,6 +25,7 @@ const infoPanel = document.getElementById("info-panel")
 
 let currLang
 let currFileName = null
+let currFilePath = null
 let currPolygons
 
 const tiles = require('../../leaflet/tiles.js')
@@ -70,13 +75,18 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
+    labelFile.style.color = 'white'
+    labelFile.style.backgroundColor = '#0275d8'
     btnSelect.innerHTML = i18n.gettext('Select a file')
     btnSelect.addEventListener('click', (event) => {callDisk()})
     btnLast.innerHTML = i18n.gettext('Last Used')
-    btnLast.addEventListener('click', (event) => {displaySubNavbar()})
+    btnLast.addEventListener('click', (event) => {callLastUsed()})
     btnBaz.innerHTML = '@Bazile'
-    btnBaz.addEventListener('click', (event) => {hideSubNavbar()})
-    btnSave.innerHTML = i18n.gettext('Save')
+    btnBaz.addEventListener('click', (event) => {downloadBazile()})
+    btnSaveOpen.innerHTML = i18n.gettext('Open Air format')    
+    btnSaveOpen.addEventListener('click', (event) => {save()})    
+    btnSaveGpx.innerHTML = i18n.gettext('GPX Format')
+    btnSaveGpx.addEventListener('click', (event) => {exportGPX()})  
     btnReset.innerHTML = i18n.gettext('Reset')
     btnReset.addEventListener('click', (event) => {totalUpdate()})    
     document.getElementById('lb-floor').innerHTML = i18n.gettext('Floor')
@@ -104,7 +114,9 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 ipcRenderer.on('open-airset', (event, airPolygons) => {
+    $('#waiting-spin').addClass('d-none')
     if (airPolygons.airspaceSet.length > 0) {
+        if(currFilePath != null && currFilePath != '') store.set('lastair',currFilePath)
         currPolygons = airPolygons
         totalUpdate()        
     } else {
@@ -112,36 +124,66 @@ ipcRenderer.on('open-airset', (event, airPolygons) => {
     }
 })
 
+ipcRenderer.on("dl-complete", (event, fullPathFile) => {
+    console.log('Téléchargement terminé : '+fullPathFile) // Full file path   
+    if(fullPathFile != null) {    
+        if (currPolygons != undefined && currPolygons.airspaceSet.length > 0 ) {
+            // We remove all geoJson
+            mapOA.eachLayer(function(layer){
+            if (layer.hasOwnProperty('feature')) {
+                mapOA.removeLayer(layer)       
+            }      
+            }) 
+            currPolygons = {} 
+        } 
+      //  let fileName = fullPathFile.substring(fullPathFile.lastIndexOf('/')+1)
+     //   currFileName = selectedFile.fileName.replace(/\.[^/.]+$/, "")
+        currFileName = 'Bazile'
+        currFilePath = fullPathFile
+        decodeOA(fullPathFile)    
+    }      
+})
+
 function callDisk() {
-    // const selectedFile = ipcRenderer.sendSync('open-file','')
-    // if(selectedFile.fullPath != null) {
-    //     alert(selectedFile.fullPath)
-    // }    
-    let testpath = []
-    testpath[0] = '/Users/gil/Documents/Logfly/openair/Chamonix.txt'
-    testpath[1] = '/Users/gil/Documents/Logfly/openair/Annecy_ctr.txt'
-    testpath[2] = '/Users/gil/Documents/Logfly/openair/Reno.txt'
-    testpath[3] = '/Users/gil/Documents/Logfly/openair/Annecy.txt'
-    testpath[4] = '/Users/gil/Documents/Logfly/openair/montauban.txt'
-    testpath[5] = '/Users/gil/Documents/Logfly/openair/Bazile_Last.txt'
-    testpath[6] = '/Users/gil/Documents/Logfly/openair/160731__AIRSPACE_FRANCE_TXT_1604d.txt'
-    testpath[7] = '/Users/gil/Documents/Logfly/openair/Bazile_2022_17740_Bad.txt'
-    testpath[8] = '/Users/gil/Documents/Logfly/openair/Baden_B.txt'
-    testpath[9] = '/Users/gil/Documents/Logfly/openair/Baden_B_Good.txt'
-    testpath[10] = '/Users/gil/Documents/Logfly/openair/Bazile_2022_Good.txt'
-    testpath[11] = '/Users/gil/Documents/Logfly/openair/sarlat.txt'
-    let idxPath = 5
-    currFileName = 'Bazile_Last'
-    decodeOA(testpath[idxPath])    
+    const selectedFile = ipcRenderer.sendSync('open-file','')
+    if(selectedFile.fullPath != null) {    
+        runFile(selectedFile.fullPath,selectedFile.fileName)           
+    }    
+}
+
+function callLastUsed() {
+    let lastFilePath = store.get('lastair')
+    if (lastFilePath != undefined && lastFilePath != '') {
+        const pathParts = lastFilePath.split(path.sep)
+        const fileName = pathParts.pop()
+        runFile(lastFilePath,fileName) 
+    } else {
+        alert(i18n.gettext('No recorded file'))
+    }
+}
+
+function runFile(fullPath,fileName) {
+    $('#waiting-spin').removeClass('d-none')
+    if (currPolygons != undefined && currPolygons.airspaceSet.length > 0 ) {
+        // We remove all geoJson
+        mapOA.eachLayer(function(layer){
+        if (layer.hasOwnProperty('feature')) {
+            mapOA.removeLayer(layer)       
+        }      
+        }) 
+        currPolygons = {} 
+    } 
+    currFileName = fileName.replace(/\.[^/.]+$/, "")
+    currFilePath = fullPath
+    decodeOA(fullPath)     
 }
 
 function decodeOA(filename) {
-    //$('#title').text(filenameOpen)
     let modeDebug = true
     let content = fs.readFileSync(filename, 'utf8')
     let openRequest = {
-    oaText : content, 
-    report : false     // Mode debug with full decoding report 
+        oaText : content, 
+        report : false     // Mode debug with full decoding report 
     }
     const oaDecoding = ipcRenderer.send('read-open', openRequest)
   }
@@ -151,7 +193,13 @@ function defaultMap() {
       mapOA.off()
       mapOA.remove()
     }
-    mapOA = L.map('mapid').setView([51.505, -0.09], 13)
+
+    let mapLat, mapLong
+    let defLong = store.get('finderlong')
+    let defLat = store.get('finderlat')
+    mapLat = defLat != undefined && defLat != '' ? defLat : 45.8326  // Mont Blanc
+    mapLong = defLong != undefined && defLong != '' ? defLong : 6.865  // Mont Blanc
+    mapOA = L.map('mapid').setView([mapLat, mapLong], 12)
 
     sidebar = L.control.sidebar({
         autopan: false,       // whether to maintain the centered map point when opening the sidebar
@@ -193,7 +241,7 @@ function defaultMap() {
 }
 
 function totalUpdate() {
-    labelFile.innerHTML = currFileName+' : '+currPolygons.airspaceSet.length
+    labelFile.innerHTML = '&ensp;'+currFileName+' : '+currPolygons.airspaceSet.length+'&ensp;'
     displaySubNavbar()
     // First it's necessary to sort the array of airspaces
     let classPolygons = currPolygons.airspaceSet.sort((oaObject1, oaObject2) => {
@@ -389,7 +437,6 @@ function mapUpdate(classPolygons) {
 
     layerscontrol.addTo(mapOA).collapseTree().expandSelected().collapseTree(true)
     L.DomEvent.on(L.DomUtil.get('onlysel'), 'click', function() {
-        console.log('clic onlysel')
         layerscontrol.collapseTree(true).expandSelected(true)
     })
    
@@ -504,9 +551,35 @@ function mapUpdate(classPolygons) {
                 '#9999CC' 
     }
 
+    function getColBack(a){
+        return  a>22 ? '#999999; color: black;':   
+                a>21 ? '#999999; color: black;':
+                a>20 ? '#FFCC00; color: black;':
+                a>19 ? '#5B900A; color: white;':
+                a>18 ? '#00FF00; color: black;':
+                a>17 ? '#66CCFF; color: black;':
+                a>16 ? '#FF9999; color: black;':            
+                a>15 ? '#FF00FF; color: white;':
+                a>14 ? '#000000; color: white;':
+                a>13 ? '#9999CC; color: black;':
+                a>12 ? '#99FFFF; color: black;':
+                a>11 ? '#FFFF00; color: black;':
+                a>10 ? '#19BFBF; color: white;':   
+                a>9 ? '#7FBC58; color: black;':
+                a>8 ? '#A47A11; color: white;':
+                a>7 ? '#900A68; color: white;':
+                a>6 ? '#4B0A90; color: white;':
+                a>5 ? '#FFCCCC; color: black;':
+                a>4 ? '#FF0000; color: white;':            
+                a>3 ? '#0000FF; color: white;':
+                a>2 ? '#1971BF; color: white;':
+                a>1 ? '#FFCCCC; color: black;':
+                a>0 ? '#FE9A2E; color: black;':                                                 
+                '#9999CC; color: black;' 
+    }
+
     function infoLayout(pProperties) {
-        //let htmlText = '<p style="text-align: center;font-size:16px;background-color: #0275d8; color: white;">'
-        let htmlText = '<p style="text-align: center;font-size:16px;background-color: '+getColor(pProperties.Cat)+'; color: white;">'
+        let htmlText = '<p style="text-align: center;font-size:16px;background-color: '+getColBack(pProperties.Cat)+'">'
         htmlText += i18n.gettext('Class')+' : '+pProperties.Class+'&ensp;'+pProperties.Name+'</p>'
         htmlText += '<p style="text-align: center;"><span style="background-color: #292b2c; color: white;margin-right: 50px">&ensp;'
         htmlText += i18n.gettext('Floor')+' : '+pProperties.Floor+' m&ensp;</span>'
@@ -518,9 +591,92 @@ function mapUpdate(classPolygons) {
     }
 }
 
-function fillPanel(infoText) {
-    console.log('infoText '+infoText)
-    return infoText
+function save() {
+    let openText = ''
+    mapOA.eachLayer(function(layer){
+        if (layer.hasOwnProperty('feature')) {
+            let selected = currPolygons.airspaceSet.find(e => {    
+                if (e.dbGeoJson.properties.Name === layer.feature.properties.Name) {
+                    return e
+                }
+            })
+            openText += selected.openair+"\r\n\r\n"
+        }      
+    })
+    if (openText != '') {
+        const currentdate = new Date()
+        let dateOp = moment(currentdate).format("DD MM YYYY")
+        let headerFile = "**********************************************************************\r\n"
+        headerFile += "*                                                                    *\r\n"
+        headerFile += "*                         OPEN AIR FILE                              *\r\n"
+        headerFile += "*                      Generated by LOGFLY 6                         *\r\n"
+        headerFile += "*                            "+dateOp+"                              *\r\n"
+        headerFile += "*                                                                    *\r\n"
+        headerFile += "**********************************************************************\r\n\r\n"
+        let totalText = headerFile+openText
+        const exportResult = ipcRenderer.sendSync('save-open',totalText)
+        if (exportResult.indexOf('Error') !== -1) {
+            alert(exportResult)      
+        } else {
+            alert(i18n.gettext('Successful operation'))
+        }  
+    }    
+}
+
+function exportGPX() {
+    const togpx = require('togpx')
+    let totalGeoJson = {    
+        "type": "FeatureCollection",
+        "features": []
+    }
+    let nbGeoJson = 0
+    mapOA.eachLayer(function(layer){
+        if (layer.hasOwnProperty('feature')) {
+            let selected = currPolygons.airspaceSet.find(e => {    
+                if (e.dbGeoJson.properties.Name === layer.feature.properties.Name) {
+                    return e
+                }
+            })
+            totalGeoJson.features.push(selected.dbGeoJson)
+            nbGeoJson++
+        }      
+    })
+    if (nbGeoJson > 0) {
+        //console.log(JSON.stringify(totalGeoJson))
+        let gpxText = togpx(totalGeoJson)
+        const exportResult = ipcRenderer.sendSync('save-gpx',gpxText)
+        if (exportResult.indexOf('Error') !== -1) {
+            alert(exportResult)      
+        } else {
+            alert(i18n.gettext('Successful operation'))
+        }  
+    }
+}
+
+function downloadBazile() {
+    $('#waiting-spin').removeClass('d-none')
+    
+    const memBazile = store.get('urlairspace')
+    const defBazile = 'http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVers_ff-French-outT.txt'
+    let baziUrl
+    if (memBazile != 'undefined' && memBazile != '') {
+        baziUrl = memBazile
+    } else {
+        baziUrl = 'http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVers_ff-French-outT.txt'
+        store.set('urlairspace',baziUrl)
+    } 
+    const config = {
+        timeout: 5000, 
+        retries: 3,
+        domain: baziUrl
+    }
+    checkInternetConnected(config)
+        .then((result) => {
+            ipcRenderer.send('dl-file-progress', baziUrl)
+        })
+        .catch((ex) => {
+            alert(i18n.gettext('Bad download URL'))
+        });
 }
 
 function displaySubNavbar() {
@@ -531,6 +687,7 @@ function displaySubNavbar() {
     $('#lb-checkbox').removeClass('d-none')
     $('#reset').removeClass('d-none')
     $('#save').removeClass('d-none')
+    $('#drop-save').removeClass('d-none')
 }
 
 function hideSubNavbar() {
@@ -541,4 +698,5 @@ function hideSubNavbar() {
     $('#lb-checkbox').addClass('d-none')
     $('#reset').addClass('d-none')
     $('#save').addClass('d-none')
+    $('#drop-save').addClass('d-none')
 }
