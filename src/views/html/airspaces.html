@@ -53,9 +53,18 @@
                             <li class="nav-item">
                                 <a class="nav-link d-none" id="reset" href="#"></a>
                             </li>                                
-                            <li class="nav-item">
-                                <a class="nav-link d-none" id="save" style="margin-right: 50px;"href="#"></a>
-                            </li> 
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle d-none" style="margin-right: 20px;" id="drop-save" data-toggle="dropdown">Save/Export</a>
+                                <div class="dropdown-menu">
+                                  <a class="dropdown-item" id="save-open" href="#">f Open</a>
+                                  <a class="dropdown-item" id="save-gpx" href="#">f GPX</a>                  
+                                </div>
+                            </li>                               
+                            <li>
+                                <div class="spinner-border text-danger d-none" id="waiting-spin" style="margin-right: 40px;" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>             
+                            </li>
                             <li class="nav-item">
                               <a class="nav-link" id="sel-open" href="#"></a>
                             </li>            
