@@ -111,7 +111,7 @@ const winTemplate = [
         .then((result) => {
           // comment for debug
          // checkInfo()
-         openWindow('airspaces')
+         openWindow('logbook')
         })
         .catch((ex) => {
           openWindow('logbook')
@@ -194,7 +194,7 @@ function openWindow(pageName) {
       break; 
     case "airspaces":
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))
-      mainWindow.webContents.openDevTools()
+   //   mainWindow.webContents.openDevTools()
       break;              
     case "photos":
       mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
