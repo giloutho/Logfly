@@ -2,7 +2,6 @@ const {ipcMain} = require('electron')
 // https://github.com/tbrams/OpenAirJS/blob/master/app.js
 const geometry = require('spherical-geometry-js')
 const turfbbox = require('@turf/bbox').default
-const moment = require('moment')
 
 // Global variables
 let mCenter = {
@@ -25,32 +24,36 @@ let modeDebug
 const STEP_SIZE = 1
 const lineBreak = '\n'
 
-let openPolygons = {
-    airspaceSet : [],
-    report : '',
-    center : {
-      long : 0,
-      lat : 0
-    },
-    bbox : {
-      minlat : 0,
-      minlon : 0,
-      maxlat : 0, 
-      maxlon : 0
-    }
-}
-let decodingReport = ''
-let totalGeo = {    
-  "type": "FeatureCollection",
-    "crs": { 
-      "type": "name", 
-      "properties": { 
-        "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } 
-    },
-    "features": []
-}
+let openPolygons = {}
+let decodingReport
+let totalGeo = {}    
 
 ipcMain.on('read-open', (event, openRequest) => {
+    // Important to reset the variables at each call
+    openPolygons = {
+      airspaceSet : [],
+      report : '',
+      center : {
+        long : 0,
+        lat : 0
+      },
+      bbox : {
+        minlat : 0,
+        minlon : 0,
+        maxlat : 0, 
+        maxlon : 0
+      }
+    } 
+    decodingReport = ''
+    totalGeo = {    
+      "type": "FeatureCollection",
+        "crs": { 
+          "type": "name", 
+          "properties": { 
+            "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } 
+        },
+        "features": []
+    }
     const myPolygons = decodeOA(openRequest.oaText, openRequest.report)
     if(myPolygons.airspaceSet.length > 0) {
       const geobox = computeBbox()
@@ -63,13 +66,11 @@ function decodeOA(oaText, modeReport) {
     let lines = oaText.split('\n')
     let groups = groupLines(lines) 
     const currentdate = new Date()
-    let dateOp = moment(currentdate).format("DD MM YYYY HH:mm:ss")
-    decodingReport = dateOp+lineBreak
     decodingReport += groups.length+' groups found'+lineBreak
     groups.forEach((group) => {
       // reinitialisation
-      //let originalText = group.join(lineBreak)
-      let originalText = ''
+      let originalText = group.join(lineBreak)
+      //let originalText = ''
       let oaObject = {
         openair : originalText,
         dbGeoJson : '',
