@@ -93,6 +93,7 @@
     "sharp": "^0.30.7",
     "spherical-geometry-js": "2.0.0",
     "srtm-elevation": "^2.1.0",
+    "togpx": "^0.5.4",
     "zoned-date-time": "^1.1.0"
   },
   "devDependencies": {
