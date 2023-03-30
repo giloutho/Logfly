@@ -22,41 +22,43 @@ function encodeIGC(gpxString, logbook) {
     if (nbTracks > 0) {
         // File header definition
         const firstTrack = parsedTracks[0]
-        const startTime = firstTrack.points[0].time
-        const startDate = String(startTime.getDate()).padStart(2, '0')+String((startTime.getMonth()+1)).padStart(2, '0')+startTime.getFullYear().toString().slice(-2)
-        stringIGC += 'AXLF'+CrLf
-        stringIGC += 'HFDTE'+startDate+CrLf          
-        // for external tracks we have not pilot and glider name
-        stringIGC += 'HFPLTPILOT:'+sPilot+CrLf        
-        stringIGC += 'HFGTYGLIDERTYPE:'+sGlider+CrLf 
-        stringIGC += 'HFGIDGLIDERID:'+CrLf 
-        stringIGC += 'HODTM100GPSDATUM: WGS-84'+CrLf 
-        stringIGC += 'HOCIDCOMPETITIONID:'+CrLf         
-        stringIGC += 'HOCCLCOMPETITION CLASS:'+CrLf 
-        stringIGC += 'HOSITSite:'+CrLf 
-        for (let index = 0; index < nbTracks; index++) {
-            const currTrack = parsedTracks[index]
-            currTrack.points.forEach(function(pt){
-                nbPt++
-                // let strDate = String(pt.time.getDate()).padStart(2, '0')+'/'+String((pt.time.getMonth()+1)).padStart(2, '0')+'/'+pt.time.getFullYear()
-                //let strTime = String(pt.time.getHours()).padStart(2, '0')+String(pt.time.getMinutes()).padStart(2, '0')+String(pt.time.getSeconds()).padStart(2, '0')        
-                let igcLat = Lat_Dd_IGC(pt.lat)
-                let igcLong = Long_Dd_IGC(pt.lon)
-                let utcTime = fixUTC(pt.time)
-                // Elevation can be a real number like this :
-                // <trkpt lat="45.890532" lon="6.450395"><ele>1812.959</ele><time>2013-09-25T11:48:32Z</time>
-                let intAlt = Math.ceil(pt.ele)
-                let strAlt = intAlt.toString().padStart(5, '0')
-                let bRecord = 'B'+utcTime+igcLat+igcLong+'A00000'+strAlt
-                stringIGC += bRecord+CrLf
-            })            
+        if (firstTrack.points[0].time != undefined && firstTrack.points[0].time != null) {
+            const startTime = firstTrack.points[0].time
+            const startDate = String(startTime.getDate()).padStart(2, '0')+String((startTime.getMonth()+1)).padStart(2, '0')+startTime.getFullYear().toString().slice(-2)
+            stringIGC += 'AXLF'+CrLf
+            stringIGC += 'HFDTE'+startDate+CrLf          
+            // for external tracks we have not pilot and glider name
+            stringIGC += 'HFPLTPILOT:'+sPilot+CrLf        
+            stringIGC += 'HFGTYGLIDERTYPE:'+sGlider+CrLf 
+            stringIGC += 'HFGIDGLIDERID:'+CrLf 
+            stringIGC += 'HODTM100GPSDATUM: WGS-84'+CrLf 
+            stringIGC += 'HOCIDCOMPETITIONID:'+CrLf         
+            stringIGC += 'HOCCLCOMPETITION CLASS:'+CrLf 
+            stringIGC += 'HOSITSite:'+CrLf 
+            for (let index = 0; index < nbTracks; index++) {
+                const currTrack = parsedTracks[index]
+                currTrack.points.forEach(function(pt){
+                    nbPt++
+                    // let strDate = String(pt.time.getDate()).padStart(2, '0')+'/'+String((pt.time.getMonth()+1)).padStart(2, '0')+'/'+pt.time.getFullYear()
+                    //let strTime = String(pt.time.getHours()).padStart(2, '0')+String(pt.time.getMinutes()).padStart(2, '0')+String(pt.time.getSeconds()).padStart(2, '0')        
+                    let igcLat = Lat_Dd_IGC(pt.lat)
+                    let igcLong = Long_Dd_IGC(pt.lon)
+                    let utcTime = fixUTC(pt.time)
+                    // Elevation can be a real number like this :
+                    // <trkpt lat="45.890532" lon="6.450395"><ele>1812.959</ele><time>2013-09-25T11:48:32Z</time>
+                    let intAlt = Math.ceil(pt.ele)
+                    let strAlt = intAlt.toString().padStart(5, '0')
+                    let bRecord = 'B'+utcTime+igcLat+igcLong+'A00000'+strAlt
+                    stringIGC += bRecord+CrLf
+                })            
+            }
+            // File footer definition
+            stringIGC += 'LXLF Logfly 6'+CrLf 
+            const genDate = new Date();  
+            let strDate = String(genDate.getDate()).padStart(2, '0')+'-'+String((genDate.getMonth()+1)).padStart(2, '0')+'-'+genDate.getFullYear()
+            let strTime = String(genDate.getHours()).padStart(2, '0')+':'+String(genDate.getMinutes()).padStart(2, '0')+':'+String(genDate.getSeconds()).padStart(2, '0')     
+            stringIGC += 'LXLF generated '+strDate+' '+strTime+CrLf   
         }
-        // File footer definition
-        stringIGC += 'LXLF Logfly 6'+CrLf 
-        const genDate = new Date();  
-        let strDate = String(genDate.getDate()).padStart(2, '0')+'-'+String((genDate.getMonth()+1)).padStart(2, '0')+'-'+genDate.getFullYear()
-        let strTime = String(genDate.getHours()).padStart(2, '0')+':'+String(genDate.getMinutes()).padStart(2, '0')+':'+String(genDate.getSeconds()).padStart(2, '0')     
-        stringIGC += 'LXLF generated '+strDate+' '+strTime+CrLf   
     }
     result.igcString = stringIGC
     result.nbPoints = nbPt

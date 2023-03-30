@@ -96,11 +96,15 @@ function displayGpx(trackFile) {
     // if gpx-to-igc returns a valid igc string, gps-read calls IGCDecoder
     // and finally returns a valid track 
     track = ipcRenderer.sendSync('read-gpx', gpxString)  // process-main/gpx/gpx-read.js
-    if (track.fixes.length> 0) {
+    if (track.fixes != undefined && track.fixes.length> 0) {
       updateInfos(trackFile)
       mapIgc(track)
     } else {
-      displayStatus(track.info.parsingError)
+      if (track.info != undefined) {
+        displayStatus(track.info.parsingError)
+      } else {
+        displayStatus(i18n.gettext(track))
+      }
     }        
   } catch (error) {
     displayStatus('Error '+' : '+error)      

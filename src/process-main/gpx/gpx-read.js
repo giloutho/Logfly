@@ -9,7 +9,7 @@ ipcMain.on('read-gpx', (event, gpxString) => {
         track.parse(true, true)  
         event.returnValue = track    	
     } else {
-        event.returnValue = null
+        event.returnValue = 'The GPX file cannot be translated into IGC format'
     }
   	
 })
