@@ -2,14 +2,15 @@ var {ipcRenderer} = require('electron')
 const i18n = require('../../lang/gettext.js')()
 const fs = require('fs')
 const jetpack = require('fs-jetpack')
-const path = require('path');
+const path = require('path')
 const log = require('electron-log')
 const Store = require('electron-store')
 const Mustache = require('mustache')
+const inputMask = require('inputmask')
 const dbbasic = require('../../utils/db/db-basic.js')
 const settingsList = require('../../settings/settings-list.js')
-let menuFill = require('../../views/tpl/sidebar.js');
-const { Alert } = require('bootstrap');
+let menuFill = require('../../views/tpl/sidebar.js')
+const { Alert } = require('bootstrap')
 const store = new Store()
 let dbList = null
 let currLang
@@ -51,6 +52,11 @@ const selectStart = document.getElementById("sel-start")
 const selectOver = document.getElementById("sel-over")
 const selectMap = document.getElementById("sel-map")
 const selectPhoto = document.getElementById("sel-photos")
+const txLatDd = document.getElementById('tx-lat-dd')
+const txLongDd = document.getElementById('tx-long-dd')
+
+let latDD = 0
+let longDD = 0
 
 iniForm()
 
@@ -61,21 +67,45 @@ function iniForm() {
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-            let langjson = JSON.parse(content);
+            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+            let langjson = JSON.parse(content)
             i18n.setMessages('messages', currLang, langjson)
-            i18n.setLocale(currLang);
+            i18n.setLocale(currLang)
         }
       } catch (error) {
           log.error('[problem.js] Error while loading the language file')
       }  
     // let menuOptions = menuFill.fillMenuOptions(i18n)
     // $.get('../../views/tpl/sidebar.html', function(templates) { 
-    //     const template = $(templates).filter('#temp-menu').html();  
+    //     const template = $(templates).filter('#temp-menu').html()  
     //     const rendered = Mustache.render(template, menuOptions)
     //     document.getElementById('target-sidebar').innerHTML = rendered
     // })
     translateLabels()
+    const maskLatDd = new Inputmask({
+      mask: '[-]9{1,2}.9{5}'        
+    })
+    maskLatDd.mask(txLatDd)
+
+    $("#tx-lat-dd").on('focusout', function(){    
+      const degrees = txLatDd.value.replaceAll('_','')
+      if (degrees != '') {
+          latDD = degrees
+      }
+    })    
+
+    const maskLongDd = new Inputmask({
+        mask: '[-]9{1,3}.9{5}'
+    })
+    maskLongDd.mask(txLongDd)
+
+    $("#tx-long-dd").on('focusout', function(){    
+      const degrees = txLongDd.value.replaceAll('_','')
+      if (degrees != '') {
+          longDD = degrees
+      }
+    })       
+
     btnLogbook.addEventListener('click',(event) => {
       fnLogbook()
     })
@@ -97,16 +127,16 @@ function iniForm() {
 
 
 function callPage(pageName) {
-    ipcRenderer.send("changeWindow", pageName);    // main.js
+    ipcRenderer.send("changeWindow", pageName)    // main.js
 }
 
 btnMenu.addEventListener('click', (event) => {
   if (btnMenu.innerHTML === "Menu On") {
-      btnMenu.innerHTML = "Menu Off";
+      btnMenu.innerHTML = "Menu Off"
   } else {
-      btnMenu.innerHTML = "Menu On";
+      btnMenu.innerHTML = "Menu On"
   }
-  $('#sidebar').toggleClass('active');
+  $('#sidebar').toggleClass('active')
 })
 
 $('#sel-logbook').on('change', function() {
@@ -121,7 +151,7 @@ $('#sel-logbook').on('change', function() {
       alert(i18n.gettext('Reading problem in logbook'))
     }
   }
-});
+})
 
 function iniLogbook() {
   let pathDb = store.get('pathdb')
@@ -182,7 +212,7 @@ function iniLogbook() {
     if (checkLogbooks()) {
       // display menu
       btnMenu.innerHTML = "Menu Off"
-      $('#sidebar').toggleClass('active');    
+      $('#sidebar').toggleClass('active')    
     } else {
       alert(i18n.gettext('The new settings are not correct'))
     }
@@ -201,14 +231,14 @@ function iniPilot() {
     btnCancelPil.innerHTML = i18n.gettext('Cancel')
     setGps = settingsList.getAllGps()
     for (let index in setGps ) {
-      var gps = setGps[index];
-      selectGps.options[selectGps.options.length] = new Option(gps.val, gps.key);
+      var gps = setGps[index]
+      selectGps.options[selectGps.options.length] = new Option(gps.val, gps.key)
     }  
 
     setLeagues = settingsList.getLeagues()
     for (let index in setLeagues ) {
-      var _league = setLeagues[index];
-      selectLeague.options[selectLeague.options.length] = new Option(_league.val, _league.key);
+      var _league = setLeagues[index]
+      selectLeague.options[selectLeague.options.length] = new Option(_league.val, _league.key)
     }  
 
     btnValPil.addEventListener('click', (event)=>{
@@ -237,34 +267,34 @@ function iniGeneral() {
   selectLang.innerHTML = null
   setLang = settingsList.getLanguages(i18n)
   for (let index in setLang ) {
-    var _lang = setLang[index];
-    selectLang.options[selectLang.options.length] = new Option(_lang.val, _lang.key);
+    var _lang = setLang[index]
+    selectLang.options[selectLang.options.length] = new Option(_lang.val, _lang.key)
   }  
 
   selectStart.innerHTML = null
   setStart = settingsList.getStart(i18n)
   for (let index in setStart ) {
-    var _start = setStart[index];
-    selectStart.options[selectStart.options.length] = new Option(_start.val, _start.key);
+    var _start = setStart[index]
+    selectStart.options[selectStart.options.length] = new Option(_start.val, _start.key)
   }  
 
   selectOver.innerHTML = null
   setOver = settingsList.getOverview(i18n)
   for (let index in setOver ) {
-    var _over = setOver[index];
-    selectOver.options[selectOver.options.length] = new Option(_over.val, _over.key);
+    var _over = setOver[index]
+    selectOver.options[selectOver.options.length] = new Option(_over.val, _over.key)
   }  
 
   selectMap.innerHTML = null
   setMaps = settingsList.getMaps()
   for (let index in setMaps ) {
-    var _map = setMaps[index];
-    selectMap.options[selectMap.options.length] = new Option(_map.val, _map.key);
+    var _map = setMaps[index]
+    selectMap.options[selectMap.options.length] = new Option(_map.val, _map.key)
   }  
 
   selectPhoto.innerHTML = null
-  selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('No'),'no');
-  selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('Yes'),'yes');
+  selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('No'),'no')
+  selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('Yes'),'yes')
 
   const btnPathImport = document.getElementById('bt-import')
   btnPathImport.addEventListener('click', (event) => {
@@ -296,8 +326,8 @@ function iniGeneral() {
       currLang = langChoosed
       if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
-        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-        let langjson = JSON.parse(content);
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+        let langjson = JSON.parse(content)
         i18n.setMessages('messages', currLang, langjson)
         i18n.setLocale(currLang)
         translateLabels()
@@ -314,6 +344,8 @@ function iniGeneral() {
     store.set('pathimport',document.getElementById('tx-import').value)
     store.set('pathexport',document.getElementById('tx-export').value)
     store.set('pathsyride',document.getElementById('tx-syride').value)    
+    if (longDD != 0) store.set('finderlong',longDD)
+    if (latDD != 0) store.set('finderlat',latDD)
     store.set('photo',selectPhoto.value)    
   })  
 
@@ -469,7 +501,7 @@ function moveLogbooks(pathDest) {
           // const src = jetpack.cwd(pathDb)
           // const dst = jetpack.cwd(pathDest)
           // src.find({ matching: "*.db" }).forEach(filePath => {
-          //   src.move(filePath, dst.path(filePath));
+          //   src.move(filePath, dst.path(filePath))
           //   nbMoved++
           // })
           // alert(nbMoved+' '+i18n.gettext('files moved'))
@@ -618,6 +650,28 @@ function iniGeneralsettings() {
     document.getElementById('tx-syride').value = ''
   else
     document.getElementById('tx-syride').value = pPathSyride
+  
+  const pFinderLat = store.get('finderlat')
+  if (pFinderLat == '' || pFinderLat == null) {
+    document.getElementById('tx-lat-dd').value = ''
+  } else {
+    const degrees = pFinderLat.replaceAll('_','')
+    if (degrees != '') {
+        latDD = degrees
+    }    
+    document.getElementById('tx-lat-dd').value = pFinderLat
+  }
+
+  const pFinderLong = store.get('finderlong')  
+  if (pFinderLong == '' || pFinderLong == null) {
+    document.getElementById('tx-long-dd').value = ''
+  } else{
+    const degrees = pFinderLong.replaceAll('_','')
+    if (degrees != '') {
+        longDD = degrees
+    }
+    document.getElementById('tx-long-dd').value = pFinderLong
+  }
 }
 
 function iniWebSettings() {
@@ -631,7 +685,7 @@ function iniWebSettings() {
 function translateLabels() {
   let menuOptions = menuFill.fillMenuOptions(i18n)
   $.get('../../views/tpl/sidebar.html', function(templates) { 
-      const template = $(templates).filter('#temp-menu').html();  
+      const template = $(templates).filter('#temp-menu').html()  
       const rendered = Mustache.render(template, menuOptions)
       document.getElementById('target-sidebar').innerHTML = rendered
   })
@@ -669,6 +723,9 @@ function translateLabels() {
   document.getElementById('lg-start').innerHTML = i18n.gettext('Start window')
   document.getElementById('lg-overview').innerHTML = i18n.gettext('Overview')
   document.getElementById('lg-map').innerHTML = i18n.gettext('Default map')
+  document.getElementById('lg-map-loca').innerHTML = i18n.gettext('Default map location')
+  document.getElementById('lb-lat-dd').innerHTML = i18n.gettext('Latitude')
+  document.getElementById('lb-long-dd').innerHTML = i18n.gettext('Longitude')
   document.getElementById('lg-import').innerHTML = i18n.gettext('Select the import folder for GPS tracks')
   document.getElementById('lg-export').innerHTML = i18n.gettext('Select the folder of GPS tracks to import')
   document.getElementById('lg-syride').innerHTML = i18n.gettext('Select the Syride folder for GPS tracks')
