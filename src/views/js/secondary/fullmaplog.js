@@ -38,7 +38,9 @@ let currLeague
 let map
 let layerControl
 let scoreGroup
+let airspGroup
 let geoScore
+let currOAFile
 
 iniForm()
 
@@ -73,9 +75,13 @@ function runXcScore(selScoring) {
 
 ipcRenderer.on('xc-score-result', (_, result) => {
   $('#waiting-spin').addClass('d-none')
-  console.log('retour')
   mainTrack.xcscore = result
   displayScoring()
+})
+
+ipcRenderer.on('check-result', (event, checkResult) => {
+  $('#waiting-check').addClass('d-none')
+  displayAirCheck(checkResult)
 })
 
 function buildMap() {
@@ -219,7 +225,11 @@ function buildMap() {
 
   buildSidePanels()
   // by default sidebar is open on tab "summary"
-  sidebar.open('summary');
+  sidebar.open('summary')
+
+  const labelAlt = i18n.gettext('Alt')
+  const labelSpeed = i18n.gettext('Spd')
+  const labelGround = i18n.gettext('Gnd')
 
   hgChart = new Highcharts.Chart({
     chart: {      
@@ -283,7 +293,9 @@ function buildMap() {
           }
           let index = this.point.index;
           //var tooltip = Heure[index]+'<br/>Alt : '+altiVal[index]+'m<br/>HS : '+groundVal[index]+'m<br/>Vz : '+Vario[index]+'m/s<br/>Vit : '+Speed[index]+' km/h';
-          tooltip = Highcharts.dateFormat('%H:%M:%S', arrayHour[index])+'<br/>Alt : '+arrayAlti[index]+'m<br/>Vz : '+mainTrack.vz[index].toFixed(2)+'m/s<br/>Vit : '+mainTrack.speed[index].toFixed(0)+' km/h'
+          let gndH = ''
+          if (anaTrack.elevation[index] != undefined) gndH = anaTrack.elevation[index]
+          tooltip = Highcharts.dateFormat('%H:%M:%S', arrayHour[index])+'<br/>'+labelAlt+' : '+arrayAlti[index]+'m<br/>'+labelGround+' : '+gndH+'m<br/>Vz : '+mainTrack.vz[index].toFixed(2)+'m/s<br/>'+labelSpeed+' : '+mainTrack.speed[index].toFixed(0)+' km/h'
           return tooltip;
       },
       crosshairs: true
@@ -478,6 +490,15 @@ function buildSidePanels()
     pane: fillSidebarScoring()
   })     
 
+  sidebar.addPanel({
+    id:   'check',
+    tab:  '<i class="fa fa-gear"></i>',
+    title: i18n.gettext('Checking'),
+    pane: fillSidebarChecking()
+  })     
+
+
+
   sidebar.on('closing', function(e) {
     sidebarState = false
     btnInfos.innerHTML = i18n.gettext('Show analysis')
@@ -553,7 +574,6 @@ function fillSidebarScoring() {
   htmlText += '<div style="margin-top: 20px;">'
 
   htmlText += '<div class="d-flex align-items-center">'
-  //htmlText += '     <button type="button" class="btn-success btn-sm mr-3" onclick="ask_scoring()">'+i18n.gettext('Scoring')+'</button>'
   htmlText += '     <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="dd-scoring">score</button>'                      
   htmlText += '     <div class="dropdown-menu" id="mnu-scoring">'
   htmlText += '         <a class="dropdown-item" href="#">FFVL</a>'
@@ -588,7 +608,22 @@ function fillSidebarScoring() {
   return htmlText  
 }
 
+function fillSidebarChecking() {
+  let htmlText = fillSidebarButtons()
+  htmlText += '<br><br>'
+  htmlText += '<div style="margin-top: 20px;">'
+  htmlText += '<div class="d-flex align-items-center">'
+  htmlText += '     <button type="button" class="btn-light btn-sm mr-3" onclick="checkAirspace()">'+i18n.gettext('Select an airspace file')+'</button>'
+  htmlText += '     <div id="check-file" class="d-none" style="font-size:16px;">Bazile_last.txt</div>'
+  htmlText += '     <div class="spinner-border text-danger ml-auto d-none" role="status" id="waiting-check">'
+  htmlText += '        <span class="sr-only">Loading...</span>'
+  htmlText += '     </div>'
+  htmlText += '</div>'
+  htmlText += '<br><br>'
+  htmlText += '<div id="check-result" class="d-none" style="font-size:16px;"></div>'
 
+  return htmlText  
+}
 
 
 function fillSidebarSummary() {
@@ -791,10 +826,6 @@ function fillSidebarPathway() {
   return htmlText
 }
 
-function ask_scoring() {
-  alert('coucou')
-}
-
 function changeScoring() {
   map.removeLayer(geoScore)
   const currColor = getColor()
@@ -875,10 +906,11 @@ function displayScoring() {
 function fillSidebarButtons() {
   let htmlText = '<br>'
   htmlText += '<div class="btn-toolbar pull-left">'
-  htmlText += ' <button type="button" class="btn-success btn-sm mr-3" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
-  htmlText += ' <button type="button" class="btn-warning btn-sm mr-3" onclick="openPathway()">'+i18n.gettext('Pathway')+'</button>'
-  htmlText += ' <button type="button" class="btn-secondary btn-sm mr-3" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
-  htmlText += ' <button type="button" class="btn-primary btn-sm" onclick="sidebar.open(\'score\')">'+i18n.gettext('Score')+'</button>'
+  htmlText += ' <button type="button" class="btn-success btn-sm mr-2" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
+  htmlText += ' <button type="button" class="btn-warning btn-sm mr-2" onclick="openPathway()">'+i18n.gettext('Pathway')+'</button>'
+  htmlText += ' <button type="button" class="btn-secondary btn-sm mr-2" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
+  htmlText += ' <button type="button" class="btn-primary btn-sm mr-2" onclick="sidebar.open(\'score\')">'+i18n.gettext('Score')+'</button>'
+  htmlText += ' <button type="button" class="btn-info btn-sm" onclick="sidebar.open(\'check\')"><i class="fa fa-plane"></i>&nbsp;'+i18n.gettext('Check')+'</button>'
   htmlText += '</div>'
   return htmlText
 }
@@ -947,4 +979,146 @@ function displaySegment(lat1,long1,lat2,long2) {
 
 function testdb() {
   console.log(dblog.searchSiteInDb(45.85314, 6.2228, false));
+}
+
+function checkAirspace() {
+  const selectedFile = ipcRenderer.sendSync('open-file','')
+  if(selectedFile.fullPath != null) {    
+     // runFile(selectedFile.fullPath,selectedFile.fileName)           
+     $('#waiting-check').removeClass('d-none')
+     let content = fs.readFileSync(selectedFile.fullPath, 'utf8')
+     let checkRequest = {
+      oaText : content, 
+      track : mainTrack,
+      ground : anaTrack.elevation
+    }
+    currOAFile = selectedFile.fileName
+    const checking = ipcRenderer.send('check-open', checkRequest)
+  }  
+}
+
+function displayAirCheck(checkResult) {
+  if (typeof airspGroup !== "undefined") {
+    map.removeLayer(airspGroup)
+    $('#check-result').addClass('d-none')
+    $('#check-file').addClass('d-none')
+  }
+  let nbBadPoints = 0
+  let cr = '<br>'
+  let report = ''
+  alert(nbBadPoints+' *'+checkResult.airGeoJson.length+'*')
+  if (checkResult.insidePoints.length > 0 &&  checkResult.airGeoJson.length > 0) {
+    airspGroup = new L.LayerGroup()
+    report += '<p><span style="background-color: #F6BB42; color: white;">&nbsp;&nbsp;&nbsp;'
+    report += i18n.gettext('Airspaces involved')+'&nbsp;&nbsp;&nbsp;&nbsp;</span><br>'
+    // airspaces GeoJson added to the map 
+    for (let index = 0; index < checkResult.airGeoJson.length; index++) {
+      const element = checkResult.airGeoJson[index]
+      report += element.properties.Name+cr
+      airSpace = L.geoJson(element,{ style: styleAirsp, onEachFeature: airSpPopup })
+      airspGroup.addLayer(airSpace)
+    }
+    report += '</p>'
+    // Bad points GeoJson
+    let badGeoJson = { 
+      "type": "Feature", 
+      "properties": {
+        "name": "Airspace checking",
+        "desc": ""
+      },
+      "geometry": 
+        { "type": "MultiPoint", 
+          "coordinates": []
+        } 
+    }
+    let badCoord = []
+    for (let index = 0; index < checkResult.insidePoints.length; index++) {
+      nbBadPoints++
+      const idxBad = checkResult.insidePoints[index]
+      badCoord.push([mainTrack.fixes[idxBad].longitude,mainTrack.fixes[idxBad].latitude])
+    }
+    let badStyle = {
+      'color': "#FFFF00",
+      'weight': 2,
+      'opacity': 1
+    }  
+    let geojsonMarkerOptions = {
+      radius: 3,
+      fillColor: "#ff7800",
+      color: "#000",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    }
+    badGeoJson.geometry.coordinates = badCoord
+    badLayerPoints =  L.geoJson(badGeoJson,{
+      style : badStyle,
+      pointToLayer: function(f, latlng) {return L.circleMarker(latlng,geojsonMarkerOptions)}
+    })
+    airspGroup.addLayer(badLayerPoints)
+    airspGroup.addTo(map)
+    layerControl.addOverlay( airspGroup, i18n.gettext('Checking'))
+    report += '<p><span style="background-color: #DA4453; color: white;"> &nbsp;&nbsp;&nbsp;'
+    report += i18n.gettext('violation(s)')+' : '+nbBadPoints+' '+i18n.gettext('points')+'&nbsp;&nbsp;&nbsp;&nbsp;</span></p>'
+    report += '<i>'+i18n.gettext('Click on an airspace to display the description')+'</i>'
+  } else {
+    report += '<span style="font-size:16px;background-color: #009900; color: white;">&nbsp;&nbsp;&nbsp;'
+    report += i18n.gettext('No violations in the selected airspace file')
+    report += '&nbsp;&nbsp;&nbsp;</span>'
+  }
+  showAirspReport(report)
+}
+
+function showAirspReport(content) {
+  // document.getElementById('mod-title').innerHTML = i18n.gettext('Checking')+' : '+currOAFile
+  // document.getElementById('mod-body').innerHTML = content
+  // $('#modalCheck').modal('show')
+  $('#check-result').removeClass('d-none')
+  $('#check-file').removeClass('d-none')
+  document.getElementById("check-file").innerHTML = currOAFile
+  document.getElementById("check-result").innerHTML = content
+}
+
+function airSpPopup(feature, layer) {
+  if (feature.properties) {
+      layer.bindPopup('<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name+'<BR/>Floor : '+feature.properties.Floor+'<BR/>Ceiling : '+feature.properties.Ceiling+'<BR/>'+feature.properties.Comment)
+  }
+}
+
+function styleAirsp(feature){
+  console.log(getColor(Number(feature.properties.Cat)))
+  return{      
+      fillColor: getColorAirsp(feature.properties.Cat),
+      weight: 1,
+      opacity: 1,
+      color: 'white',
+      fillOpacity: 0.4
+  }
+}
+
+function getColorAirsp(a){
+  return  a>22 ? '#999999':   
+          a>21 ? '#999999':
+          a>20 ? '#FFCC00':
+          a>19 ? '#5B900A':
+          a>18 ? '#00FF00':
+          a>17 ? '#66CCFF':
+          a>16 ? '#FF9999':            
+          a>15 ? '#FF00FF':
+          a>14 ? '#000000':
+          a>13 ? '#9999CC':
+          a>12 ? '#99FFFF':
+          a>11 ? '#FFFF00':
+          a>10 ? '#19BFBF':   
+          a>9 ? '#7FBC58':
+          a>8 ? '#A47A11':
+          a>7 ? '#900A68':
+          a>6 ? '#4B0A90':
+          a>5 ? '#FFCCCC':
+          a>4 ? '#FF0000':            
+          a>3 ? '#0000FF':
+          a>2 ? '#1971BF':
+          a>1 ? '#FFCCCC':
+          a>0 ? '#FE9A2E':                                                 
+          '#9999CC' 
 }

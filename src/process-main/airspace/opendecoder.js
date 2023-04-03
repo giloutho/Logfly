@@ -2,6 +2,9 @@ const {ipcMain} = require('electron')
 // https://github.com/tbrams/OpenAirJS/blob/master/app.js
 const geometry = require('spherical-geometry-js')
 const turfbbox = require('@turf/bbox').default
+const turfIntersect = require('@turf/boolean-intersects').default
+const turfWithin = require('@turf/points-within-polygon').default
+const turfHelper = require('@turf/helpers')
 
 // Global variables
 let mCenter = {
@@ -20,16 +23,23 @@ let AltLimit_Bottom_Unit
 let oaGeojson
 let coordArray
 let modeDebug
+let minLat
+let minLon
+let maxLat
+let maxLon    
 
 const STEP_SIZE = 1
 const lineBreak = '\n'
 
 let openPolygons = {}
 let decodingReport
-let totalGeo = {}    
 
 ipcMain.on('read-open', (event, openRequest) => {
     // Important to reset the variables at each call
+    minLat = 100
+    minLon = 200
+    maxLat = -100
+    maxLon = -200 
     openPolygons = {
       airspaceSet : [],
       report : '',
@@ -45,21 +55,95 @@ ipcMain.on('read-open', (event, openRequest) => {
       }
     } 
     decodingReport = ''
-    totalGeo = {    
-      "type": "FeatureCollection",
-        "crs": { 
-          "type": "name", 
-          "properties": { 
-            "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } 
-        },
-        "features": []
-    }
     const myPolygons = decodeOA(openRequest.oaText, openRequest.report)
     if(myPolygons.airspaceSet.length > 0) {
-      const geobox = computeBbox()
+      openPolygons.bbox.minlat = minLat
+      openPolygons.bbox.minlon = minLon
+      openPolygons.bbox.maxlat = maxLat 
+      openPolygons.bbox.maxlon = maxLon
     }
     event.sender.send('open-airset', myPolygons)
 })
+
+ipcMain.on('check-open', (event, checkRequest) => {
+  // Important to reset the variables at each call
+  openPolygons = {
+    airspaceSet : [],
+    report : '',
+    center : {
+      long : 0,
+      lat : 0
+    },
+  } 
+  decodingReport = ''
+  let checkResult = {
+    airGeoJson : [],
+    insidePoints : []
+  }
+
+  const myPolygons = decodeOA(checkRequest.oaText, false)
+  if (myPolygons.airspaceSet.length > 0) {    
+      /* As a reminder
+        Track.fixes  structure      
+        {
+          "timestamp": 1436439971000,
+          "time": "11:06:11",
+          "latitude": 45.60595,
+          "longitude": 6.2133666666666665,
+          "valid": true,
+          "pressureAltitude": 1722,
+          "gpsAltitude": 1819,
+          "extensions": {
+              "FXA": "009",
+              "GSP": "03231",
+              "TRT": "045",
+              "VAT": "00082"
+          },
+          "enl": null,
+          "fixAccuracy": 9
+        } 
+    */
+  
+    // In order to use turfWithin below, the fixes array must be converted in a "turf multipoint object"
+    let trackPoints = checkRequest.track.fixes.map(point => [point.longitude,point.latitude] )
+    let altMaxPoint = checkRequest.track.stat.maxalt.gps
+    let multiPt = turfHelper.multiPoint(trackPoints)
+    let geoTrack = checkRequest.track.GeoJSON
+    let turfNb = 0
+    let nbInside = 0
+    for (let index = 0; index < myPolygons.airspaceSet.length; index++) {
+      const element = myPolygons.airspaceSet[index].dbGeoJson
+      if (myPolygons.airspaceSet[index].ceiling < altMaxPoint) {
+        if (turfIntersect(element,geoTrack)) {
+          let pushGeoJson = false
+          let ptsWithin = turfWithin(multiPt, element)
+          for (let i = 0; i < ptsWithin.features.length; i++) {
+            const feature = ptsWithin.features[i]
+            for (let j = 0; j < feature.geometry.coordinates.length; j++) {
+              turfNb ++               
+              const vPoint = feature.geometry.coordinates[j]
+              idxPoint = trackPoints.findIndex(e => e === vPoint)
+              let floorLimit = element.properties.Floor
+              let ceilingLimit = element.properties.Ceiling             
+              if (element.properties.altLimitBottomAGL === true) floorLimit += checkRequest.ground[idxPoint]
+              if (element.properties.altLimitTopAGL ===  true) ceilingLimit += checkRequest.ground[idxPoint]
+              if (checkRequest.track.fixes[idxPoint].gpsAltitude > floorLimit && checkRequest.track.fixes[idxPoint].gpsAltitude < ceilingLimit) {
+                nbInside++
+                if (!pushGeoJson) {
+                  checkResult.airGeoJson.push(element)
+                  pushGeoJson = true
+                }          
+                checkResult.insidePoints.push(idxPoint)
+              }              
+            }
+          }
+        } 
+      } 
+    }  
+  }
+  event.sender.send('check-result', checkResult)
+})
+
 
 function decodeOA(oaText, modeReport) {  
     modeDebug = modeReport
@@ -77,30 +161,33 @@ function decodeOA(oaText, modeReport) {
         name :  '',
         class : '',
         floor : 0,
-        ceiling : 0,
-        latMini : 0,
-        latMaxi : 0,
-        longMini : 0,
-        longMaxi : 0
-        }
+        ceiling : 0,  
+        bbox: []
+      }
       AltLimit_Top  = 0
-      AltLimit_Top_AGL = 0
+      AltLimit_Top_AGL = false
       AltLimit_Top_Ref = 'STD'
       AltLimit_Top_Unit = 'F'
       AltLimit_Bottom = 0
-      AltLimit_Bottom_AGL = 0
+      AltLimit_Bottom_AGL = false
       AltLimit_Bottom_Ref = 'STD'
       AltLimit_Bottom_Unit = 'F'      
       coordArray = []
       oaGeojson = {
         type :"Feature",
         properties : {
-           Floor : "",
+           Floor : 0,
            Cat : "1",
-           Ceiling : "",
+           Ceiling : 0,
            Class : "",
            Name : "",
-           Comment : ""
+           Comment : "",
+           altLimitTopAGL : false,
+           altLimitTopRef : '',
+           altLimitTopUnit : '',
+           altLimitBottomAGL : false,
+           altLimitBottomRef : '',
+           altLimitBottomUnit : '',                 
         },
         geometry : {
             type : "Polygon",
@@ -120,16 +207,11 @@ function decodeOA(oaText, modeReport) {
         oaObject.class = oaGeojson.properties.Class
         oaObject.floor = oaGeojson.properties.Floor
         oaObject.ceiling = oaGeojson.properties.Ceiling
-        // Compute bbbox
-        let geobox = turfbbox(oaGeojson)
-        if (geobox.length = 4) {
-            oaObject.latMini = geobox[1]
-            oaObject.longMini = geobox[0]
-            oaObject.latMaxi = geobox[3]
-            oaObject.longMaxi = geobox[2]
-        }
+        // Compute bbbox        
+        // let geobox = turfbbox(oaGeojson)
+        let geobox = computeTotalBbox(oaGeojson)
+        if (geobox.length = 4) oaObject.bbox = geobox
         openPolygons.airspaceSet.push(oaObject)    
-        totalGeo.features.push(oaGeojson)      
       }
     })
 
@@ -240,8 +322,8 @@ function parseCommand(cmd) {
             AltLimit_Bottom_Ref = parseReference(strRef)  
             AltLimit_Bottom_Unit = parseUnit(strRef) 
             if (AltLimit_Bottom_Ref === 'AGL') {
-              AltLimit_Bottom_AGL = 1
-              patternAlt = /\d+[Mm]*/g
+              AltLimit_Bottom_AGL = true
+              patternAlt = /([Mm])/g
               altMeter = findRegex(patternAlt, cmd)
               if (altMeter.includes('M') || altMeter.includes('m')) {
                   // unit altitude is meters. Not current but possible
@@ -260,7 +342,10 @@ function parseCommand(cmd) {
                     break
               }
             }    
-            oaGeojson["properties"]["Floor"] = AltLimit_Bottom
+            oaGeojson.properties.Floor = AltLimit_Bottom
+            oaGeojson.properties.altLimitBottomAGL = AltLimit_Bottom_AGL
+            oaGeojson.properties.altLimitBottomRef = AltLimit_Bottom_Ref
+            oaGeojson.properties.altLimitBottomUnit = AltLimit_Bottom_Unit
             if (modeDebug) decodingReport +='[AL] '+cmd+' -> '+rest+" * "+iAlt+' * ref :'+strRef+' floor : '+AltLimit_Bottom+lineBreak
             break
           case "AH":
@@ -273,8 +358,8 @@ function parseCommand(cmd) {
             AltLimit_Top_Ref = parseReference(strRef)
             AltLimit_Top_Unit = parseUnit(strRef)
             if (AltLimit_Top_Ref === 'AGL') {
-              AltLimit_Top_AGL = 1
-              patternAlt = /\d+[Mm]*/g
+              AltLimit_Top_AGL = true
+              patternAlt = /([Mm])/g
               altMeter = findRegex(patternAlt, cmd)
               if (altMeter.includes('M') || altMeter.includes('m')) {
                   // unit altitude is meters. Not current but possible
@@ -293,7 +378,10 @@ function parseCommand(cmd) {
                     break
                 }
             }
-            oaGeojson["properties"]["Ceiling"] = AltLimit_Top
+            oaGeojson.properties.Ceiling = AltLimit_Top
+            oaGeojson.properties.altLimitTopAGL = AltLimit_Top_AGL
+            oaGeojson.properties.altLimitTopRef = AltLimit_Top_Ref
+            oaGeojson.properties.altLimitTopUnit = AltLimit_Top_Unit
             if (modeDebug) decodingReport += '[AH] '+cmd+' -> '+rest+" * "+iAlt+' * ref :'+strRef+' ceiling : '+AltLimit_Top+lineBreak
             break
           case "DC":
@@ -650,23 +738,17 @@ function setCatColor(value) {
   return catColor
 }
 
-function computeCenter() {
-    let center = turfcenter(totalGeo)
-    if (center.geometry.coordinates.length > 1) {
-      openPolygons.center.long = center.geometry.coordinates[0]
-      openPolygons.center.lat = center.geometry.coordinates[1]
-    }
-
-}
-
-function computeBbox() {
+function computeTotalBbox(oaGeojson) {
+  let oaBbox = []
   try {
-    let totalbox = turfbbox(totalGeo)
-    openPolygons.bbox.minlat = totalbox[1]
-    openPolygons.bbox.minlon = totalbox[0]
-    openPolygons.bbox.maxlat = totalbox[3] 
-    openPolygons.bbox.maxlon = totalbox[2]
+    oaBbox = turfbbox(oaGeojson)
+    if (oaBbox[1] < minLat) minLat = oaBbox[1]
+    if (oaBbox[0] < minLon) minLon = oaBbox[0]
+    if (oaBbox[3] > maxLat) maxLat = oaBbox[3]
+    if (oaBbox[2] > maxLon) maxLon = oaBbox[2]
   } catch (error) {
     console.log(error)
   }
+
+  return oaBbox
 }

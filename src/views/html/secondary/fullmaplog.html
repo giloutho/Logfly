@@ -28,7 +28,8 @@
                 <i class="fa fa-close"></i>
             </button>
             <button type="button" id="bt-infos" class="btn btn-outline-primary btn-sm" style="margin-left:60px">Informations</button>
-            <button type="button" id="bt-mes" class="btn btn-outline-primary btn-sm" style="margin-left:10px">Mesurer</button>
+            <button type="button" id="bt-mes" class="btn btn-outline-primary btn-sm" style="margin-left:10px">Mesurer</button>        
+            <div class="spinner-border text-danger d-none" id="waiting-spin" style="margin-left:10px" role="status"></div>             
             <button type="button" id="wintitle" class="btn btn-outline-success btn-sm" style="margin-left:300px">Mesurer 2</button>           
     </nav>
     <!-- Begin page content -->
@@ -37,7 +38,6 @@
     <div id="sidebar" class="leaflet-sidebar collapsed">
       <div class="leaflet-sidebar-content"></div>
     </div>
-
     <script type="text/javascript">
         var i18n = window.i18n();
     </script>  
