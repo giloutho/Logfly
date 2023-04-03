@@ -580,11 +580,17 @@ function mapUpdate(classPolygons) {
 
     function infoLayout(pProperties) {
         let htmlText = '<p style="text-align: center;font-size:16px;background-color: '+getColBack(pProperties.Cat)+'">'
-        htmlText += i18n.gettext('Class')+' : '+pProperties.Class+'&ensp;'+pProperties.Name+'</p>'
+        htmlText += '['+i18n.gettext('Class')+' : '+pProperties.Class+']'+'&ensp;'+pProperties.Name+'</p>'
         htmlText += '<p style="text-align: center;"><span style="background-color: #292b2c; color: white;margin-right: 50px">&ensp;'
-        htmlText += i18n.gettext('Floor')+' : '+pProperties.Floor+' m&ensp;</span>'
+        console.log(pProperties.altLimitBottomAGL)
+        let headerFloor = ''
+        if (pProperties.altLimitBottomAGL === true) headerFloor = '(AGL)'+' '
+        htmlText += headerFloor+i18n.gettext('Floor')+' : '+pProperties.Floor+' m&ensp;</span>'
         htmlText += '<span style="background-color:  #d9534f; color: white;">&ensp;'
-        htmlText += i18n.gettext('Ceiling')+' : '+pProperties.Ceiling+'m&ensp;</span></p><br>'
+        console.log('AGL '+pProperties.altLimitTopAGL)
+        let headerCeiling = ''
+        if (pProperties.altLimitTopAGL === true) headerCeiling = '(AGL)'+' '
+        htmlText += headerCeiling+i18n.gettext('Ceiling')+' : '+pProperties.Ceiling+'m&ensp;</span></p><br>'
         htmlText += '<p>'+pProperties.Comment+'</p>'
 
         return htmlText
