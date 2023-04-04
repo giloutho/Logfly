@@ -188,7 +188,7 @@ btnFullmap.addEventListener('click', (event) => {
 })  
 
 function displayFullMap() {
-  if (track !== undefined)  {
+  if (!noGpsFlight && track !== undefined)  {
     if (track.fixes.length> 0) {    
       // functionnal code
       displayWait()
@@ -202,6 +202,8 @@ function displayFullMap() {
       let err_content = i18n.gettext("Decoding problem in track file")
       ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
     } 
+  }  else {
+    alert(i18n.gettext('No track to display'))
   }   
 }
 
