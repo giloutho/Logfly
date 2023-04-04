@@ -109,9 +109,10 @@ const winTemplate = [
     if (startOk) {
       checkInternetConnected()
         .then((result) => {
-          // comment for debug
-         // checkInfo()
-         openWindow('logbook')
+          // comment CheckInfo() for debug
+          checkInfo()
+          // and open directly the wanted page
+          // openWindow('photos')
         })
         .catch((ex) => {
           openWindow('logbook')
@@ -198,7 +199,7 @@ function openWindow(pageName) {
       break;              
     case "photos":
       mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
-     // mainWindow.webContents.openDevTools();  
+   //   mainWindow.webContents.openDevTools();  
       break;                
     case "settings":
       mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
@@ -247,7 +248,7 @@ function checkInfo() {
           if (json.version > currVersion || json.message !== undefined )  {
             openWindow('infos')
           } else {
-              openWindow('airspaces')
+              openWindow('logbook')
           }             
         })
       } else {

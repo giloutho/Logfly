@@ -977,10 +977,6 @@ function displaySegment(lat1,long1,lat2,long2) {
   map.fitBounds([[lat1, long1],[lat2, long2]]);      
 }   
 
-function testdb() {
-  console.log(dblog.searchSiteInDb(45.85314, 6.2228, false));
-}
-
 function checkAirspace() {
   const selectedFile = ipcRenderer.sendSync('open-file','')
   if(selectedFile.fullPath != null) {    
@@ -1006,7 +1002,6 @@ function displayAirCheck(checkResult) {
   let nbBadPoints = 0
   let cr = '<br>'
   let report = ''
-  alert(nbBadPoints+' *'+checkResult.airGeoJson.length+'*')
   if (checkResult.insidePoints.length > 0 &&  checkResult.airGeoJson.length > 0) {
     airspGroup = new L.LayerGroup()
     report += '<p><span style="background-color: #F6BB42; color: white;">&nbsp;&nbsp;&nbsp;'
@@ -1086,7 +1081,6 @@ function airSpPopup(feature, layer) {
 }
 
 function styleAirsp(feature){
-  console.log(getColor(Number(feature.properties.Cat)))
   return{      
       fillColor: getColorAirsp(feature.properties.Cat),
       weight: 1,
