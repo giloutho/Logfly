@@ -655,7 +655,7 @@ function iniGeneralsettings() {
   if (pFinderLat == '' || pFinderLat == null) {
     document.getElementById('tx-lat-dd').value = ''
   } else {
-    const degrees = pFinderLat.replaceAll('_','')
+    const degrees = pFinderLat.toString().replaceAll('_','')
     if (degrees != '') {
         latDD = degrees
     }    
@@ -666,7 +666,7 @@ function iniGeneralsettings() {
   if (pFinderLong == '' || pFinderLong == null) {
     document.getElementById('tx-long-dd').value = ''
   } else{
-    const degrees = pFinderLong.replaceAll('_','')
+    const degrees = pFinderLong.toString().replaceAll('_','')
     if (degrees != '') {
         longDD = degrees
     }
