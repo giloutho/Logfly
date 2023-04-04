@@ -58,7 +58,6 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
-
 function displayStatus(content) {
     statusContent.innerHTML = content
     $('#status').show();
