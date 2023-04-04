@@ -10,10 +10,7 @@ const { event } = require('jquery');
 const homedir = require('os').homedir()
 
 ipcMain.on('disk-import', (event, importPath) => {
-  //openWindow(event,importPath)
-  runSearchIgc(importPath,function(searchResult) {
-    event.returnValue = searchResult
-  })
+  event.returnValue = runSearchTracks(importPath)
 })
 
 function runSearchIgc(importPath,_callback) {
@@ -46,6 +43,36 @@ function runSearchIgc(importPath,_callback) {
     }  
     _callback(searchResult)
   })
+}
+
+function runSearchTracks(importPath) {
+  let searchResult = {
+    errReport: '',
+    totalIGC : 0,
+    igcBad: [],
+    igcForImport : []
+   };
+  const  arrayIGC = glob.sync(path.join(importPath, '**/*.igc'))
+  if (arrayIGC != null && arrayIGC instanceof Array) {
+    log.info('[runSearchTracks] returns '+arrayIGC.length+' files')
+    searchResult.totalIGC = arrayIGC.length
+    for (let index = 0; index < arrayIGC.length; index++) {   
+      let igcData = fs.readFileSync(arrayIGC[index], 'utf8');      
+      try {
+        let flightData = IGCParser.parse(igcData, { lenient: true });  
+        checkedIgc = new validIGC(arrayIGC[index],flightData, igcData)
+        if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
+      } catch (error) {
+        log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error);
+        searchResult.igcBad.push(arrayIGC[index])
+      }          
+    }      
+  } else {
+    log.error('[runSearchTracks] no files returned from '+importPath)
+    searchResult.errReport = errormsg 
+  }
+
+  return searchResult
 }
 
 function validIGC(path, flightData, igcData) {
