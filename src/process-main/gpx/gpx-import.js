@@ -23,7 +23,9 @@ function runSearchGpx(importPath,_callback) {
     igcBad: [],
     igcForImport : []
   }
-  const  arrayGPX = glob.sync(path.join(importPath, '**/*.gpx'),{nocase : true})
+  const  arrayUpGPX = glob.sync(path.join(importPath, '**/*.GPX'))
+  const  arrayMinGPX = glob.sync(path.join(importPath, '**/*.gpx'))
+  const arrayGPX = [...arrayUpGPX, ...arrayMinGPX]
   if (arrayGPX != null && arrayGPX instanceof Array) {
     log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files')
     searchResult.totalIGC = arrayGPX.length
