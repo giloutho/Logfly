@@ -51,6 +51,12 @@ ipcRenderer.on('gpsdump-fone', (event, result) => {
   if (result != null) alert(result)      
 })  
 
+ipcRenderer.on('tracks-result', (_, searchIgc) => {
+  console.log('retour OK')
+  hideWaiting()
+  console.log({searchIgc})
+})
+
 function iniForm() {
   try {    
     currLang = store.get('lang')
@@ -202,10 +208,18 @@ function callSyride() {
 
 
 function callDisk() {
+  /*  code de base
   const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
   if (selectedPath != null) {
     const importStatus = selectedPath+' : '
     callDiskGpxIgc(selectedPath,importStatus)
+  }
+   */
+  const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
+  if (selectedPath != null) {
+    log.info('parti pour nouvelle procedure')
+    displayWaiting('many')
+    ipcRenderer.send('tracks-disk', selectedPath)   
   }
 }
 
@@ -796,6 +810,29 @@ function displayWaiting(typeMsg) {
     document.getElementById('div_waiting').innerHTML = rendered
     $('#div_waiting').removeClass('d-none')
     $('#div_waiting').addClass('m-5 pb-5 d-block')
+}
+
+const newDisplayWaiting= async (typeMsg) => {
+  log.info('async deb')
+  $('#table-content').removeClass('d-block')
+  $('#table-content').addClass('d-none')
+  let msg
+  switch (typeMsg) {
+    case 'one':
+      msg = i18n.gettext('Loading the selected flight')
+      break;
+    case 'gpsdump' :
+      msg = i18n.gettext('Tracks waiting to be received from GPS')
+      break;
+    case 'many':
+      msg = i18n.gettext('Retrieving the list of flights in progress') 
+      break;
+  }    
+  const rendered = Mustache.render(waitTpl, { typeimport : msg });
+  document.getElementById('div_waiting').innerHTML = rendered
+  $('#div_waiting').removeClass('d-none')
+  $('#div_waiting').addClass('m-5 pb-5 d-block')
+  log.info('async fin')
 }
 
 
