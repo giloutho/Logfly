@@ -20,7 +20,9 @@ function runSearchTracks(importPath) {
     igcBad: [],
     igcForImport : []
    }
-  const  arrayIGC = glob.sync(path.join(importPath, '**/*.igc'))
+  const  arrayUpIgc = glob.sync(path.join(importPath, '**/*.IGC'))
+  const  arrayMinIgc = glob.sync(path.join(importPath, '**/*.igc'))
+  const  arrayIGC = [...arrayUpIgc, ...arrayMinIgc]
   if (arrayIGC != null && arrayIGC instanceof Array) {
     log.info('[runSearchTracks] returns '+arrayIGC.length+' files')
     searchResult.totalIGC = arrayIGC.length
