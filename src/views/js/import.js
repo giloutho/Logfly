@@ -798,6 +798,7 @@ function displayWaiting(typeMsg) {
     $('#div_waiting').addClass('m-5 pb-5 d-block')
 }
 
+
 function hideWaiting() {
     $('#div_waiting').removeClass('d-block')
     $('#div_waiting').addClass('d-none')
