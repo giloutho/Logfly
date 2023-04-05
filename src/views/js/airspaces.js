@@ -664,13 +664,18 @@ function downloadBazile() {
     
     const memBazile = store.get('urlairspace')
     const defBazile = 'http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVers_ff-French-outT.txt'
-    let baziUrl
-    if (memBazile != 'undefined' && memBazile != '') {
+    let baziUrl    
+    alert('before '+memBazile)
+    if (memBazile != undefined && memBazile != 'undefined' && memBazile != '') {
         baziUrl = memBazile
+        alert('no good')
     } else {
+        alert('else')
         baziUrl = 'http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVers_ff-French-outT.txt'
         store.set('urlairspace',baziUrl)
+        alert(baziUrl)
     } 
+    alert('demarrage')
     const config = {
         timeout: 5000, 
         retries: 3,
