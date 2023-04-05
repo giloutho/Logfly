@@ -178,7 +178,7 @@ function openWindow(pageName) {
       break;            
     case "import":
       mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
-      //mainWindow.webContents.openDevTools();
+   //   mainWindow.webContents.openDevTools();
       break;        
     case "external":
       mainWindow.loadFile(path.join(__dirname, './views/html/external.html'));
@@ -195,7 +195,7 @@ function openWindow(pageName) {
       break; 
     case "airspaces":
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))
-   //   mainWindow.webContents.openDevTools()
+    //  mainWindow.webContents.openDevTools()
       break;              
     case "photos":
       mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
@@ -248,7 +248,7 @@ function checkInfo() {
           if (json.version > currVersion || json.message !== undefined )  {
             openWindow('infos')
           } else {
-              openWindow('logbook')
+              openWindow('import')
           }             
         })
       } else {
