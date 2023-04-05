@@ -1,8 +1,7 @@
 const {ipcMain} = require('electron')
 const log = require('electron-log')
 const path = require('path')
-const glob = require("glob");
-const fs = require('fs');
+const fs = require('fs')
 const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-parser
 const offset = require('../../utils/geo/offset-utc.js')
 const dblog = require('../../utils/db/db-search.js')
@@ -13,7 +12,7 @@ let searchResult = {
   totalIGC : 0,
   igcBad: [],
   igcForImport : []
- };
+ }
 
 ipcMain.on('gpsdump-import', (event, arrayIgc) => {
   runSearchIgc(arrayIgc)  
@@ -24,13 +23,13 @@ function runSearchIgc(arrayIGC) {
    searchResult.totalIGC = arrayIGC.length
    for (let index = 0; index < arrayIGC.length; index++) {   
       flightFilePath = gpsdumpOne.getGpsdumpFlight(arrayIGC[index]['gpsparam'], arrayIGC[index]['flightIndex'])
-      let igcData = fs.readFileSync(flightFilePath, 'utf8');      
+      let igcData = fs.readFileSync(flightFilePath, 'utf8')      
       try {
-        let flightData = IGCParser.parse(igcData, { lenient: true });  
+        let flightData = IGCParser.parse(igcData, { lenient: true })  
         checkedIgc = new validIGC(flightData, igcData)
         if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
       } catch (error) {
-        log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error);
+        log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error)
         searchResult.igcBad.push(arrayIGC[index])
       }          
    }      
@@ -59,7 +58,7 @@ function validIGC(flightData, igcData) {
     this.dateStart = dateLocal
     // format of flightData.date is not good -> YYYY-MM-DD
     this.date = String(dateLocal.getDate()).padStart(2, '0')+'-'+String((dateLocal.getMonth()+1)).padStart(2, '0')+'-'+dateLocal.getFullYear()
-    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');  
+    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0')  
     const isoLocalEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp+(this.offsetUTC*60000)).toISOString()
     this.dateEnd = new Date(isoLocalEnd.slice(0, -1))
     this.errors = [] 
