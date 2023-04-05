@@ -1,49 +1,17 @@
 const {ipcMain, BrowserWindow} = require('electron')
 const log = require('electron-log')
 const path = require('path')
-const glob = require("glob");
-const fs = require('fs');
+const glob = require('glob')
+const fs = require('fs')
 const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-parser
 const offset = require('../../utils/geo/offset-utc.js')
 const dblog = require('../../utils/db/db-search.js')
-const { event } = require('jquery');
+const { event } = require('jquery')
 const homedir = require('os').homedir()
 
 ipcMain.on('disk-import', (event, importPath) => {
   event.returnValue = runSearchTracks(importPath)
 })
-
-function runSearchIgc(importPath,_callback) {
-  let searchResult = {
-    errReport: '',
-    totalIGC : 0,
-    igcBad: [],
-    igcForImport : []
-   };
-    getDirectories(importPath, function (err, arrayIGC) {
-    if (err) {
-      log.error('[disk-import] getDirectories -> '+err)
-      searchResult.errReport = errormsg 
-    } else {
-      if (arrayIGC != null && arrayIGC instanceof Array) {
-        log.info('[runSearchIgc] getDirectories returns '+arrayIGC.length+' files')
-        searchResult.totalIGC = arrayIGC.length
-        for (let index = 0; index < arrayIGC.length; index++) {   
-          let igcData = fs.readFileSync(arrayIGC[index], 'utf8');      
-          try {
-            let flightData = IGCParser.parse(igcData, { lenient: true });  
-            checkedIgc = new validIGC(arrayIGC[index],flightData, igcData)
-            if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
-          } catch (error) {
-            log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error);
-            searchResult.igcBad.push(arrayIGC[index])
-          }          
-        }      
-      }
-    }  
-    _callback(searchResult)
-  })
-}
 
 function runSearchTracks(importPath) {
   let searchResult = {
@@ -51,19 +19,19 @@ function runSearchTracks(importPath) {
     totalIGC : 0,
     igcBad: [],
     igcForImport : []
-   };
+   }
   const  arrayIGC = glob.sync(path.join(importPath, '**/*.igc'))
   if (arrayIGC != null && arrayIGC instanceof Array) {
     log.info('[runSearchTracks] returns '+arrayIGC.length+' files')
     searchResult.totalIGC = arrayIGC.length
     for (let index = 0; index < arrayIGC.length; index++) {   
-      let igcData = fs.readFileSync(arrayIGC[index], 'utf8');      
+      let igcData = fs.readFileSync(arrayIGC[index], 'utf8')      
       try {
-        let flightData = IGCParser.parse(igcData, { lenient: true });  
+        let flightData = IGCParser.parse(igcData, { lenient: true })  
         checkedIgc = new validIGC(arrayIGC[index],flightData, igcData)
         if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
       } catch (error) {
-        log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error);
+        log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error)
         searchResult.igcBad.push(arrayIGC[index])
       }          
     }      
@@ -101,7 +69,7 @@ function validIGC(path, flightData, igcData) {
     this.dateStart = dateLocal
     // format of flightData.date is not good -> YYYY-MM-DD
     this.date = String(dateLocal.getDate()).padStart(2, '0')+'-'+String((dateLocal.getMonth()+1)).padStart(2, '0')+'-'+dateLocal.getFullYear()
-    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0');  
+    this.startLocalTime = String(dateLocal.getHours()).padStart(2, '0')+':'+String(dateLocal.getMinutes()).padStart(2, '0')+':'+String(dateLocal.getSeconds()).padStart(2, '0')  
     const isoLocalEnd = new Date(flightData.fixes[flightData.fixes.length - 1].timestamp+(this.offsetUTC*60000)).toISOString()
     this.dateEnd = new Date(isoLocalEnd.slice(0, -1))
     this.errors = [] 
@@ -116,11 +84,4 @@ function validIGC(path, flightData, igcData) {
     this.errors = flightData.errors  // igc-parser returns an array
     this.validtrack = false
   }
-}
-
-let getDirectories = function (src, callback) {
-  // igc or IGC ??? In Reversale, it was IGC
-  // glob function did not seem to work
-  // We've been looking for this option [nocase : true] for a long time !!!
-  glob(src + '/**/*.igc',{nocase : true},callback);
 }

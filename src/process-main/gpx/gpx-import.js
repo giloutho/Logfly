@@ -12,10 +12,7 @@ const homedir = require('os').homedir()
 const gpxIgc = require('./gpx-to-igc.js')
 
 ipcMain.on('disk-gpx', (event, importPath) => {
-  console.log('disk-gpx called')
-  runSearchGpx(importPath,function(searchResult) {
-    event.returnValue = searchResult
-  })
+  event.returnValue = runSearchGpx(importPath)
 })
 
 // The principle is simple : the GPX is read and immediately encoded in IGC
@@ -25,32 +22,30 @@ function runSearchGpx(importPath,_callback) {
     totalIGC : 0,
     igcBad: [],
     igcForImport : []
-   }
-    getDirectories(importPath, function (err, arrayGPX) {
-    if (err) {
-      log.error('[gpx-import] getDirectories -> '+err)
-      searchResult.errReport = errormsg 
-    } else {
-      if (arrayGPX != null && arrayGPX instanceof Array) {
-        log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files')
-        searchResult.totalIGC = arrayGPX.length
-        for (let index = 0; index < arrayGPX.length; index++) {   
-          const gpxString = fs.readFileSync(arrayGPX[index], 'utf8')
-          const newIgc = gpxIgc.encodeIGC(gpxString, false) 
-          const igcData = newIgc.igcString
-          try {
-            let flightData = IGCParser.parse(igcData, { lenient: true })  
-            checkedIgc = new validIGC(arrayGPX[index],flightData, igcData)
-            if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
-          } catch (error) {
-            log.warn('   [IGC] decoding error on '+arrayGPX[index]+' -> '+error)
-            searchResult.igcBad.push(arrayGPX[index])
-          }          
-        }      
-      }
-    }  
-    _callback(searchResult)
-  })
+  }
+  const  arrayGPX = glob.sync(path.join(importPath, '**/*.gpx'),{nocase : true})
+  if (arrayGPX != null && arrayGPX instanceof Array) {
+    log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files')
+    searchResult.totalIGC = arrayGPX.length
+    for (let index = 0; index < arrayGPX.length; index++) {   
+      const gpxString = fs.readFileSync(arrayGPX[index], 'utf8')
+      const newIgc = gpxIgc.encodeIGC(gpxString, false) 
+      const igcData = newIgc.igcString
+      try {
+        let flightData = IGCParser.parse(igcData, { lenient: true })  
+        checkedIgc = new validIGC(arrayGPX[index],flightData, igcData)
+        if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
+      } catch (error) {
+        log.warn('   [IGC] decoding error on '+arrayGPX[index]+' -> '+error)
+        searchResult.igcBad.push(arrayGPX[index])
+      }          
+    }      
+  } else {
+    log.error('[runSearchGpx] no files returned from '+importPath)
+    searchResult.errReport = errormsg 
+  }
+
+  return searchResult
 }
 
 function validIGC(path, flightData, igcData) {
