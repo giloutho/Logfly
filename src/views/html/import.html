@@ -33,8 +33,11 @@
                     <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
                     <span class="navbar-text mx-3" id="db-state"></span>
                     <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp pour comprendre les possibilités immenses de cette navbar -->
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">          
                         <ul class="nav navbar-nav ml-auto">
+                            <div class="spinner-border text-danger d-none" id="waiting-spin" style="margin-right: 40px;" role="status">
+                              <span class="sr-only">Loading...</span>
+                            </div>   
                             <!-- Dropdown -->
                             <li class="nav-item dropdown">
                               <a href="#" class="nav-link dropdown-toggle" id="imp-gps" data-toggle="dropdown"></a>

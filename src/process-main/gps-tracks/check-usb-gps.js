@@ -204,9 +204,10 @@ function exploreDrives(typeGPS,arrayDrives) {
               break;                              
           case 'reverlog':
             // there is a settings file called PARAM.VGP  in root folder    
-            var vgpFile = glob.sync(usbPath + '/PARAM.VGP')
+           // var vgpFile = glob.sync(usbPath + '/PARAM.VGP')
+            let vgpFile = glob.sync(path.join(usbPath, 'PARAM.VGP'))
             if (vgpFile.length > 0) {
-              pathFlights = usbPath
+              pathFlights =  path.join(usbPath, path.sep+'LOG')
               validFlights = true
               validSpecial = true      
               // Reversale  : by default igc files are in a folder called 'LOG' 
@@ -226,26 +227,7 @@ function exploreDrives(typeGPS,arrayDrives) {
               // }     
             }                                            
             break;   
-          case 'revercomp':   //*** DEPRECATED ***/
-            // Reversale  : with comp option, some igc files could be found in a folder called 'COMP' 
-            // there is a settings file called PARAM.VGP  in root folder    
-            // We keep the code for historical purposes only
-            var vgpFile = glob.sync(usbPath + '/PARAM.VGP')
-            if (vgpFile.length > 0) {
-              validSpecial = true
-              arrFolders = getUsbFolders(usbPath) 
-              if (arrFolders instanceof Array) { 
-                for (let j = 0; j < arrFolders.length; j++) {
-                  switch (arrFolders[j]) {
-                    case 'COMPET':
-                      validFlights = true
-                      pathFlights = path.join(usbPath, path.sep+'COMPET')
-                      break;                            
-                  }                       
-                }
-              }     
-            }                                            
-            break;                               
+                       
           case 'sky2':
             // Skytraxx 2 igc files are in a set of sub folders in 'Flights' or 'FLIGHTS' folder
             // A folder called 'elevation' or 'ELEVATION' exists

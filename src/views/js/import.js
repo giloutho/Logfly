@@ -52,9 +52,9 @@ ipcRenderer.on('gpsdump-fone', (event, result) => {
 })  
 
 ipcRenderer.on('tracks-result', (_, searchIgc) => {
-  console.log('retour OK')
-  hideWaiting()
-  console.log({searchIgc})
+  simpleHideWating()
+  alert('retour tracks result')
+  displayDiskResult(searchIgc)
 })
 
 function iniForm() {
@@ -165,22 +165,29 @@ function callUsbGps(typeGPS) {
       gpsStatus = '<strong>GPS Syride via Usb : </strong>'     
       break;          
   }
-  displayWaiting('many')
+ // displayWaiting('many')
+ simpleWaiting()
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
       if (logResult != null) {     
-        if (typeGPS != 'reverlog') {
-          callUsbImport(logResult,gpsStatus)  
-        } else {
-          callDiskGpxIgc(logResult,gpsStatus)          
-        }
+      //  if (typeGPS != 'reverlog') {
+         // callUsbImport(logResult,gpsStatus)  
+         console.log({logResult})
+          newCallUsbImport(logResult,gpsStatus)  
+        // } else {
+        //   // initial
+        //   // callDiskGpxIgc(logResult,gpsStatus)   
+        //   ipcRenderer.send('tracks-disk', selectedPath)          
+        // }
       } else {
           let errorMsg
-          clearTable()
+          simpleHideWating()
+          clearTable()        
           if (typeGPS == 'varduino') {
             errorMsg = gpsStatus+' '+i18n.gettext('The USB connection being very random, it is advised to use directly the microSD connected to the computer')
           } else {
             errorMsg = gpsStatus+' '+i18n.gettext('Not found')
           }
+          console.log(errorMsg)
           displayStatus(errorMsg,false)      
       }
   })     
@@ -208,17 +215,10 @@ function callSyride() {
 
 
 function callDisk() {
-  /*  code de base
   const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
   if (selectedPath != null) {
-    const importStatus = selectedPath+' : '
-    callDiskGpxIgc(selectedPath,importStatus)
-  }
-   */
-  const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
-  if (selectedPath != null) {
-    log.info('parti pour nouvelle procedure')
-    displayWaiting('many')
+    currStatusContent = selectedPath+' : '
+    simpleWaiting()
     ipcRenderer.send('tracks-disk', selectedPath)   
   }
 }
@@ -291,7 +291,14 @@ function callUsbImport(selectedPath, statusContent) {
     }
 }
 
+function newCallUsbImport(selectedPath, statusContent) {
+ // simpleWaiting()
+  currStatusContent = statusContent
+  ipcRenderer.send('tracks-disk', selectedPath)   
+}
+
 function callDiskGpxIgc(selectedPath, statusContent) {
+  let statusReport = currStatusContent
   try {    
     clearTable()
     displayWaiting('many')
@@ -320,22 +327,42 @@ function callDiskGpxIgc(selectedPath, statusContent) {
           return db - da;
         });
         // result display
-        statusContent += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
-        statusContent += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
-        statusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
-        currStatusContent = statusContent
-        statusContent += nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-        displayStatus(statusContent,true)
+        statusReport += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
+        statusReport += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
+        statusReport += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
+        currStatusContent = statusReport
+        statusReport += searchIgc.totalInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        displayStatus(statusReport,true)
         tableStandard(searchIgc.igcForImport)          
     } else {
-      statusContent += ' '+'No tracks decoded'
-      displayStatus(statusContent,false)
+      statusReport += ' '+'No tracks decoded'
+      displayStatus(statusReport,false)
       log.info('disk-import.js : zero igc files decoded');
     }  
   } catch (error) {
       displayStatus(error,false)
       log.error('[callDiskGpxIgc] '+error)    
   }
+}
+
+function displayDiskResult(searchIgc) {
+  clearTable()
+  let statusReport = currStatusContent
+  if (searchIgc.igcForImport.length > 0) {
+    // result display
+    statusReport += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
+    statusReport += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
+    statusReport += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
+    currStatusContent = statusReport
+    statusReport += searchIgc.totalInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+    displayStatus(statusReport,true)
+    console.log({searchIgc})
+    tableStandard(searchIgc.igcForImport)          
+  } else {
+    currStatusContent += ' '+'No tracks decoded'
+    displayStatus(currStatusContent,false)
+    log.info('disk-import.js : zero igc files decoded');
+  } 
 }
 
 function serialGpsCall(gpsModel) {
@@ -812,29 +839,17 @@ function displayWaiting(typeMsg) {
     $('#div_waiting').addClass('m-5 pb-5 d-block')
 }
 
-const newDisplayWaiting= async (typeMsg) => {
-  log.info('async deb')
+function simpleWaiting() {
   $('#table-content').removeClass('d-block')
   $('#table-content').addClass('d-none')
-  let msg
-  switch (typeMsg) {
-    case 'one':
-      msg = i18n.gettext('Loading the selected flight')
-      break;
-    case 'gpsdump' :
-      msg = i18n.gettext('Tracks waiting to be received from GPS')
-      break;
-    case 'many':
-      msg = i18n.gettext('Retrieving the list of flights in progress') 
-      break;
-  }    
-  const rendered = Mustache.render(waitTpl, { typeimport : msg });
-  document.getElementById('div_waiting').innerHTML = rendered
-  $('#div_waiting').removeClass('d-none')
-  $('#div_waiting').addClass('m-5 pb-5 d-block')
-  log.info('async fin')
+  $('#waiting-spin').removeClass('d-none')   
 }
 
+function simpleHideWating() {
+  $('#waiting-spin').addClass('d-none')
+  $('#table-content').removeClass('d-none')
+  $('#table-content').addClass('d-block')   
+}
 
 function hideWaiting() {
     $('#div_waiting').removeClass('d-block')

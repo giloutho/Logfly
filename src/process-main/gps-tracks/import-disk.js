@@ -16,6 +16,7 @@ function scanFolders(event,importPath) {
     log.info('[scanFolders] for '+importPath)
     // main/gps-tracks/disk-import.js
     const searchIgc = runSearchIgc(importPath)
+    searchIgc.totalIGC =searchIgc.igcForImport.length
     log.info('Igc : '+searchIgc.igcForImport.length)
     const searchGpx = runSearchGpx(importPath)
     log.info('Gpx : '+searchGpx.igcForImport.length)
@@ -24,7 +25,7 @@ function scanFolders(event,importPath) {
             searchIgc.igcForImport.push(searchGpx.igcForImport[index])  
         }
     }
-    searchIgc.totalIGC =searchGpx.igcForImport.length
+    searchIgc.totalIGC += searchGpx.igcForImport.length
     if (searchGpx.igcBad.length > 0) {
         for (let index = 0; index < searchGpx.igcBad.length; index++) {
             searchIgc.igcBad.push(searchGpx.igcBad[index])      
@@ -39,8 +40,9 @@ function scanFolders(event,importPath) {
         if (element.forImport === true ) {
             nbInsert++
         }
-        })
-        // 
+        })       
+        searchIgc.totalInsert = nbInsert
+        console.log('nbInsert '+searchIgc.totalInsert)
         searchIgc.igcForImport.sort((a, b) => {
         let da = a.dateStart,
             db = b.dateStart
@@ -54,6 +56,7 @@ function runSearchIgc(importPath) {
   let searchResult = {
     errReport: '',
     totalIGC : 0,
+    totalInsert : 0,
     igcBad: [],
     igcForImport : []
    }
@@ -61,8 +64,7 @@ function runSearchIgc(importPath) {
   const  arrayMinIgc = glob.sync(path.join(importPath, '**/*.igc'))
   const  arrayIGC = [...arrayUpIgc, ...arrayMinIgc]
   if (arrayIGC != null && arrayIGC instanceof Array) {
-    log.info('[runSearchTracks] returns '+arrayIGC.length+' files')
-    searchResult.totalIGC = arrayIGC.length
+    log.info('[runSearchTracks] in '+importPath+' returns '+arrayIGC.length+' files')
     for (let index = 0; index < arrayIGC.length; index++) {   
       let igcData = fs.readFileSync(arrayIGC[index], 'utf8')      
       try {
@@ -95,7 +97,6 @@ function runSearchGpx(importPath,_callback) {
     const arrayGPX = [...arrayUpGPX, ...arrayMinGPX]
     if (arrayGPX != null && arrayGPX instanceof Array) {
       log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files')
-      searchResult.totalIGC = arrayGPX.length
       for (let index = 0; index < arrayGPX.length; index++) {   
         const gpxString = fs.readFileSync(arrayGPX[index], 'utf8')
         const newIgc = gpxIgc.encodeIGC(gpxString, false) 
