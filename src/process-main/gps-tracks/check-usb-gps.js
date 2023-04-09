@@ -282,7 +282,7 @@ function exploreDrives(typeGPS,arrayDrives) {
           case 'flynet':
             // igc files are in root folder
             // there is a settings file called CONFIG.TXT
-            const flynetTxt =  globSync(usbPath + 'CONFIG.TXT')
+            const flynetTxt =  globSync(path.join(usbPath, 'CONFIG.TXT'))
             if (flynetTxt.length > 0) {
               pathFlights = usbPath
               validFlights = true
