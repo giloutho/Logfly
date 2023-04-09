@@ -1,7 +1,7 @@
 const {ipcMain} = require('electron')
 const log = require('electron-log')
 const path = require('path')
-const glob = require('glob')
+const {globSync} = require('glob')
 const fs = require('fs')
 const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-parser
 const offset = require('../../utils/geo/offset-utc.js')
@@ -14,7 +14,6 @@ ipcMain.on('tracks-disk', (event,importPath) => {
 
 function scanFolders(event,importPath) {  
     log.info('[scanFolders] for '+importPath)
-    // main/gps-tracks/disk-import.js
     const searchIgc = runSearchIgc(importPath)
     searchIgc.totalIGC =searchIgc.igcForImport.length
     log.info('Igc : '+searchIgc.igcForImport.length)
@@ -59,10 +58,11 @@ function runSearchIgc(importPath) {
     totalInsert : 0,
     igcBad: [],
     igcForImport : []
-   }
-  const  arrayUpIgc = glob.sync(path.join(importPath, '**/*.IGC'))
-  const  arrayMinIgc = glob.sync(path.join(importPath, '**/*.igc'))
-  const  arrayIGC = [...arrayUpIgc, ...arrayMinIgc]
+  }
+  // if necessary, it is possible to put an array of patternb parameters
+  // const arrayIGC = globSync([path.join(usbPath,'**/*.igc'),path.join(usbPath,'**/*.gpx')],{nocase : true,windowsPathsNoEscape:true})
+  // but we must treat igc and gpx separately
+  const arrayIGC = globSync(path.join(importPath,'**/*.igc'),{nocase : true,windowsPathsNoEscape:true})
   if (arrayIGC != null && arrayIGC instanceof Array) {
     log.info('[runSearchTracks] in '+importPath+' returns '+arrayIGC.length+' files')
     for (let index = 0; index < arrayIGC.length; index++) {   
@@ -92,9 +92,10 @@ function runSearchGpx(importPath,_callback) {
       igcBad: [],
       igcForImport : []
     }
-    const  arrayUpGPX = glob.sync(path.join(importPath, '**/*.GPX'))
-    const  arrayMinGPX = glob.sync(path.join(importPath, '**/*.gpx'))
-    const arrayGPX = [...arrayUpGPX, ...arrayMinGPX]
+    const arrayGPX = globSync(path.join(importPath,'**/*.gpx'),{nocase : true,windowsPathsNoEscape:true})
+    // const  arrayUpGPX = glob.sync(path.join(importPath, '**/*.GPX'))
+    // const  arrayMinGPX = glob.sync(path.join(importPath, '**/*.gpx'))
+    // const arrayGPX = [...arrayUpGPX, ...arrayMinGPX]
     if (arrayGPX != null && arrayGPX instanceof Array) {
       log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files')
       for (let index = 0; index < arrayGPX.length; index++) {   

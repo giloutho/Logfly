@@ -1,9 +1,9 @@
 const {ipcMain} = require('electron')
-var fs = require('fs')
-var path = require('path')
-var drivelist = require('drivelist')
+const fs = require('fs')
+const path = require('path')
+const drivelist = require('drivelist')
 const log = require('electron-log')
-var glob = require('glob')
+const {globSync} = require('glob')
 
 async function listDrives() {
   const drives = await drivelist.list();
@@ -33,7 +33,7 @@ function exploreDrives(typeGPS,arrayDrives) {
       nbUsb++
       if (arrayDrives[index].mountpoints.length > 0) {
         let usbPath = arrayDrives[index].mountpoints[0].path
-        log.info('   [exploreDrives] test '+usbPath);
+        log.info('   [exploreDrives] test '+usbPath)
         let validFlights = false
         let validSpecial = false   
         let arrFolders  
@@ -49,15 +49,15 @@ function exploreDrives(typeGPS,arrayDrives) {
                   case 'Flights':
                     validFlights = true
                     pathFlights = path.join(usbPath, path.sep+'Flights')
-                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                    break;   
+                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                    break   
                   case 'Settings':
                     validSpecial = true
-                    break;                           
+                    break                           
                 }                       
               }
             }             
-            break; 
+            break 
           case 'varduino':
             // Varduino : igc files are in a folder  called 'igc' 
             // A folder called 'audio' exists            
@@ -68,15 +68,15 @@ function exploreDrives(typeGPS,arrayDrives) {
                   case 'igc':
                     validFlights = true
                     pathFlights = path.join(usbPath, path.sep+'igc')
-                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                    break;   
+                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                    break   
                   case 'audio':
                     validSpecial = true
-                    break;                           
+                    break                           
                 }                       
               }
             }             
-            break; 
+            break 
           case 'connect':
               // Connect : igc files are in a folder called 'flights' 
               // A folder called 'config' exists            
@@ -87,15 +87,15 @@ function exploreDrives(typeGPS,arrayDrives) {
                     case 'flights':
                       validFlights = true
                       pathFlights = path.join(usbPath, path.sep+'Flights')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                      break;   
+                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      break   
                     case 'config':
                       validSpecial = true
-                      break;                           
+                      break                           
                   }                       
                 }
               }             
-              break;        
+              break        
           case 'sensbox':
               // Sensbox : igc files are in a folder called 'tracks' 
               // A folder called 'System' or 'system' exists            
@@ -106,18 +106,18 @@ function exploreDrives(typeGPS,arrayDrives) {
                     case 'tracks':
                       validFlights = true
                       pathFlights = path.join(usbPath, path.sep+'tracks')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                      break;   
+                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      break   
                     case 'system':
                       validSpecial = true
-                      break;      
+                      break      
                     case 'System':
                       validSpecial = true
-                      break;                                              
+                      break                                              
                   }                       
                 }
               }             
-              break;                      
+              break                      
           case 'cpilot':
               // C-Pilot : igc files are in a folder called 'tracks' 
               // A folder called 'displays' exists            
@@ -128,15 +128,15 @@ function exploreDrives(typeGPS,arrayDrives) {
                     case 'tracks':
                       validFlights = true
                       pathFlights = path.join(usbPath, path.sep+'tracks')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                      break;   
+                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      break   
                     case 'displays':
                       validSpecial = true
-                      break;                                                    
+                      break                                                    
                   }                       
                 }
               }             
-              break;        
+              break        
           case 'skydrop':
             // Skydrop : igc files are in a folder called 'LOGS' 
             // A folder called 'AIR' exists            
@@ -147,15 +147,15 @@ function exploreDrives(typeGPS,arrayDrives) {
                   case 'LOGS':
                     validFlights = true
                     pathFlights = path.join(usbPath, path.sep+'LOGS')
-                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                    break;   
+                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                    break   
                   case 'AIR':
                     validSpecial = true
-                    break;                                                    
+                    break                                                    
                 }                       
               }
             }             
-            break;                            
+            break                            
           case 'element':
                 // Element : igc files are in a folder called 'flights' 
                 // A folder called 'config' exists      
@@ -167,18 +167,18 @@ function exploreDrives(typeGPS,arrayDrives) {
                       case 'flights':
                         validFlights = true
                         pathFlights = path.join(usbPath, path.sep+'flights')
-                        log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                        break;   
+                        log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                        break   
                       case 'config':
                         validSpecial = true
-                        break;       
+                        break       
                       case 'waypoints':
                         validSpecial = true
-                        break;                                                      
+                        break                                                      
                     }                       
                   }
                 }             
-                break;     
+                break     
           case 'syrideusb':
               // Nav XL : igc files are in a folder called 'IGC' 
               // A folder called 'KEYS' exists      
@@ -190,44 +190,28 @@ function exploreDrives(typeGPS,arrayDrives) {
                     case 'IGC':
                       validFlights = true
                       pathFlights = path.join(usbPath, path.sep+'IGC')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights);
-                      break;   
+                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      break   
                     case 'KEYS':
                       validSpecial = true
-                      break;       
+                      break       
                     case 'update':
                       validSpecial = true
-                      break;                                                      
+                      break                                                      
                   }                       
                 }
               }             
-              break;                              
+              break                              
           case 'reverlog':
             // there is a settings file called PARAM.VGP  in root folder    
            // var vgpFile = glob.sync(usbPath + '/PARAM.VGP')
-            let vgpFile = glob.sync(path.join(usbPath, 'PARAM.VGP'))
+            let vgpFile = globSync(path.join(usbPath, 'PARAM.VGP'))
             if (vgpFile.length > 0) {
-              pathFlights =  path.join(usbPath, path.sep+'LOG')
+              pathFlights =  usbPath
               validFlights = true
-              validSpecial = true      
-              // Reversale  : by default igc files are in a folder called 'LOG' 
-              // This code was used to limit the exploration to the Log folder
-              // We keep the code for historical purposes only       
-              // validSpecial = true
-              // arrFolders = getUsbFolders(usbPath) 
-              // if (arrFolders instanceof Array) { 
-              //   for (let j = 0; j < arrFolders.length; j++) {
-              //     switch (arrFolders[j]) {
-              //       case 'LOG':
-              //         validFlights = true
-              //         pathFlights = path.join(usbPath, path.sep+'LOG')
-              //         break;                            
-              //     }                       
-              //   }
-              // }     
+              validSpecial = true          
             }                                            
-            break;   
-                       
+            break                          
           case 'sky2':
             // Skytraxx 2 igc files are in a set of sub folders in 'Flights' or 'FLIGHTS' folder
             // A folder called 'elevation' or 'ELEVATION' exists
@@ -239,18 +223,18 @@ function exploreDrives(typeGPS,arrayDrives) {
                     // Sytraxx 2.0 Uppercase
                     validFlights = true
                     pathFlights = path.join(usbPath, path.sep+'FLIGHTS')
-                    break;
+                    break
                   case 'flights':
                     // Skytraxx 2.1 lowercase
                     validFlights = true
                     pathFlights = path.join(usbPath, path.sep+'flights')
-                    break;          
+                    break          
                   case 'elevation':
                     validSpecial = true
-                    break;         
+                    break         
                   case 'ELEVATION':
                     validSpecial = true
-                    break;                         
+                    break                         
                 }                       
               }
             }                    
@@ -269,18 +253,18 @@ function exploreDrives(typeGPS,arrayDrives) {
                       // Skytraxx 2.1 lowercase
                       validFlights = true
                       pathFlights = path.join(usbPath, path.sep+'flights')
-                      break;          
+                      break          
                       case 'pilot_profiles':
                         // exists on Skytraxx 3
                         validSpecial = true
-                        break;        
+                        break        
                       case 'flightscreens':
                         // exists on Skytraxx 4
                         validSpecial = true
-                        break;                            
+                        break                            
                       case 'waypoints':
                         validSpecial = true
-                        break;                         
+                        break                         
                   }                       
                 }
               }                    
@@ -288,8 +272,8 @@ function exploreDrives(typeGPS,arrayDrives) {
           case 'xctracer':
             // igc files are in root folder
             // there is a settings file called XC**.txt
-            var txtFiles = glob.sync(usbPath + '/XC*.txt')
-            if (txtFiles.length > 0) {
+            const xcTxt = globSync(path.join(usbPath,'XC*.txt'),{nocase : true,windowsPathsNoEscape:true})
+            if (xcTxt.length > 0) {
               pathFlights = usbPath
               validFlights = true
               validSpecial = true
@@ -298,8 +282,8 @@ function exploreDrives(typeGPS,arrayDrives) {
           case 'flynet':
             // igc files are in root folder
             // there is a settings file called CONFIG.TXT
-            var txtFiles = glob.sync(usbPath + '/CONFIG.TXT')
-            if (txtFiles.length > 0) {
+            const flynetTxt =  globSync(usbPath + 'CONFIG.TXT')
+            if (flynetTxt.length > 0) {
               pathFlights = usbPath
               validFlights = true
               validSpecial = true
@@ -307,7 +291,7 @@ function exploreDrives(typeGPS,arrayDrives) {
             break              
         }
         if (validFlights && validSpecial) {
-          break;            
+          break            
         } 
       }
     }        
@@ -318,6 +302,6 @@ function exploreDrives(typeGPS,arrayDrives) {
 
 function getUsbFolders(_path) {
   return fs.readdirSync(_path).filter(function (file) {
-    return fs.statSync(_path+'/'+file).isDirectory();
-  });
+    return fs.statSync(_path+'/'+file).isDirectory()
+  })
 }
