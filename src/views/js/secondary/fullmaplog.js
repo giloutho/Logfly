@@ -515,14 +515,14 @@ function buildSidePanels()
 // entre la classe et l'application à une id de table
 
 function fillSidebarInfo() {
-
   let flightDate
-  const dateTkoff = new Date(mainTrack.fixes[0].timestamp)
+  const dateTkoff = new Date(mainTrack.GeoJSON.features[0].properties.coordTimes[0])  // to get local time
   // getMonth returns integer from 0(January) to 11(December)
   const dTkOff = String(dateTkoff.getDate()).padStart(2, '0')+'/'+String((dateTkoff.getMonth()+1)).padStart(2, '0')+'/'+dateTkoff.getFullYear()     
-  const hTkoff = String(dateTkoff.getHours()).padStart(2, '0')+':'+String(dateTkoff.getMinutes()).padStart(2, '0')
-  const dateLand = new Date(mainTrack.fixes[mainTrack.fixes.length - 1].timestamp);
-  const hLand = String(dateLand.getHours()).padStart(2, '0')+':'+String(dateLand.getMinutes()).padStart(2, '0')+':'+String(dateLand.getSeconds()).padStart(2, '0');     
+  const hTkoff =  Highcharts.dateFormat('%H:%M:%S',dateTkoff)
+  const dateLand = new Date(mainTrack.GeoJSON.features[0].properties.coordTimes[mainTrack.GeoJSON.features[0].properties.coordTimes.length - 1])
+ // const dateLand = new Date(mainTrack.fixes[mainTrack.fixes.length - 1].timestamp);
+  const hLand = Highcharts.dateFormat('%H:%M:%S',dateLand)    
   const durationFormatted = new Date(mainTrack.stat.duration*1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
   const arrTakeOff = tkoffSite.split("*");
   let formattedSite
