@@ -50,7 +50,14 @@ ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
   mainTrack = track
   anaTrack = analyzedTrack
   tkoffSite = tkSite
-  const winLabel = mainTrack.info.date+' '+i18n.gettext('Glider')+' : '+mainTrack.info.gliderType.trim()
+  let gliderType
+  if (mainTrack.info.gliderType != undefined && mainTrack.info.gliderType != '') {
+    gliderType = ' '+i18n.gettext('Glider')+' : '+mainTrack.info.gliderType.trim()
+  } else {
+    gliderType = ''
+  }
+  //const winLabel = mainTrack.info.date+' '+i18n.gettext('Glider')+' : '+mainTrack.info.gliderType.trim()
+  const winLabel = mainTrack.info.date+gliderType
   document.getElementById('wintitle').innerHTML = winLabel
   buildMap()
   $( "#mnu-scoring a" ).on( "click", function() {
