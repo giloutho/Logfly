@@ -53,7 +53,6 @@ ipcRenderer.on('gpsdump-fone', (event, result) => {
 
 ipcRenderer.on('tracks-result', (_, searchIgc) => {
   simpleHideWating()
-  alert('retour tracks result')
   displayDiskResult(searchIgc)
 })
 
@@ -165,25 +164,17 @@ function callUsbGps(typeGPS) {
       gpsStatus = '<strong>GPS Syride via Usb : </strong>'     
       break;          
   }
- // displayWaiting('many')
- simpleWaiting()
+  simpleWaiting()
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
       if (logResult != null) {     
-      //  if (typeGPS != 'reverlog') {
-         // callUsbImport(logResult,gpsStatus)  
-         console.log({logResult})
-          newCallUsbImport(logResult,gpsStatus)  
-        // } else {
-        //   // initial
-        //   // callDiskGpxIgc(logResult,gpsStatus)   
-        //   ipcRenderer.send('tracks-disk', selectedPath)          
-        // }
+        console.log({logResult})
+        newCallUsbImport(logResult,gpsStatus)  
       } else {
           let errorMsg
           simpleHideWating()
           clearTable()        
           if (typeGPS == 'varduino') {
-            errorMsg = gpsStatus+' '+i18n.gettext('The USB connection being very random, it is advised to use directly the microSD connected to the computer')
+            errorMsg = gpsStatus+' '+i18n.gettext('The USB connection being very random, it is advised to use directly the microSD with disk import')
           } else {
             errorMsg = gpsStatus+' '+i18n.gettext('Not found')
           }
@@ -204,8 +195,9 @@ function callSyride() {
   log.info('[Import Syride] from '+syrideSetting)
   const syridePath = ipcRenderer.sendSync('syride-check',syrideSetting)
   if (syridePath.parapentepath != null) {
-    const gpsStatus = '<strong>Syride : </strong>'  
-    callUsbImport(syridePath.parapentepath,gpsStatus)  
+   currStatusContent = '<strong>Syride : </strong>' 
+   simpleWaiting()
+   ipcRenderer.send('tracks-disk', syridePath.parapentepath)   
   } else {
     clearTable()
     const errorMsg = 'Syride path setting ['+syrideSetting+'] not found'
@@ -247,102 +239,9 @@ function callManu() {
 }
 
 
-/**
- *
- *
- * @param {*} selectedPath
- * @param {*} statusContent
- */
-function callUsbImport(selectedPath, statusContent) {
-    try {    
-      clearTable()
-      displayWaiting('many')
-      log.info('[Import disk] for '+selectedPath)
-      const searchDisk = ipcRenderer.sendSync('disk-import',selectedPath) // in -> main/gps-tracks/disk-import.js
-      if (searchDisk.igcForImport.length > 0) {
-          let nbInsert = 0
-          searchDisk.igcForImport.forEach(element => {
-            if (element.forImport === true ) {
-              nbInsert++
-            }
-          });
-          // 
-          searchDisk.igcForImport.sort((a, b) => {
-            let da = a.dateStart,
-                db = b.dateStart;
-            return db - da;
-          });
-          // result display
-          statusContent += searchDisk.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
-          statusContent += searchDisk.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
-          statusContent += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
-          currStatusContent = statusContent
-          statusContent += nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-          displayStatus(statusContent,true)
-          tableStandard(searchDisk.igcForImport)          
-      } else {
-        statusContent += ' '+'No tracks decoded'
-        displayStatus(statusContent,false)
-        log.info('disk-import.js : zero igc files decoded');
-      }  
-    } catch (error) {
-        displayStatus(error,false)
-        log.error('[callUsbImport] '+error)    
-    }
-}
-
 function newCallUsbImport(selectedPath, statusContent) {
- // simpleWaiting()
   currStatusContent = statusContent
   ipcRenderer.send('tracks-disk', selectedPath)   
-}
-
-function callDiskGpxIgc(selectedPath, statusContent) {
-  let statusReport = currStatusContent
-  try {    
-    clearTable()
-    displayWaiting('many')
-    log.info('[Import disk] for '+selectedPath)
-    // main/gps-tracks/disk-import.js
-    let searchIgc = ipcRenderer.sendSync('disk-import',selectedPath) // in -> main/gps-tracks/disk-import.js
-    console.log('Igc : '+searchIgc.igcForImport.length)
-    const searchGpx = ipcRenderer.sendSync('disk-gpx',selectedPath)
-    if (searchGpx.igcForImport.length > 0) {
-      for (let index = 0; index < searchGpx.igcForImport.length; index++) {
-        searchIgc.igcForImport.push(searchGpx.igcForImport[index])
-        searchIgc.totalIGC++        
-      }
-    }
-    if (searchIgc.igcForImport.length > 0) {
-        let nbInsert = 0
-        searchIgc.igcForImport.forEach(element => {
-          if (element.forImport === true ) {
-            nbInsert++
-          }
-        });
-        // 
-        searchIgc.igcForImport.sort((a, b) => {
-          let da = a.dateStart,
-              db = b.dateStart;
-          return db - da;
-        });
-        // result display
-        statusReport += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
-        statusReport += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
-        statusReport += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
-        currStatusContent = statusReport
-        statusReport += searchIgc.totalInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-        displayStatus(statusReport,true)
-        tableStandard(searchIgc.igcForImport)          
-    } else {
-      statusReport += ' '+'No tracks decoded'
-      displayStatus(statusReport,false)
-      log.info('disk-import.js : zero igc files decoded');
-    }  
-  } catch (error) {
-      displayStatus(error,false)
-      log.error('[callDiskGpxIgc] '+error)    
-  }
 }
 
 function displayDiskResult(searchIgc) {
@@ -361,7 +260,7 @@ function displayDiskResult(searchIgc) {
   } else {
     currStatusContent += ' '+'No tracks decoded'
     displayStatus(currStatusContent,false)
-    log.info('disk-import.js : zero igc files decoded');
+    log.info('import-disk.js : zero igc files decoded');
   } 
 }
 
