@@ -1,17 +1,17 @@
 const { app, BrowserWindow, Menu, ipcMain, net } = require('electron')
-const path = require('path');
-const fs = require('fs');
-const glob = require('glob')
+const path = require('path')
+const fs = require('fs')
+const {globSync} = require('glob')
 const checkInternetConnected = require('check-internet-connected')
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 
-let mainWindow = null;
+let mainWindow = null
 let releaseInfo
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   // eslint-disable-line global-require
-  app.quit();
+  app.quit()
 }
 
 // To avoid an “Electron Security Warning”in the console when the program is run
@@ -25,7 +25,7 @@ const createWindow = () => {
    * to test our prod mode we run ->  yarn start -- -- --prod     
    * without this argument, we will be in dev prod
    */
-   // let modeProd = app.commandLine.hasSwitch('prod') ? true : false;
+   // let modeProd = app.commandLine.hasSwitch('prod') ? true : false
 
   const startOk = settings.checkSettings()
 
@@ -39,7 +39,7 @@ const createWindow = () => {
       nodeIntegration: true,
       contextIsolation: false,
     }      
-  });
+  })
 
  const macTemplate = [
   {
@@ -127,7 +127,7 @@ const winTemplate = [
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', createWindow)
 
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -135,21 +135,21 @@ app.on('ready', createWindow);
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit();
+    app.quit()
   }
-});
+})
 
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createWindow()
   }
-});
+})
 
 ipcMain.on("changeWindow", function(event, arg) {
     openWindow(arg)
-});
+})
 
 ipcMain.on('hide-waiting-gif', function(event, arg) {
   console.log('hide waiting reçu')
@@ -158,69 +158,69 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
 
 ipcMain.on('ask-infos', function(event, arg) {
   mainWindow.webContents.send('read-infos', releaseInfo)
-});
+})
 
 function openWindow(pageName) {
   switch (pageName) {
     case "logbook":
-        mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'));
-     //   mainWindow.webContents.openDevTools(); 
-        break;
+        mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'))
+     //   mainWindow.webContents.openDevTools() 
+        break
     case "overview":
       // original code
       mainWindow.loadFile(path.join(__dirname, './views/html/overview.html'))      
- //     mainWindow.webContents.openDevTools();
-      break;      
+ //     mainWindow.webContents.openDevTools()
+      break      
     case "infos":
-      mainWindow.loadFile(path.join(__dirname, './views/html/information.html'));
+      mainWindow.loadFile(path.join(__dirname, './views/html/information.html'))
       mainWindow.webContents.send('read-infos')
-//      mainWindow.webContents.openDevTools(); 
-      break;            
+//      mainWindow.webContents.openDevTools() 
+      break            
     case "import":
-      mainWindow.loadFile(path.join(__dirname, './views/html/import.html'));
-   //   mainWindow.webContents.openDevTools();
-      break;        
+      mainWindow.loadFile(path.join(__dirname, './views/html/import.html'))
+   //   mainWindow.webContents.openDevTools()
+      break        
     case "external":
-      mainWindow.loadFile(path.join(__dirname, './views/html/external.html'));
-      break;              
+      mainWindow.loadFile(path.join(__dirname, './views/html/external.html'))
+      break              
     case "stat":
-    //  mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'));
-      mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
-      break;          
+    //  mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'))
+      mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
+      break          
     case "sites":
-        mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'));
-        break;
+        mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'))
+        break
     case "wayp":
-      mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'));
-      break; 
+      mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'))
+      break 
     case "airspaces":
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))
     //  mainWindow.webContents.openDevTools()
-      break;              
+      break              
     case "photos":
-      mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'));
-   //   mainWindow.webContents.openDevTools();  
-      break;                
+      mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'))
+   //   mainWindow.webContents.openDevTools()  
+      break                
     case "settings":
-      mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'));
-      break;          
+      mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'))
+      break          
     case "utils":
-      mainWindow.loadFile(path.join(__dirname, './views/html/utils.html'));
-   //   mainWindow.webContents.openDevTools();  
-      break;         
+      mainWindow.loadFile(path.join(__dirname, './views/html/utils.html'))
+   //   mainWindow.webContents.openDevTools()  
+      break         
     case "problem":
-          mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'));
-          break;                     
+          mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
+          break                     
     case "support":
-      mainWindow.loadFile(path.join(__dirname, './views/html/support.html'));
-     // mainWindow.webContents.openDevTools();
-      break;   
+      mainWindow.loadFile(path.join(__dirname, './views/html/support.html'))
+     // mainWindow.webContents.openDevTools()
+      break   
     case "flyxc":
-      mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'));
-      break;       
+      mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'))
+      break       
       case "noflights":
-        mainWindow.loadFile(path.join(__dirname, './views/html/noflights.html'));
-        break;                
+        mainWindow.loadFile(path.join(__dirname, './views/html/noflights.html'))
+        break                
   } 
 }
 
@@ -235,24 +235,24 @@ function checkInfo() {
     })
     request.on('response', (response) => {
       if (response.statusCode == 200) {
-        let buffers = [];
+        let buffers = []
         response.on('data', (chunk) => {
-          buffers.push(chunk);
+          buffers.push(chunk)
         })
         response.on('end', () => {
-          let responseBodyBuffer = Buffer.concat(buffers);
-          let json = JSON.parse(responseBodyBuffer.toString());
+          let responseBodyBuffer = Buffer.concat(buffers)
+          let json = JSON.parse(responseBodyBuffer.toString())
           releaseInfo = json
           const currVersion = app.getVersion() 
           console.log('currVersion '+currVersion+' json.version '+releaseInfo.version)
           if (json.version > currVersion || json.message !== undefined )  {
             openWindow('infos')
           } else {
-              openWindow('import')
+              openWindow('logbook')
           }             
         })
       } else {
-        console.log('logfly.org is now unavailable');
+        console.log('logfly.org is now unavailable')
         openWindow('logbook')
       }
     })
@@ -261,6 +261,6 @@ function checkInfo() {
 
 // Require each JS file in the main-process dir
 function loadMainProcesses () {
-  const files = glob.sync(path.join(__dirname, 'process-main/**/*.js'))
+  const files = globSync(path.join(__dirname, 'process-main/**/*.js'),{nocase : true,windowsPathsNoEscape:true})
   files.forEach((file) => { require(file) })
 }
