@@ -167,7 +167,6 @@ function callUsbGps(typeGPS) {
   simpleWaiting()
   ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
       if (logResult != null) {     
-        console.log({logResult})
         newCallUsbImport(logResult,gpsStatus)  
       } else {
           let errorMsg
@@ -255,7 +254,6 @@ function displayDiskResult(searchIgc) {
     currStatusContent = statusReport
     statusReport += searchIgc.totalInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
     displayStatus(statusReport,true)
-    console.log({searchIgc})
     tableStandard(searchIgc.igcForImport)          
   } else {
     currStatusContent += ' '+'No tracks decoded'
@@ -382,6 +380,7 @@ function tableFromGpsDump(flightList,gpsModel) {
   if ($.fn.DataTable.isDataTable('#tableimp_id')) {
     $('#tableimp_id').DataTable().clear().destroy()
   }   
+  attachCheckClic()
   let dataTableOption = {
     data: flightList, 
     // // the select plugin is used -> https://datatables.net/extensions/select/
@@ -499,14 +498,16 @@ function uncheckTable() {
   displayStatus(newStatusContent,false) 
 }
 
-$('#tableimp_id').on('click', 'tbody td:first-child', function () {  
-  let data = table.rows( function ( idx, data, node ) {
-    return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
-  }).data().toArray();
-  let nbInsert = data.length
-  let newStatusContent = currStatusContent+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-  displayStatus(newStatusContent,true)
-});
+function attachCheckClic() {
+  $('#tableimp_id').on('click', 'tbody td:first-child', function () {  
+    let data = table.rows( function ( idx, data, node ) {
+      return $(node).find('input[type="checkbox"][name="chkbx"]').prop('checked')
+    }).data().toArray();
+    let nbInsert = data.length
+    let newStatusContent = currStatusContent+nbInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+    displayStatus(newStatusContent,true)
+  })
+}
 
 // a enlever si ok
 function updateStatus() {
@@ -524,6 +525,7 @@ function tableStandard(igcForImport) {
       console.log('destroy')
       $('#tableimp_id').DataTable().clear().destroy(true)
     }   
+    attachCheckClic()
     currTypeGps = 'disk'
     let dataTableOption = {
       // width format see this http://live.datatables.net/zurecuzi/1/edit
@@ -723,7 +725,7 @@ function displayWaiting(typeMsg) {
     let msg
     switch (typeMsg) {
       case 'one':
-        msg = i18n.gettext('Loading the selected flight')
+        msg = i18n.gettext('Loading the sel ected flight')
         break;
       case 'gpsdump' :
         msg = i18n.gettext('Tracks waiting to be received from GPS')
