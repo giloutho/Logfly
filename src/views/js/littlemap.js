@@ -7,6 +7,7 @@ const L = require('leaflet');
 const Store = require('electron-store')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 let currLang
+let igcText
 
 let mapPm
 const store = new Store()
@@ -28,14 +29,30 @@ btnClose.addEventListener('click',(event) => {
     window.close()
 })
 
+let btnExport = document.getElementById('bt-export')
+btnExport.innerHTML = i18n.gettext('Export')
+btnExport.addEventListener('click',(event) => {
+    exportIgc()
+})
+
 ipcRenderer.on('little-map-elements', (event, igcString) => {
     const mapTrack = elemMap.buildMapElements(igcString)
     if (mapTrack.ready) {
+        igcText = igcString
         buildMap(mapTrack)
     } else {
         Alert(i18n.gettext('An error occurred during the map generation'))
     }
 })
+
+function exportIgc() {
+    const exportResult = ipcRenderer.sendSync('save-igc',igcText)
+    if ( exportResult.indexOf('Error') !== -1) {
+        alert(i18n.gettext('Error while exporting data'))      
+    } else {
+        alert(i18n.gettext('Successful operation'))
+    }
+}
 
 //  Gardée pur tests éventuels
 // try {
