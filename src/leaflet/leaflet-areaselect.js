@@ -78,7 +78,13 @@ L.AreaSelect = L.Class.extend({
         this._container.parentNode.removeChild(this._container);
     },
 
-    
+    getDimensions: function() {
+        return {
+            width: this._width,
+            height: this._height
+        }
+    },
+
     setDimensions: function(dimensions) {
         if (!dimensions)
             return;
@@ -124,6 +130,7 @@ L.AreaSelect = L.Class.extend({
         var self = this;
         function onMouseDown(event) {
             event.stopPropagation();
+            event.preventDefault();
             self.map.dragging.disable();
             L.DomEvent.removeListener(this, "touchstart", onMouseDown);
             var curX = event.pageX;
@@ -131,6 +138,8 @@ L.AreaSelect = L.Class.extend({
             var ratio = self._width / self._height;
             var size = self.map.getSize();
             var mapContainer = self.map.getContainer();
+
+            self.fire("resizestart")
             
             function onMouseMove(event) {
                 if (self.options.keepAspectRatio) {
@@ -151,6 +160,8 @@ L.AreaSelect = L.Class.extend({
                 curX = event.pageX;
                 curY = event.pageY;
                 self._render();
+
+                self.fire("resize")
             }
             function onMouseUp(event) {
                 self.map.dragging.enable();
@@ -158,6 +169,7 @@ L.AreaSelect = L.Class.extend({
                 L.DomEvent.removeListener(mapContainer, "touchmove", onMouseMove);
                 L.DomEvent.addListener(handle, "touchstart", onMouseDown);
                 self.fire("change");
+                self.fire("resizeend")
             }
             L.DomEvent.addListener(mapContainer, "touchmove", onMouseMove);
             L.DomEvent.addListener(mapContainer, "touchend", onMouseUp);
@@ -176,9 +188,11 @@ L.AreaSelect = L.Class.extend({
     _render: function() {
         var size = this.map.getSize();
         var handleOffset = Math.round(this._nwHandle.offsetWidth/2);
-        
-        var topBottomHeight = Math.round((size.y-this._height)/2);
-        var leftRightWidth = Math.round((size.x-this._width)/2);
+
+        var topBottomWidth = size.x
+        var topBottomHeight = Math.round((size.y - this._height) / 2);
+        var leftRightWidth = Math.round((size.x - this._width) / 2);
+        var leftRightHeight = size.y - (topBottomHeight * 2);
         
         function setDimensions(element, dimension) {
             element.style.width = dimension.width + "px";
@@ -188,26 +202,36 @@ L.AreaSelect = L.Class.extend({
             element.style.bottom = dimension.bottom + "px";
             element.style.right = dimension.right + "px";
         }
-        
-        setDimensions(this._topShade, {width:size.x, height:topBottomHeight, top:0, left:0});
-        setDimensions(this._bottomShade, {width:size.x, height:topBottomHeight, bottom:0, left:0});
+
+        setDimensions(this._topShade, {
+            width: Math.max(topBottomWidth, 0),
+            height: Math.max(topBottomHeight, 0),
+            top: 0,
+            left: 0
+        });
+        setDimensions(this._bottomShade, {
+            width:  Math.max(topBottomWidth, 0),
+            height:  Math.max(topBottomHeight, 0),
+            top: Math.max(size.y - topBottomHeight, 0),
+            left: 0
+        });
         setDimensions(this._leftShade, {
-            width: leftRightWidth, 
-            height: size.y-(topBottomHeight*2), 
-            top: topBottomHeight, 
+            width:  Math.max(leftRightWidth, 0),
+            height:  Math.max(leftRightHeight, 0),
+            top: Math.max(topBottomHeight, 0),
             left: 0
         });
         setDimensions(this._rightShade, {
-            width: leftRightWidth, 
-            height: size.y-(topBottomHeight*2), 
-            top: topBottomHeight, 
-            right: 0
+            width:  Math.max(leftRightWidth, 0),
+            height:  Math.max(leftRightHeight, 0),
+            top:  Math.max(topBottomHeight, 0),
+            left: Math.max(size.x - leftRightWidth, 0)
         });
         
-        setDimensions(this._nwHandle, {left:leftRightWidth-handleOffset, top:topBottomHeight-7});
-        setDimensions(this._neHandle, {right:leftRightWidth-handleOffset, top:topBottomHeight-7});
-        setDimensions(this._swHandle, {left:leftRightWidth-handleOffset, bottom:topBottomHeight-7});
-        setDimensions(this._seHandle, {right:leftRightWidth-handleOffset, bottom:topBottomHeight-7});
+        setDimensions(this._nwHandle, {left:leftRightWidth-handleOffset, top:topBottomHeight-handleOffset});
+        setDimensions(this._neHandle, {left:size.x - leftRightWidth-handleOffset, top:topBottomHeight-handleOffset});
+        setDimensions(this._swHandle, {left:leftRightWidth-handleOffset, top:size.y-topBottomHeight-handleOffset});
+        setDimensions(this._seHandle, {left:size.x - leftRightWidth-handleOffset, top:size.y-topBottomHeight-handleOffset});
     }
 });
 
