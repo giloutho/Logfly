@@ -913,10 +913,10 @@ function displayScoring() {
 function fillSidebarButtons() {
   let htmlText = '<br>'
   htmlText += '<div class="btn-toolbar pull-left">'
-  htmlText += ' <button type="button" class="btn-success btn-sm mr-2" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
-  htmlText += ' <button type="button" class="btn-warning btn-sm mr-2" onclick="openPathway()">'+i18n.gettext('Pathway')+'</button>'
-  htmlText += ' <button type="button" class="btn-secondary btn-sm mr-2" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
-  htmlText += ' <button type="button" class="btn-primary btn-sm mr-2" onclick="sidebar.open(\'score\')">'+i18n.gettext('Score')+'</button>'
+  htmlText += ' <button type="button" class="btn-success btn-sm mr-1" onclick="sidebar.open(\'summary\')">'+i18n.gettext('Summary')+'</button>'
+  htmlText += ' <button type="button" class="btn-warning btn-sm mr-1" onclick="openPathway()">'+i18n.gettext('Pathway')+'</button>'
+  htmlText += ' <button type="button" class="btn-secondary btn-sm mr-1" onclick="sidebar.open(\'infos\')">'+i18n.gettext('General')+'</button>'
+  htmlText += ' <button type="button" class="btn-primary btn-sm mr-1" onclick="sidebar.open(\'score\')">'+i18n.gettext('Score')+'</button>'
   htmlText += ' <button type="button" class="btn-info btn-sm" onclick="sidebar.open(\'check\')"><i class="fa fa-plane"></i>&nbsp;'+i18n.gettext('Check')+'</button>'
   htmlText += '</div>'
   return htmlText
