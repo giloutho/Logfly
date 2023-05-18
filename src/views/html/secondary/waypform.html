@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <title>Logfly</title>
+    <link rel="stylesheet" href="../../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="../../../assets/css/home.css">
+    <link rel="stylesheet" href="../../../assets/css/font-awesome-450.min.css">  
+    <link rel="stylesheet" href="../../../../node_modules/leaflet/dist/leaflet.css" />   
+    <link rel="stylesheet" href="../../../leaflet/leaflet.awesome-markers.css" />   
+</head>
+
+<body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>
+        let $ = require('jquery');
+    </script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>    
+    <script src="../../../lang/gettext.js" type="text/javascript"></script>
+    <!-- Begin page content -->
+    <div class="alert alert-info collapse" role="alert" id="status"></div>           
+    <!--  <div class="alert alert-warning collapse" role="alert" id="inputcomment"></div>  -->
+    <div class="d-md-flex h-md-100 align-items-start top-buffer">
+         <div class="col-md-7 ">
+                <div class="card">
+                  <div class="card-body m-sm-3 ">
+                      <form>
+                        <div class="row">
+                            <div class="col-md-6 pr-1">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="rd-std" value="option1" />
+                                    <label class="form-check-label" for="inlineRadio1" id="lb-std">Standard</label>
+                                </div>                                      
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="rd-takeoff" value="option1" />
+                                    <label class="form-check-label" for="inlineRadio1" id="lb-take-off">Take Off</label>
+                                  </div>                                  
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="rd-landing" value="option2" />
+                                    <label class="form-check-label" for="inlineRadio2" id="lb-landing">Landing</label>
+                                  </div>
+                            </div> 
+                            <div class="col-md-5 pr-1"></div>                                                    
+                        </div>
+                        <div class="row top-buffer">
+                            <div class="col-md-6 pr-1">
+                                <label id="lb-longname">Long Name</label>
+                            </div>                                                                                                                         
+                        </div>         
+                        <div class="row">
+                            <div class="col-md-6 pr-1">   
+                                <input type="text" class="form-control" id="tx-longname" style="text-transform: uppercase" value="">                                
+                            </div>                         
+                        </div>  
+                        <div class="row top-buffer">
+                            <div class="col-md-6 pr-1">
+                                <label id="lb-shortname">Short Name</label>
+                            </div>                                                                                                                       
+                        </div>         
+                        <div class="row">
+                            <div class="col-md-3 pr-1">  
+                                <input type="text" class="form-control" id="tx-shortname" style="text-transform: uppercase" value="">                             
+                            </div>                         
+                        </div>  
+                        <div class="row top-buffer">
+                            <div class="col-md-2 pr-1">
+                                <label id="lb-alt">Alt (m) </label>
+                            </div>                                                                                                                     
+                        </div>         
+                        <div class="row">
+                            <div class="col-md-3 pr-1">
+                                <input type="text" class="form-control w-50" id="tx-alt" value=""> 
+                            </div>      
+                            <div class="col-md-3 pr-1">
+                                <span class="badge badge-danger d-none" id="lb-srtm">Downloading digital elevation data</span>
+                            </div>                            
+                        </div>                
+                        <div class="row top-buffer"></div>                                                                  
+                        <div class="row top-buffer">
+                        <div class="col-md-1 pr-1 text-bold">
+                            <label class="mt-2">DD</label>
+                        </div> 
+                        <div class="col-md-2 pr-1 text-right">
+                            <label class="mt-2" id="lb-lat-dd">Latitude</label>
+                        </div> 
+                        <div class="col-md-2 pr-1">
+                            <input type="text" class="form-control" id="tx-lat-dd" value=""> 
+                        </div>   
+                        <div class="col-md-3 pr-1 text-right">
+                            <label class="mt-2" id="lb-long-dd">Longitude</label>
+                        </div> 
+                        <div class="col-md-2 pr-1">
+                            <input type="text" class="form-control" id="tx-long-dd" value=""> 
+                        </div>
+                        </div>             
+                        <div class="row">
+                        <div class="col-md-1 pr-1"></div> 
+                        <div class="col-md-2 pr-1"></div> 
+                        <div class="col-md-3 pr-1">
+                            <small class="form-text">e.g [-]45.6789</small>
+                        </div>   
+                        <div class="col-md-2 pr-1"></div> 
+                        <div class="col-md-3 pr-1">
+                            <small class="form-text">e.g [-]180.1234</small>
+                        </div>
+                        </div>                                              
+                        <div class="row top-buffer">
+                        <div class="col-md-1 pr-1 text-bold">
+                            <label class="mt-2">DMm</label>
+                        </div> 
+                        <div class="col-md-2 pr-1 text-right">
+                            <label class="mt-2" id="lb-lat-dmm">Latitude</label>
+                        </div> 
+                        <div class="col-md-3 pr-1">
+                            <input type="text" class="form-control" id="tx-lat-dmm" value=""> 
+                        </div>  
+                        <div class="col-md-2 pr-1 text-right">
+                            <label class="mt-2" id="lb-long-dmm">Longitude</label>
+                        </div> 
+                        <div class="col-md-4 pr-1">
+                            <input class="form-control w-75" type="text" class="form-control" id="tx-long-dmm" value=""> 
+                        </div>
+                        </div>    
+                        <div class="row">
+                        <div class="col-md-1 pr-1"></div> 
+                        <div class="col-md-2 pr-1"></div> 
+                        <div class="col-md-3 pr-1">
+                            <small class="form-text">e.g 45°34.9876N[S]</small>
+                        </div>  
+                        <div class="col-md-2 pr-1"></div> 
+                        <div class="col-md-4 pr-1">
+                            <small class="form-text">e.g 120°27.1234W[E]</small> 
+                        </div>
+                        </div>  
+                        <div class="row top-buffer">
+                        <div class="col-md-1 pr-1 text-bold">
+                            <label class="mt-2">DMS</label>
+                        </div> 
+                        <div class="col-md-2 pr-1 text-right">
+                            <label class="mt-2" id="lb-lat-dms">Latitude</label>
+                        </div> 
+                        <div class="col-md-3 pr-1">
+                            <input type="text" class="form-control" id="tx-lat-dms" value=""> 
+                        </div>  
+                        <div class="col-md-2 pr-1 text-right">
+                            <label class="mt-2" id="lb-long-dms">Longitude</label>
+                        </div> 
+                        <div class="col-md-4 pr-1">
+                            <input class="form-control w-75" type="text" class="form-control" id="tx-long-dms" value="""> 
+                        </div>
+                        </div>    
+                        <div class="row">
+                        <div class="col-md-1 pr-1"></div> 
+                        <div class="col-md-2 pr-1"></div> 
+                        <div class="col-md-3 pr-1">
+                            <small class="form-text">e.g 08°51’29.76’’ N[S]</small>
+                        </div>  
+                        <div class="col-md-2 pr-1"></div> 
+                        <div class="col-md-4 pr-1">
+                            <small class="form-text">e.g 002° 17’ 40.00’’ W[E]</small> 
+                        </div>
+                        </div>      
+                        <div class="row top-buffer"></div>                                                                                                                                                                                                                                                                  
+                        <div class="row top-buffer">
+                        <div class="col-sm-6 my-1">                                                                                          
+                        </div>
+                        <div class="col-auto my-1 align-self-center">
+                            <button type="button" class="btn btn-danger btn-lg" id="bt-cancel">Cancel</button>
+                        </div>                                                                                                      
+                        <div class="col-auto my-1 align-self-center">
+                            <button type="button" class="btn btn-success btn-lg" id="bt-ok">OK</button>
+                        </div>
+                        </div>                          
+                        <div class="clearfix"></div>
+                      </form>
+                  </div>
+               </div>         
+         </div>
+         <div class="col-md-5 ">
+           <!--- Second half content here --->
+           <div id="mapid" class="map-full"></div>
+           <div class="row top-buffer justify-content-center">
+            <span class="badge badge-secondary" id="lb-move">Move marker to change coordinates</span>
+        </div>
+         </div>     
+    </div>
+    <div class="alert alert-primary collapse" role="alert" id="inputdata"></div> 
+    <!-- End of page content -->
+    <script type="text/javascript">
+        var i18n = window.i18n();
+    </script>  
+    <!-- 
+        I wonder if this trick is really necessary ?
+        https://24ways.org/2005/have-your-dom-and-script-it-too 
+    <img src="../../assets/img/loaded.gif" alt="" onload="$.getScript('../../views/js/siteform.js');" />         -->   
+
+    <script src="../../../views/js/secondary/waypform.js" type="text/javascript"></script>
+</body>
+
+</html>
