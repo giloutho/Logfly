@@ -110,9 +110,9 @@ const winTemplate = [
       checkInternetConnected()
         .then((result) => {
           // comment CheckInfo() for debug
-          checkInfo()
+          //checkInfo()
           // and open directly the wanted page
-          // openWindow('photos')
+          openWindow('wayp')
         })
         .catch((ex) => {
           openWindow('logbook')
