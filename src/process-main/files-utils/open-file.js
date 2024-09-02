@@ -39,6 +39,7 @@ ipcMain.on('choose-img', (event, arg) => {
 
 ipcMain.on('open-directory', (event,arg) => {
   let folderChoosed = null
+  console.log(arg)
   /**
    *  Asynchronous version
    *
@@ -172,6 +173,65 @@ ipcMain.on('save-gpx', (event, openData) => {
         event.returnValue = 'Error : the user clicked the btn but didn\'t created a file'        
       }
       fs.writeFile(filename, openData, (err) => {
+        if (err) {
+          event.returnValue = 'Error : An error ocurred with file creation ' + err.message          
+        }
+        event.returnValue = result.filePath        
+      })      
+    })
+  .catch(err => {
+    console.log(err)
+    event.returnValue = 'Error : '+err
+    })
+})
+
+ipcMain.on('save-wpt', (event, wptString, wptLabel, defPath) => {
+  let resultMsg = null
+  let dlgTitle = 'Export'
+  let dlgName = 'Waypoints'
+  let dlgExt = 'wpt'
+  switch (wptLabel) {
+    case 'ozi':
+      dlgTitle = 'Ozi'
+      dlgName = 'OZI format'
+      dlgExt = 'wpt'
+      break;
+    case 'cup':
+        dlgTitle = 'Cup'
+        dlgName = 'CUP format'
+        dlgExt = 'cup'
+        break;     
+    case 'com':
+      dlgTitle = 'CompeGps'
+      dlgName = 'CompeGps format'
+      dlgExt = 'wpt'
+      break;    
+    case 'gpx':
+      dlgTitle = 'Gpx'
+      dlgName = 'Gpx format'
+      dlgExt = 'gpx'
+      break;           
+    case 'kml':
+      dlgTitle = 'Kml'
+      dlgName = 'Kml format'
+      dlgExt = 'kml'
+      break;                      
+  }
+  dialog.showSaveDialog(
+    { title: dlgTitle,
+      defaultPath : defPath,
+      filters: [{
+        name: dlgName,
+        extensions: [dlgExt]
+      }]
+    }
+  )
+  .then(result => {
+      const filename = result.filePath
+      if (filename === undefined || filename === '') {
+        event.returnValue = 'Error : the user clicked the btn but didn\'t created a file'        
+      }
+      fs.writeFile(filename, wptString, (err) => {
         if (err) {
           event.returnValue = 'Error : An error ocurred with file creation ' + err.message          
         }

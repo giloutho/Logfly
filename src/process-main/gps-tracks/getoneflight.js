@@ -5,8 +5,6 @@ var log = require('electron-log');
 const gpsdumpOne = require('../gps-tracks/gpsdump-flight.js')
 const gpsDumpFiles = require('../../settings/gpsdump-settings.js')
 const gpsDumpParams = gpsDumpFiles.getParam()
-const Store = require('electron-store');
-const store = new Store();
 
 // process-main/gps-tracks/getoneflight.js
 ipcMain.on('displayoneflight', (event, gpsParam, flightIndex) => {

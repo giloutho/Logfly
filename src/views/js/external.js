@@ -61,6 +61,8 @@ function iniForm() {
     document.getElementById('lg-date').innerHTML = i18n.gettext('Date')
     document.getElementById('lg-duration').innerHTML = i18n.gettext('Duration')
     document.getElementById('lg-points').innerHTML = i18n.gettext('Points')
+    document.getElementById('lg-pilot').innerHTML = i18n.gettext('Pilot')
+    document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
     btnSelect.innerHTML = i18n.gettext('Select a track')
     btnSelect.addEventListener('click', (event) => {callDisk()})
     $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
@@ -72,6 +74,15 @@ function iniForm() {
       $('button[data-toggle="dropdown"]').text(selLeague)    
       runXcScore(selLeague)
     })
+    /* DEBUG SESSION */
+    // let debugTrack = {
+    //   fullPath : '/Users/gil/Documents/El_Logfly/lfparseigc/Argentine1.igc',
+    //   directoryName : '',
+    //   fileName : 'Argentine1',
+    //   fileExt : 'IGC'
+    // }
+    // displayIgc(debugTrack)
+    /* END OF DEBUG SESSION */
 }
 
 function callDisk() {
@@ -172,6 +183,8 @@ btnFullmap.addEventListener('click', (event) => {
     const duration = moment.duration(track.stat.duration,'seconds').format("h[h]m[mn]")
     document.getElementById('tx-duration').value = duration
     document.getElementById('tx-points').value = track.fixes.length
+    document.getElementById('tx-pilot').value = track.info.pilot
+    document.getElementById('tx-glider').value = track.info.gliderType
     $('#div-infos').removeClass('d-none')
     $('#div-map').removeClass('d-none')
 

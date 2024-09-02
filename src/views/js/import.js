@@ -79,7 +79,7 @@ function iniForm() {
     document.getElementById('imp-disk').innerHTML = i18n.gettext('Disk import')
     document.getElementById('imp-manu').innerHTML = i18n.gettext('Flight without GPS track')
     btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
-    btnFlymOld.addEventListener('click',(event) => {callFlymOld()})
+    btnFlymOld.addEventListener('click',(event) => {serialGpsCall('FlymasterOld')})
     btnFlytec20.addEventListener('click',(event) => {serialGpsCall('Flytec20')})
     btnFlytec15.addEventListener('click',(event) => {serialGpsCall('Flytec15')})
     btnOudie.addEventListener('click',(event) => {callUsbGps('oudie')})
@@ -165,9 +165,10 @@ function callUsbGps(typeGPS) {
       break;          
   }
   simpleWaiting()
-  ipcRenderer.invoke('check-usb-gps',typeGPS).then((logResult) => {   
-      if (logResult != null) {     
-        newCallUsbImport(logResult,gpsStatus)  
+  ipcRenderer.invoke('check-usb-gps',typeGPS).then((resultUsb) => {   
+      if (resultUsb.pathFlights != null) {     
+        console.log(resultUsb.pathFlights)
+        newCallUsbImport(resultUsb.pathFlights,gpsStatus)  
       } else {
           let errorMsg
           simpleHideWating()
@@ -289,6 +290,7 @@ function serialGpsCall(gpsModel) {
         if (typeof result[i].manufacturer != 'undefined') {
           const regexProlif = /prolific/i
           const regexFlym = /flymas/i
+          const regexFlymOld = /FTDI/i
           if (result[i].manufacturer.search(regexProlif) >= 0) {
             // Dès Logfly5, on avait un problème avec Flytec
             // deux ports dev/cu.usbserial et dev/cu.usbserial-1440 apparaissent
@@ -314,6 +316,14 @@ function serialGpsCall(gpsModel) {
             }          
             gpsCom.push(gpsReq)
             log.info(msg+' Flymaster manufacturer detected on '+result[i].path)
+          } else if (result[i].manufacturer.search(regexFlymOld) >= 0) {
+            gpsReq =  {
+              'chip': result[i].manufacturer,
+              'model': gpsModel,
+              'port': result[i].path
+            }          
+            gpsCom.push(gpsReq)
+            log.info(msg+' FTDI manufacturer detected on '+result[i].path+' (Flymaster Old)')            
           }
         }
       }

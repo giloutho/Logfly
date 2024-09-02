@@ -119,52 +119,49 @@ ipcRenderer.on('back_siteform', (_, updateSite) => {
     }
   })
 
-// Confirmation to update db
-ipcRenderer.on('confirmation-dialog', (event, response) => {
-    if (response) {
-        if (flightDataRec.date == inputDate.value && flightData.time == inputTime.value) {
-            alert(i18n.gettext('A flight at the same date and time was recorded'))
-        } else {
-            flightData.sqlDate = inputDate.value+' '+inputTime.value+':00'
-            // in logbook date is displayed as DD-MM-YYYY
-            flightData.date = moment(inputDate.value).format('DD-MM-YYYY')
-            flightData.time = inputTime.value
-            let durMilli = moment.duration(inputDuration.value)
-            flightData.duree = Math.floor(durMilli.asSeconds())
-            flightData.strduree = moment(inputDuration.value,'HH:mm').format('HH[h]mm[mn]')
-            flightData.lat = flightSite.lat
-            flightData.lon = flightSite.lon
-            flightData.alti = flightSite.alti
-            flightData.nom = flightSite.nom
-            flightData.pays = flightSite.pays
-            flightData.glider = document.querySelector('#glider-list-inp').value
-            flightData.comment = document.getElementById('tx-comment').value
-            if (db.open) {
-                try {
-                    if (flightData.type == 'edit') {
-                        console.log({flightData})
-                        let smtUp = db.prepare('UPDATE Vol SET V_Date=?, V_Duree=?, V_sDuree=?, V_LatDeco=?, V_LongDeco=?, V_AltDeco=?, V_Site=?, V_Pays=?, V_Engin=?, V_Commentaire= ? WHERE V_ID =?')
-                        const updateFlight = smtUp.run(flightData.sqlDate,flightData.duree,flightData.strduree,flightData.lat,flightData.lon,flightData.alti,flightData.nom,flightData.pays,flightData.glider,flightData.comment,flightData.id)       
-                        ipcRenderer.sendTo(1, "back_flightform", flightData)      
-                        window.close()
-                    } else {
-                        let smt1 ='INSERT INTO Vol (V_Date,V_Duree,V_sDuree,V_LatDeco,V_LongDeco,V_AltDeco,V_Site,V_Pays,V_IGC,UTC,V_Engin,V_Commentaire)'
-                        let smt2 = '(?,?,?,?,?,?,?,?,?,?,?,?)'
-                        const stmt = db.prepare(smt1+' VALUES '+smt2)
-                        const newFlight = stmt.run(flightData.sqlDate, flightData.duree, flightData.strduree, flightData.lat, flightData.lon, flightData.alti, flightData.nom, flightData.pays, null, 0, flightData.glider, flightData.comment)
-                    }     
-                    flightDataRec.date = flightData.date
-                    flightDataRec.time = flightData.time                         
-                } catch (error) {
-                    alert(i18n.gettext('Inserting in the flights file failed'))
-                    log.error('[nogpsflight.js] writing error in the database')
-                }               
-            }
-            $('#div-recorded').removeClass('d-none')
-            document.getElementById('lb-recorded').innerHTML = i18n.gettext('Flight')+' : '+inputDate.value+' '+inputTime.value+' '+i18n.gettext('saved')            
+function updateDb() {
+    if (flightDataRec.date == inputDate.value && flightData.time == inputTime.value) {
+        alert(i18n.gettext('A flight at the same date and time was recorded'))
+    } else {
+        flightData.sqlDate = inputDate.value+' '+inputTime.value+':00'
+        // in logbook date is displayed as DD-MM-YYYY
+        flightData.date = moment(inputDate.value).format('DD-MM-YYYY')
+        flightData.time = inputTime.value
+        let durMilli = moment.duration(inputDuration.value)
+        flightData.duree = Math.floor(durMilli.asSeconds())
+        flightData.strduree = moment(inputDuration.value,'HH:mm').format('HH[h]mm[mn]')
+        flightData.lat = flightSite.lat
+        flightData.lon = flightSite.lon
+        flightData.alti = flightSite.alti
+        flightData.nom = flightSite.nom
+        flightData.pays = flightSite.pays
+        flightData.glider = document.querySelector('#glider-list-inp').value
+        flightData.comment = document.getElementById('tx-comment').value
+        if (db.open) {
+            try {
+                if (flightData.type == 'edit') {
+                    console.log({flightData})
+                    let smtUp = db.prepare('UPDATE Vol SET V_Date=?, V_Duree=?, V_sDuree=?, V_LatDeco=?, V_LongDeco=?, V_AltDeco=?, V_Site=?, V_Pays=?, V_Engin=?, V_Commentaire= ? WHERE V_ID =?')
+                    const updateFlight = smtUp.run(flightData.sqlDate,flightData.duree,flightData.strduree,flightData.lat,flightData.lon,flightData.alti,flightData.nom,flightData.pays,flightData.glider,flightData.comment,flightData.id)       
+                    ipcRenderer.send('back_flightform', flightData)      
+                    window.close()
+                } else {
+                    let smt1 ='INSERT INTO Vol (V_Date,V_Duree,V_sDuree,V_LatDeco,V_LongDeco,V_AltDeco,V_Site,V_Pays,V_IGC,UTC,V_Engin,V_Commentaire)'
+                    let smt2 = '(?,?,?,?,?,?,?,?,?,?,?,?)'
+                    const stmt = db.prepare(smt1+' VALUES '+smt2)
+                    const newFlight = stmt.run(flightData.sqlDate, flightData.duree, flightData.strduree, flightData.lat, flightData.lon, flightData.alti, flightData.nom, flightData.pays, null, 0, flightData.glider, flightData.comment)
+                }     
+                flightDataRec.date = flightData.date
+                flightDataRec.time = flightData.time                         
+            } catch (error) {
+                alert(i18n.gettext('Inserting in the flights file failed'))
+                log.error('[nogpsflight.js] writing error in the database')
+            }               
         }
+        $('#div-recorded').removeClass('d-none')
+        document.getElementById('lb-recorded').innerHTML = i18n.gettext('Flight')+' : '+inputDate.value+' '+inputTime.value+' '+i18n.gettext('saved')            
     }
-})
+}
 
 function validFields() {
     const gliderName = document.querySelector('#glider-list-inp').value
@@ -188,8 +185,11 @@ function validFields() {
             yes : i18n.gettext('Yes'),
             no : i18n.gettext('No')
         }
-        ipcRenderer.send('open-confirmation-dialog', dialogLang)
-        // result will come with ipcRenderer.on('confirmation-dialog')
+        ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
+            if (result) {
+              updateDb()
+            } 
+        })
     }
 }
 

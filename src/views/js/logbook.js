@@ -41,7 +41,7 @@ function iniForm() {
   if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights') 
 
   try {    
-    document.title = 'Logfly '+store.get('version')
+    document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'   
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
@@ -87,18 +87,22 @@ function iniForm() {
                 }
                 break                
               case "Change": 
-                const flightDef = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+']</strong>'
-                changeGlider(table.cell(this, 7).data(),table.row( this ).index(),flightDef)
+                // const flightDef = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+']</strong>'
+                // changeGlider(table.cell(this, 7).data(),table.row( this ).index(),flightDef)
+                changeGliderNew()
                 break
               case "Site": 
                 // const siteLabel = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+' '+table.cell(this, 4).data()+']</strong>'
                 const siteLabel = '<strong>['+table.cell(this, 4).data()+']</strong>'
                 changeSite(table.cell(this, 7).data(),table.row( this ).index(),siteLabel,table.cell(this, 4).data())
-                break
+                break              
               case "Glider" :
                 let flGlider = table.cell(this, 5).data()
                 gliderHours(flGlider )
                 break
+              case "Mutlicount" :
+                multiCount()
+                break                
               case "Day" :
                 let flPhoto = table.cell(this, 0).data()
                 let rowIndex = table.row( this ).index()  
@@ -129,6 +133,7 @@ function iniForm() {
             "Change": {name: i18n.gettext("Change glider")},
             "Site": {name: i18n.gettext("Site")},
             "Glider": {name: i18n.gettext("Glider flight time")},
+            "Mutlicount": {name: i18n.gettext("Totals for the selection")},
             "Day": {name: i18n.gettext("Photo of the day")},
             "Delete": {name: i18n.gettext("Delete")},
             "Igc": {name: i18n.gettext("IGC export")},
@@ -525,7 +530,42 @@ function deleteFlights() {
     })
     tableStandard()
   }
-  
+}
+
+function multiCount() {
+  let msgResult = '<strong>'+i18n.gettext("Totals for the selection")+'  '+'</strong>'
+  let rows = table.rows('.selected')
+  if(rows.data().length > 0 && db.open) {
+    let totSeconds = 0
+    let nbFlights = 0
+    table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
+      let flightId = table.cell(this, 7).data()
+      let req ='SELECT V_Duree FROM Vol WHERE V_ID = ?'
+      try {
+        const stmt = db.prepare(req)
+        const result = stmt.get(flightId)
+        if (result.V_Duree != null && result.V_Duree > 0) {
+          totSeconds += result.V_Duree
+          nbFlights++
+          console.log(totSeconds+' '+nbFlights)
+        }
+      } catch (err) {
+        displayStatus('Database error')        
+      } 
+    })
+    if (totSeconds > 0) {      
+      const nbHours = Math.floor(totSeconds/3600)
+      const nbMin = Math.floor((totSeconds - (nbHours*3600))/60)
+      const minutes = String(nbMin).padStart(2, '0')
+      msgResult += '<span class="badge badge-primary even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flights')+' : '+nbFlights+'</span>'
+      msgResult += '<span class="badge badge-warning even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+minutes+'mn'+'</span>'      
+    } else {
+      msgResult = i18n.gettext('No flights counted for this glider')      
+    }
+    let displayResult = document.getElementById('inputcomment')
+    displayResult.innerHTML = msgResult      
+    $('#inputcomment').show() 
+  }
 }
 
 function updateFlight() {
@@ -580,6 +620,7 @@ function testSelected() {
 
 function gliderHours(flGlider) {
   if (db.open) {
+    let displayResult = document.getElementById('inputcomment')
     try {
       let msgResult = '<strong>'+i18n.gettext("Glider flight time")+' '+flGlider+'</strong>'
       const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
@@ -590,12 +631,12 @@ function gliderHours(flGlider) {
         const minutes = String(nbMin).padStart(2, '0')
         msgResult += '<span class="badge badge-primary even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
         msgResult += '<span class="badge badge-warning even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+minutes+'mn'+'</span>'
-      let displayResult = document.getElementById('inputcomment')
-      displayResult.innerHTML = msgResult
-      $('#inputcomment').show() 
+       
       } else {
         msgResult = i18n.gettext('No flights counted for this glider')
       }
+      displayResult.innerHTML = msgResult
+      $('#inputcomment').show() 
     } catch (error) {
       log.error('[gliderHours] '+error)
     }
@@ -698,6 +739,86 @@ function changeGlider(flightId, rowNum, flightDef) {
   inputArea.appendChild(btnCancel)
  }
  $('#inputdata').show()
+}
+
+function changeGliderNew() {
+  // const flightDef = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+']</strong>'
+  // changeGlider(table.cell(this, 7).data(),table.row( this ).index(),flightDef)
+  let flightDef
+  let rows = table.rows('.selected')
+  if(rows.data().length > 0 && db.open) {
+    flightDef = '<strong>['+rows.data().length+' '+i18n.gettext('flights selected')+']</strong>'      
+    let inputContent = flightDef+'&nbsp&nbsp&nbsp&nbsp'+i18n.gettext('Choose an existant glider')+' : '
+    inputArea.style.marginTop = "8px" 
+    inputArea.innerHTML = inputContent
+    // select came from https://github.com/snapappointments/bootstrap-select
+    let selectGlider = document.createElement("select")
+    // We want the most recent used in first
+    const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
+    let nbGliders = 0
+    for (const gl of GliderSet.iterate()) {
+      nbGliders++
+      let newOption = document.createElement("option")
+      newOption.value= nbGliders.toString()
+      newOption.innerHTML= (gl.V_Engin)
+      selectGlider.appendChild(newOption)
+    } 
+    selectGlider.id = "selglider"
+    selectGlider.style.marginRight = "25px"
+    inputArea.appendChild(selectGlider)
+    const newText= document.createTextNode(i18n.gettext('Or new glider')+' : ')
+    inputArea.appendChild(newText)
+    let newGlider = document.createElement("input")
+    newGlider.type = "text"
+   // newGlider.className = "form-control col-xs-2"
+    newGlider.placeholder= "New glider name"
+    newGlider.id = 'newglider'
+    newGlider.style.marginRight = "25px"
+    //newGlider.style.textTransform = 'uppercase'
+    newGlider.onkeyup = function(){this.value=this.value.toUpperCase()}
+    inputArea.appendChild(newGlider)
+    let btnUpdate = document.createElement("input")   // must be input not button
+    btnUpdate.type = "button"
+    btnUpdate.name = "update"
+    btnUpdate.value=i18n.gettext("Modify")
+    btnUpdate.style.marginRight = "20px"  
+    btnUpdate.className="btn btn-danger"
+    btnUpdate.onclick = function () {
+      let selectedName
+      let enew = document.getElementById("newglider")
+      let newGliderName = document.getElementById("newglider").value
+      let elist = document.getElementById("selglider")
+      let listGliderName = elist.options[elist.selectedIndex].text
+      if (newGliderName != null && newGliderName != '') {
+        selectedName = newGliderName
+      } else {
+        selectedName = listGliderName
+      }
+      table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
+        try {
+          let flightId = table.cell(this, 7).data()
+          const stmt = db.prepare('UPDATE Vol SET V_Engin= ? WHERE V_ID = ?')
+          const updateGlider = stmt.run(selectedName,flightId)
+          table.cell({row:rowIdx, column:5}).data(selectedName)
+        } catch (error) {
+          log.error('Error during flight update '+error)
+          displayStatus('Error during flight update')
+        }
+      })
+      $('#inputdata').hide()
+    }
+    inputArea.appendChild(btnUpdate)
+    let btnCancel = document.createElement("input")   // must be input not button
+    btnCancel.type = "button"
+    btnCancel.name = "cancel"
+    btnCancel.value=i18n.gettext("Cancel")
+    btnCancel.className="btn btn-secondary"
+    btnCancel.onclick = function () {
+      $('#inputdata').hide()
+    }
+    inputArea.appendChild(btnCancel)
+    $('#inputdata').show()
+  }
 }
 
 function changeSite(flightId, rowNum, siteLabel, siteName) {

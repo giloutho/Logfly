@@ -7,13 +7,11 @@ const gpsDumpFiles = require('../../settings/gpsdump-settings.js')
 const gpsDumpParams = gpsDumpFiles.getParam()
 const Store = require('electron-store')
 const store = new Store()
-const currOS = store.get('currOS')
 const specOS = store.get('specOS')
 
 let flightList = {}
 
 ipcMain.on('flightlist', (event, gpsCom) => {
-  //openWindow(event,gpsCom)
   readOnPorts(gpsCom)
   event.sender.send('gpsdump-flist', flightList)
 })
