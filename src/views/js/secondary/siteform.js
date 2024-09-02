@@ -34,15 +34,11 @@ const txLongDmm = document.getElementById('tx-long-dmm')
 const txLatDms = document.getElementById('tx-lat-dms')
 const txLongDms = document.getElementById('tx-long-dms')
 
-// See winClose for explanations
-let originWindow
-
 iniForm()
 
 ipcRenderer.on('current-site', (event, currSite) => {    
     editSite = currSite
     if (editSite.id > 0) {
-        originWindow = 1
         if (editSite.typeSite == "D") {
             rdTakeoff.checked = true
         } else if (editSite.typeSite == "A") {
@@ -62,12 +58,24 @@ ipcRenderer.on('current-site', (event, currSite) => {
         currPosition.setLongitudeDd(editSite.long.toFixed(5))
         updateCoords(true)
     } else {
-        if ((editSite.id == 0)) {
-            originWindow = 1
-        } else if ((editSite.id == -2)) {
-            originWindow = 2
-        } 
         rdTakeoff.checked = true
+        let defaultLat 
+        let settingLat = store.get('finderlat')
+        if (settingLat == undefined || settingLat == '') {
+            defaultLat = 45.835775
+        } else {
+            defaultLat = settingLat
+        }
+        let defaultLong
+        let settingLong = store.get('finderlong')
+        if (settingLong == undefined || settingLong == '') {
+            defaultLong = 6.205428
+        } else {
+            defaultLong = settingLong
+        }
+        currPosition.setLatitudeDd(Number(defaultLat).toFixed(5))
+        currPosition.setLongitudeDd(Number(defaultLong).toFixed(5))
+        updateCoords(true)       
     }        
 })
 
@@ -168,7 +176,7 @@ function iniForm() {
     // pour la suite voir https://stackoverflow.com/questions/53954508/jquery-inputmask-latitude-longitude-validation-and-masking
     // avec les "definitions"
     btnCancel.addEventListener('click',(event)=>{
-        ipcRenderer.sendTo(originWindow, "back_siteform", null)
+        ipcRenderer.send('back_siteform', null)
         window.close()
     })  
     btnOk.addEventListener('click',(event)=>{validFields()}) 
@@ -258,7 +266,11 @@ function iniForm() {
                 updateCoords(true)
             }
         }
-    })     
+    })   
+    
+    // to display default map
+    console.log('iniform déroulée')
+
 }
 
 function displayMap() {
@@ -437,16 +449,10 @@ function translateLabels() {
 
 function winClose(update) {
     if (update) {
-        // https://stackoverflow.com/questions/40251411/communication-between-2-browser-windows-in-electron
-        // The number in sendTo is the ID of the window. Windows in electron are numbered automatically 
-        // in ascending order from what I've noticed. This means that first window you create has an ID of 1, 
-        // the second window has an ID of 2 and so on...
-        // if the original window is sites.html, originWindow = 1, only one window sites.html
-        // if the original window is nogpsflight.html, originWindow = 2, two windows import.html -> nogpsflight.html
-        ipcRenderer.sendTo(originWindow, "back_siteform", editSite)
+        ipcRenderer.send('back_siteform', editSite)
     } else {
         // pour debug
-        ipcRenderer.sendTo(originWindow, "back_siteform", editSite)
+        ipcRenderer.send('back_siteform', editSite)
     }
     window.close()
 }

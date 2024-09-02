@@ -347,6 +347,7 @@ function iniGeneral() {
     if (longDD != 0) store.set('finderlong',longDD)
     if (latDD != 0) store.set('finderlat',latDD)
     store.set('photo',selectPhoto.value)    
+    alert(i18n.gettext('Saved changes'))
   })  
 
   btnCancelGen.addEventListener('click',(event)=>{
@@ -727,7 +728,7 @@ function translateLabels() {
   document.getElementById('lb-lat-dd').innerHTML = i18n.gettext('Latitude')
   document.getElementById('lb-long-dd').innerHTML = i18n.gettext('Longitude')
   document.getElementById('lg-import').innerHTML = i18n.gettext('Select the import folder for GPS tracks')
-  document.getElementById('lg-export').innerHTML = i18n.gettext('Select the folder of GPS tracks to import')
+  document.getElementById('lg-export').innerHTML = i18n.gettext('Select the folder where the traces will be exported')
   document.getElementById('lg-syride').innerHTML = i18n.gettext('Select the Syride folder for GPS tracks')
   document.getElementById('lg-photo').innerHTML = i18n.gettext('Automatic display of photos')
   btnValGen.innerHTML = i18n.gettext('Ok')

@@ -100,13 +100,6 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
-var dialogLang = {
-  title: i18n.gettext('Please confirm'),
-  message: i18n.gettext('Are you sure you want to continue')+' ?',
-  yes : i18n.gettext('Yes'),
-  no : i18n.gettext('No')
-};
-
 /**
  *   Default display will be renderer log file
  * 
@@ -233,18 +226,6 @@ function fnSystemDisplay() {
   let table = $('#table_config').DataTable(dataTableConfig )
 
 
- 
-// $(document).ready(function () {
-//     $('#table_config').DataTable({
-//         data: arrConfig,
-//         columns: [
-//             { title: 'Id' },
-//             { title: 'Value' },
-//         ],
-//     });
-// });
-
-
   $('#div_tablelog').hide()
   $('#div_system').show()   
   $('#div_mail').hide()
@@ -285,8 +266,28 @@ function fnMailDisplay() {
 }
 
 function fnClearLog() {
-  ipcRenderer.send('open-confirmation-dialog', dialogLang)
-  // result come with ipcRenderer.on('confirmation-dialog' 
+  const dialogLang = {
+    title: i18n.gettext('Please confirm'),
+    message: i18n.gettext('Are you sure you want to continue')+' ?',
+    yes : i18n.gettext('Yes'),
+    no : i18n.gettext('No')
+  }
+  ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
+    if (result) {
+      switch (currDisplay) {
+        case mainDisplay:
+          fs.writeFileSync(logmainpath, '')
+          log.warn('The main log file has been erased')
+          ipcRenderer.send('read-log-main',logmainpath)        
+          break;
+        case renderDisplay:        
+          fs.writeFileSync(logrendererpath, '')
+          log.warn('The renderer log file has been erased')
+          ipcRenderer.send('read-log-render',logrendererpath)           
+          break;
+      }
+    } 
+  })
 }
 
 function displayLogLines(logLines) {

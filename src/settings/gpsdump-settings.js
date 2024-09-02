@@ -19,7 +19,9 @@ function getParam() {
       list : '/flightlist',
       listfile : path.join(app.getPath('temp'), 'gpslist.txt'),
       temp : '/igc_log=',
-      track : '/track='
+      track : '/track=',
+      wpread : '/rd_wpt',
+      wpwrite : '/wr_wpt'  // it can be '/wr_wpt=' (short name) or '/wr_wpt2=' mixed name : short+long name
     },
     'mac32' :  {
       gpsdump : path.join('bin_darwin',gpsdumpName['mac32']),
@@ -29,7 +31,9 @@ function getParam() {
       fly15 : '/gps=iqbasic',
       list : '/flightlist',
       temp : '/name=',
-      track : '/track='
+      track : '/track=',
+      wpread : '/rdwpt',
+      wpwrite : '/wrwpt'
     }, 
     'mac64' :  {
       gpsdump : path.join('bin_darwin',gpsdumpName['mac64']),
@@ -40,7 +44,10 @@ function getParam() {
       list : '-f0',
       listfile : '-lnomatter.txt',
       temp : '-l',
-      track : '-f'  
+      track : '-f',
+      wpread : '-w',
+      wpfile : path.join(app.getPath('temp'), 'tempwp.wpt'),
+      wpwrite : '-r' 
     },     
     'linux' :  {
       gpsdump :  path.join('bin_linux',gpsdumpName['linux']),
@@ -51,7 +58,10 @@ function getParam() {
       list : '-f0',
       listfile : '-lnomatter.txt', 
       temp : '-l',
-      track : '-f'
+      track : '-f',
+      wpread : '-w',
+      wpfile : path.join(app.getPath('temp'), 'tempwp.wpt'),
+      wpwrite : '-r'
     },          
   }  
   return gpsParameters

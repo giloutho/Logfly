@@ -1,7 +1,7 @@
 {
   "name": "logfly",
   "productName": "Logfly",
-  "version": "6.0.5",
+  "version": "6.1.0",
   "description": "Paragliding flights logbook",
   "main": "src/main.js",
   "scripts": {
@@ -51,6 +51,7 @@
     }
   },
   "dependencies": {
+    "@tmcw/togeojson": "^5.8.1",
     "@turf/bbox": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
     "@turf/boolean-point-in-polygon": "^6.5.0",
@@ -87,6 +88,7 @@
     "moment": "^2.29.4",
     "moment-duration-format": "^2.3.2",
     "mustache": "^4.2.0",
+    "node-gyp": "^10.2.0",
     "popper.js": "^1.16.1",
     "properties-reader": "^2.2.0",
     "reverse-line-reader": "^0.2.6",

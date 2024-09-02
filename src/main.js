@@ -1,8 +1,11 @@
+//const { app, BrowserWindow } = require('electron');
+//const path = require('node:path');
+
 const { app, BrowserWindow, Menu, ipcMain, net } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const {globSync} = require('glob')
-const checkInternetConnected = require('check-internet-connected')
+const checkInternetConnected = require('check-internet-connected') 
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 
 let mainWindow = null
@@ -10,8 +13,7 @@ let releaseInfo
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
-  // eslint-disable-line global-require
-  app.quit()
+  app.quit();
 }
 
 // To avoid an “Electron Security Warning”in the console when the program is run
@@ -41,7 +43,7 @@ const createWindow = () => {
     }      
   })
 
- const macTemplate = [
+  const macTemplate = [
   {
     label: app.name,
     submenu: [
@@ -71,84 +73,83 @@ const createWindow = () => {
       }      
     ]
   }
-]
+  ]
 
-const winTemplate = [
-  {
-    label: app.name,
-    submenu: [
-      { label : 'Quit Logfly',
-        role: 'quit' }      
-    ]
-  },{
-    label: 'Help',
-    submenu: [
-      {
-        label: 'Help on line',
-        click: async () => {
-          const { shell } = require('electron')
-          await shell.openExternal('https://logfly.org')
-        }
-      },
-      { 
-        label :'Debug mode',
-        role: 'toggleDevTools' 
-      }      
-    ]
-  }
-]
-
-
+  const winTemplate = [
+    {
+      label: app.name,
+      submenu: [
+        { label : 'Quit Logfly',
+          role: 'quit' }      
+      ]
+    },{
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Help on line',
+          click: async () => {
+            const { shell } = require('electron')
+            await shell.openExternal('https://logfly.org')
+          }
+        },
+        { 
+          label :'Debug mode',
+          role: 'toggleDevTools' 
+        }      
+      ]
+    }
+  ]
 
   // Hide menu bar https://stackoverflow.com/questions/69629262/how-can-i-hide-the-menubar-from-an-electron-app
-//  process.platform === "win32" && mainWindow.removeMenu()
+  //  process.platform === "win32" && mainWindow.removeMenu()
   process.platform === "win32" && Menu.setApplicationMenu(Menu.buildFromTemplate(winTemplate))
   process.platform === "linux" && mainWindow.removeMenu()
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
-    if (startOk) {
-      checkInternetConnected()
-        .then((result) => {
-          // comment CheckInfo() for debug
-          checkInfo()
-          // and open directly the wanted page
-          // openWindow('photos')
-        })
-        .catch((ex) => {
-          openWindow('logbook')
-        })      
-    } else {
-      openWindow('problem')
-    }
-
-
+  if (startOk) {
+    checkInternetConnected()
+      .then((result) => {
+        // comment CheckInfo() for debug
+        checkInfo()
+        // and open directly the wanted page
+        //openWindow('wayp')
+        openWindow('logbook')
+      })
+      .catch((ex) => {
+        openWindow('logbook')
+      })      
+  } else {
+    openWindow('problem')
+  }
 }
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.whenReady().then(() => {
+  createWindow();
 
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-  }
-})
+});
 
 ipcMain.on("changeWindow", function(event, arg) {
-    openWindow(arg)
+  openWindow(arg)
 })
 
 ipcMain.on('hide-waiting-gif', function(event, arg) {
@@ -159,6 +160,19 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
 ipcMain.on('ask-infos', function(event, arg) {
   mainWindow.webContents.send('read-infos', releaseInfo)
 })
+
+ipcMain.on('back_waypform', (event, arg) => {  
+  mainWindow.webContents.send('back_waypform',arg)
+})
+
+ipcMain.on('back_sitedown', (event, arg) => {  
+  mainWindow.webContents.send('back_sitedown',arg)
+})
+
+ipcMain.on('back_flightform', (event, arg) => {  
+  mainWindow.webContents.send('back_flightform',arg)
+})
+
 
 function openWindow(pageName) {
   switch (pageName) {
@@ -184,14 +198,15 @@ function openWindow(pageName) {
       mainWindow.loadFile(path.join(__dirname, './views/html/external.html'))
       break              
     case "stat":
-    //  mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'))
-      mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
+      mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'))
+      //mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
       break          
     case "sites":
         mainWindow.loadFile(path.join(__dirname, './views/html/sites.html'))
         break
     case "wayp":
       mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'))
+      //mainWindow.webContents.openDevTools()
       break 
     case "airspaces":
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))
@@ -218,9 +233,9 @@ function openWindow(pageName) {
     case "flyxc":
       mainWindow.loadFile(path.join(__dirname, './views/html/flyxc.html'))
       break       
-      case "noflights":
-        mainWindow.loadFile(path.join(__dirname, './views/html/noflights.html'))
-        break                
+    case "noflights":
+      mainWindow.loadFile(path.join(__dirname, './views/html/noflights.html'))
+      break                
   } 
 }
 
@@ -261,6 +276,6 @@ function checkInfo() {
 
 // Require each JS file in the main-process dir
 function loadMainProcesses () {
-  const files = globSync(path.join(__dirname, 'process-main/**/*.js'),{nocase : true,windowsPathsNoEscape:true})
-  files.forEach((file) => { require(file) })
-}
+    const files = globSync(path.join(__dirname, 'process-main/**/*.js'),{nocase : true,windowsPathsNoEscape:true})
+     files.forEach((file) => { require(file) })
+  }

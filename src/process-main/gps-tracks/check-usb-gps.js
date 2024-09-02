@@ -25,7 +25,11 @@ ipcMain.handle('check-usb-gps', async (event, typeGps) => {
 })
 
 function exploreDrives(typeGPS,arrayDrives) {
-  let pathFlights = null
+  let resultUsb = {
+    pathFlights : null,
+    pathWayp : null,
+    usbPath: null,
+  }
   let nbUsb = 0
   log.info('   [exploreDrives] start');
   for (let index = 0; index < arrayDrives.length; index++) {        
@@ -37,7 +41,9 @@ function exploreDrives(typeGPS,arrayDrives) {
         let validFlights = false
         let validSpecial = false   
         let arrFolders  
-        pathFlights = null           
+        resultUsb.pathFlights = null
+        resultUsb.pathWayp = null,
+        resultUsb.usbPath = null           
         switch (typeGPS) {
           case 'oudie':
             // Oudie : igc files are in a folder  called 'Flights' 
@@ -48,9 +54,13 @@ function exploreDrives(typeGPS,arrayDrives) {
                 switch (arrFolders[j]) {
                   case 'Flights':
                     validFlights = true
-                    pathFlights = path.join(usbPath, path.sep+'Flights')
-                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                    resultUsb.usbPath = usbPath
+                    resultUsb.pathFlights = path.join(usbPath, path.sep+'Flights')
+                    log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                     break   
+                  case 'Waypoints' :
+                    resultUsb.pathWayp = path.join(usbPath, path.sep+'Waypoints')
+                    break
                   case 'Settings':
                     validSpecial = true
                     break                           
@@ -67,8 +77,9 @@ function exploreDrives(typeGPS,arrayDrives) {
                 switch (arrFolders[j]) {
                   case 'igc':
                     validFlights = true
-                    pathFlights = path.join(usbPath, path.sep+'igc')
-                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                    resultUsb.usbPath = usbPath
+                    resultUsb.pathFlights = path.join(usbPath, path.sep+'igc')
+                    log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                     break   
                   case 'audio':
                     validSpecial = true
@@ -86,9 +97,13 @@ function exploreDrives(typeGPS,arrayDrives) {
                   switch (arrFolders[j]) {
                     case 'flights':
                       validFlights = true
-                      pathFlights = path.join(usbPath, path.sep+'Flights')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      resultUsb.usbPath = usbPath
+                      resultUsb.pathFlights = path.join(usbPath, path.sep+'Flights')
+                      log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                       break   
+                    case 'waypoints' :
+                      resultUsb.pathWayp = path.join(usbPath, path.sep+'waypoints')    
+                      break                 
                     case 'config':
                       validSpecial = true
                       break                           
@@ -105,8 +120,9 @@ function exploreDrives(typeGPS,arrayDrives) {
                   switch (arrFolders[j]) {
                     case 'tracks':
                       validFlights = true
-                      pathFlights = path.join(usbPath, path.sep+'tracks')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      resultUsb.usbPath = usbPath
+                      resultUsb.pathFlights = path.join(usbPath, path.sep+'tracks')
+                      log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                       break   
                     case 'system':
                       validSpecial = true
@@ -127,9 +143,13 @@ function exploreDrives(typeGPS,arrayDrives) {
                   switch (arrFolders[j]) {
                     case 'tracks':
                       validFlights = true
-                      pathFlights = path.join(usbPath, path.sep+'tracks')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      resultUsb.usbPath = usbPath
+                      resultUsb.pathFlights = path.join(usbPath, path.sep+'tracks')
+                      log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                       break   
+                    case 'waypoints' :
+                      resultUsb.pathWayp = path.join(usbPath, path.sep+'waypoints')   
+                      break                      
                     case 'displays':
                       validSpecial = true
                       break                                                    
@@ -146,8 +166,9 @@ function exploreDrives(typeGPS,arrayDrives) {
                 switch (arrFolders[j]) {
                   case 'LOGS':
                     validFlights = true
-                    pathFlights = path.join(usbPath, path.sep+'LOGS')
-                    log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                    resultUsb.usbPath = usbPath
+                    resultUsb.pathFlights = path.join(usbPath, path.sep+'LOGS')
+                    log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                     break   
                   case 'AIR':
                     validSpecial = true
@@ -166,8 +187,12 @@ function exploreDrives(typeGPS,arrayDrives) {
                     switch (arrFolders[j]) {
                       case 'flights':
                         validFlights = true
-                        pathFlights = path.join(usbPath, path.sep+'flights')
-                        log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                        resultUsb.usbPath = usbPath
+                        resultUsb.pathFlights = path.join(usbPath, path.sep+'flights')
+                        log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
+                        break
+                      case 'waypoints' :
+                        resultUsb.pathWayp = path.join(usbPath, path.sep+'waypoints')                            
                         break   
                       case 'config':
                         validSpecial = true
@@ -189,8 +214,9 @@ function exploreDrives(typeGPS,arrayDrives) {
                   switch (arrFolders[j]) {
                     case 'IGC':
                       validFlights = true
-                      pathFlights = path.join(usbPath, path.sep+'IGC')
-                      log.info('   [exploreDrives] -> pathFlights = '+pathFlights)
+                      resultUsb.usbPath = usbPath
+                      resultUsb.pathFlights = path.join(usbPath, path.sep+'IGC')
+                      log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                       break   
                     case 'KEYS':
                       validSpecial = true
@@ -205,9 +231,17 @@ function exploreDrives(typeGPS,arrayDrives) {
           case 'reverlog':
             // there is a settings file called PARAM.VGP  in root folder    
            // var vgpFile = glob.sync(usbPath + '/PARAM.VGP')
+           // 
             let vgpFile = globSync(path.join(usbPath, 'PARAM.VGP'))
             if (vgpFile.length > 0) {
-              pathFlights =  usbPath
+              // we keep the root folder because Reversale can have 2 tracks folder (LOG and COMP)
+              resultUsb.pathFlights = usbPath
+              resultUsb.usbPath = usbPath
+              log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
+              const testWpPath = path.join(usbPath, path.sep+'WPTS')
+              if (fs.existsSync(testWpPath)) {
+                resultUsb.pathWayp = testWpPath
+              } 
               validFlights = true
               validSpecial = true          
             }                                            
@@ -222,13 +256,23 @@ function exploreDrives(typeGPS,arrayDrives) {
                   case 'FLIGHTS':
                     // Sytraxx 2.0 Uppercase
                     validFlights = true
-                    pathFlights = path.join(usbPath, path.sep+'FLIGHTS')
+                    resultUsb.usbPath = usbPath
+                    resultUsb.pathFlights = path.join(usbPath, path.sep+'FLIGHTS')
+                    log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                     break
                   case 'flights':
                     // Skytraxx 2.1 lowercase
                     validFlights = true
-                    pathFlights = path.join(usbPath, path.sep+'flights')
+                    resultUsb.usbPath = usbPath
+                    resultUsb.pathFlights = path.join(usbPath, path.sep+'flights')
+                    log.info('   [exploreDrives] -> pathFlights = '+resultUsb.pathFlights)
                     break          
+                  case 'waypoints' :
+                    resultUsb.pathWayp = path.join(usbPath, path.sep+'waypoints')   
+                    break           
+                  case 'WAYPOINTS' :
+                    resultUsb.pathWayp = path.join(usbPath, path.sep+'WAYPOINTS')   
+                    break                   
                   case 'elevation':
                     validSpecial = true
                     break         
@@ -249,11 +293,12 @@ function exploreDrives(typeGPS,arrayDrives) {
               if (arrFolders instanceof Array) { 
                 for (let j = 0; j < arrFolders.length; j++) {
                   switch (arrFolders[j]) {
-                    case 'flights':
-                      // Skytraxx 2.1 lowercase
-                      validFlights = true
-                      pathFlights = path.join(usbPath, path.sep+'flights')
-                      break          
+                      case 'flights':
+                        // Skytraxx 2.1 lowercase
+                        validFlights = true
+                        resultUsb.usbPath = usbPath
+                        resultUsb.pathFlights = path.join(usbPath, path.sep+'flights')
+                        break          
                       case 'pilot_profiles':
                         // exists on Skytraxx 3
                         validSpecial = true
@@ -263,6 +308,7 @@ function exploreDrives(typeGPS,arrayDrives) {
                         validSpecial = true
                         break                            
                       case 'waypoints':
+                        resultUsb.pathWayp = path.join(usbPath, path.sep+'WAYPOINTS') 
                         validSpecial = true
                         break                         
                   }                       
@@ -274,7 +320,8 @@ function exploreDrives(typeGPS,arrayDrives) {
             // there is a settings file called XC**.txt
             const xcTxt = globSync(path.join(usbPath,'XC*.txt'),{nocase : true,windowsPathsNoEscape:true})
             if (xcTxt.length > 0) {
-              pathFlights = usbPath
+              resultUsb.usbPath = usbPath
+              resultUsb.pathFlights = usbPath
               validFlights = true
               validSpecial = true
             }            
@@ -284,7 +331,8 @@ function exploreDrives(typeGPS,arrayDrives) {
             // there is a settings file called CONFIG.TXT
             const flynetTxt =  globSync(path.join(usbPath, 'CONFIG.TXT'))
             if (flynetTxt.length > 0) {
-              pathFlights = usbPath
+              resultUsb.usbPath = usbPath
+              resultUsb.pathFlights = usbPath
               validFlights = true
               validSpecial = true
             }            
@@ -297,7 +345,7 @@ function exploreDrives(typeGPS,arrayDrives) {
     }        
   }
 
-  return pathFlights 
+  return resultUsb 
 }
 
 function getUsbFolders(_path) {
