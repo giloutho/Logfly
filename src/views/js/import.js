@@ -207,11 +207,12 @@ function callSyride() {
 
 
 function callDisk() {
-  const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
-  if (selectedPath != null) {
+  const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathimport'))
+  if(selectedFile.fullPath != null) {
+    let selectedPath = selectedFile.directoryName
     currStatusContent = selectedPath+' : '
     simpleWaiting()
-    ipcRenderer.send('tracks-disk', selectedPath)   
+    ipcRenderer.send('tracks-disk', selectedPath)     
   }
 }
 
