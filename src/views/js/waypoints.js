@@ -454,7 +454,9 @@ function displayWpDisk(currFilePath) {
         contentPop += i18n.gettext('Altitude')+' : '+wp.alt+' m<BR>'
         contentPop += i18n.gettext('Latitude')+' : '+wp.lat+'<BR>'
         contentPop += i18n.gettext('Longitude')+' : '+wp.long+'<BR>'
-        const newWp = L.marker([wp.lat,wp.long]).bindPopup(contentPop)
+        // Code utilisé pour une éventuelle recherche sur la datatable
+        //const newWp = L.marker([wp.lat,wp.long],{title: i.toString()}).bindPopup(contentPop).on('click', markerOnClick)
+        const newWp = L.marker([wp.lat,wp.long],{title: i.toString()}).bindPopup(contentPop)
         arrMarker[wp.index] = newWp
         mapwp.addLayer(arrMarker[wp.index])
       }
@@ -469,6 +471,38 @@ function displayWpDisk(currFilePath) {
     alert(i18n.gettext('No points decoded on'+' '+currFilePath))
   }
 }
+
+
+/* Code gardé pour mémoire 
+* Les différents essais sont un échec
+* L'index du tableau n'est pas corrélé à l'index de ligne dans la table
+* car la table est triée alphabétiquement
+* le search fonctionne mais rafraichit la table aavec la seule ligne contenant VEYRIER GARE
+*/
+function markerOnClick(e)
+{
+  alert("hi. you clicked the marker at " + e.target.options.title)
+  //$('#table_id').DataTable().search('VEYRIER GARE').draw();
+  let indexes = $('#table_id').DataTable()
+  .rows( (idx, data, node) => {
+    if (data[2] === 'VEYRIER GARE') {
+      return true;
+    }
+    return false;
+  })
+  .indexes()
+  console.log({indexes})
+  // const idxTable = parseInt(e.target.options.title)
+  // if (selectedLine > -1) {
+  //   $('#table_id').DataTable().rows(selectedLine).deselect();
+  // }
+  // $('#table_id').DataTable().rows(idxTable).select()
+  // //const displayIndex = $('#table_id').DataTable().rows( { order: 'applied', search: 'applied' } ).indexes().indexOf( this.index() ); // where `this` is the `row()` - for example in `rows().every(...)`
+  // const pageSize = $('#table_id').DataTable().page.len();
+  // $('#table_id').DataTable().page( parseInt( idxTable / pageSize, 10 ) ).draw( false )
+  // selectedLine = idxTable
+}
+
 
 function displayEmptyMap() {
   wpFilePath = i18n.gettext('Not saved')+'...'
@@ -709,7 +743,7 @@ function tableStandard() {
     table = $('#table_id').DataTable(dataTableOption )
     table.on( 'select', function ( e, dt, type, indexes ) {
       if ( type === 'row' ) {   
-          centerOnMarker(dt.row(indexes).data().arrayIdx)          
+          centerOnMarker(dt.row(indexes).data().arrayIdx)   
       }        
     })
 }
@@ -717,7 +751,7 @@ function tableStandard() {
 function centerOnMarker(arrayIndex) {
   let latLngs = [ arrMarker[arrayIndex].getLatLng() ]
   let markerBounds = L.latLngBounds(latLngs);
-  mapwp.fitBounds(markerBounds);
+  mapwp.fitBounds(markerBounds)
 }
 
 function addRow(newWayp) {
