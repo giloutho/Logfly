@@ -52,6 +52,7 @@ iniForm()
 
 function iniForm() {
     // pas de vols -> direction le Mont Blanc
+    document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'   
     try {    
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {

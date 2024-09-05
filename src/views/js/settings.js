@@ -64,17 +64,18 @@ iniForm()
 
 function iniForm() {
     try {    
-        currLang = store.get('lang')
-        if (currLang != undefined && currLang != 'en') {
-            currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
-            let langjson = JSON.parse(content)
-            i18n.setMessages('messages', currLang, langjson)
-            i18n.setLocale(currLang)
-        }
-      } catch (error) {
-          log.error('[problem.js] Error while loading the language file')
-      }  
+      document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'  
+      currLang = store.get('lang')
+      if (currLang != undefined && currLang != 'en') {
+          currLangFile = currLang+'.json'
+          let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+          let langjson = JSON.parse(content)
+          i18n.setMessages('messages', currLang, langjson)
+          i18n.setLocale(currLang)
+      }
+    } catch (error) {
+        log.error('[problem.js] Error while loading the language file')
+    }  
     // let menuOptions = menuFill.fillMenuOptions(i18n)
     // $.get('../../views/tpl/sidebar.html', function(templates) { 
     //     const template = $(templates).filter('#temp-menu').html()  
@@ -576,6 +577,7 @@ function checkLogbooks() {
 		          store.set('pathWork', document.getElementById('tx-work-path').value)
 	            store.set('dbFullPath', newDbFullPath)
               alert(i18n.gettext('Saved changes'))
+              document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'
               result = true
             }
       }

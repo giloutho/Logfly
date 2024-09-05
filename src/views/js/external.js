@@ -39,20 +39,21 @@ iniForm()
 
 function iniForm() {
     try {    
-        currLang = store.get('lang')
-        if (currLang != undefined && currLang != 'en') {
-            currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-            let langjson = JSON.parse(content);
-            i18n.setMessages('messages', currLang, langjson)
-            i18n.setLocale(currLang);
-        }
-      } catch (error) {
-          log.error('[problem.js] Error while loading the language file')
-      }  
+      document.title = 'Logfly '+store.get('version')  
+      currLang = store.get('lang')
+      if (currLang != undefined && currLang != 'en') {
+          currLangFile = currLang+'.json'
+          let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+          let langjson = JSON.parse(content)
+          i18n.setMessages('messages', currLang, langjson)
+          i18n.setLocale(currLang)
+      }
+    } catch (error) {
+        log.error('[problem.js] Error while loading the language file')
+    }  
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
-        var template = $(templates).filter('#temp-menu').html();  
+        var template = $(templates).filter('#temp-menu').html()
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
@@ -146,16 +147,16 @@ function updateInfos(trackFile) {
 
 // Calls up the relevant page 
 function callPage(pageName) {
-    ipcRenderer.send("changeWindow", pageName);    // main.js
+    ipcRenderer.send("changeWindow", pageName)   // main.js
 }
 
 btnMenu.addEventListener('click', (event) => {
     if (btnMenu.innerHTML === "Menu On") {
-        btnMenu.innerHTML = "Menu Off";
+        btnMenu.innerHTML = "Menu Off"
     } else {
-        btnMenu.innerHTML = "Menu On";
+        btnMenu.innerHTML = "Menu On"
     }
-    $('#sidebar').toggleClass('active');
+    $('#sidebar').toggleClass('active')
 })
 
 btnFullmap.addEventListener('click', (event) => {  
@@ -191,43 +192,41 @@ btnFullmap.addEventListener('click', (event) => {
     // build map
     const mapTrack = elemMap.buildElements(track)
     if (mapPm != null) {
-      mapPm.off();
-      mapPm.remove();
+      mapPm.off()
+      mapPm.remove()
     }
     mapPm = L.map('mapid').setView([0, 0], 5)
     L.control.layers(baseMaps).addTo(mapPm)
     baseMaps.OSM.addTo(mapPm)   // default is osm
 
     const geojsonLayer = L.geoJson(mapTrack.trackjson,{ style: mapTrack.trackOptions}).addTo(mapPm)
-    mapPm.fitBounds(geojsonLayer.getBounds());
+    mapPm.fitBounds(geojsonLayer.getBounds())
 
     const StartIcon = new L.Icon(mapTrack.startIcon)
     const startLatlng = L.latLng(mapTrack.startLatlng.lat,mapTrack.startLatlng.long)
-    L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm);
+    L.marker(startLatlng,{icon: StartIcon}).addTo(mapPm)
 
     const EndIcon = new L.Icon(mapTrack.endIcon)
     const endLatlng = L.latLng(mapTrack.endLatlng.lat,mapTrack.endLatlng.long)
-    L.marker(endLatlng,{icon: EndIcon}).addTo(mapPm);
+    L.marker(endLatlng,{icon: EndIcon}).addTo(mapPm)
 
-    const info = L.control({position: 'bottomright'});
+    const info = L.control({position: 'bottomright'})
 
     info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'map-info'); // create a div with a class "map-info"
-        this.update();
-        return this._div;
-    };
+        this._div = L.DomUtil.create('div', 'map-info') // create a div with a class "map-info"
+        this.update()
+        return this._div
+    }
 
     // method that we will use to update the control based on feature properties passed
     info.update = function () {
-        this._div.innerHTML = '';
+        this._div.innerHTML = ''
         this._div.innerHTML += mapTrack.flDate+'<br>'
         this._div.innerHTML += mapTrack.infoGlider
         this._div.innerHTML += mapTrack.maxAlti
         this._div.innerHTML += mapTrack.maxVario
-    };
-
-    info.addTo(mapPm);  
-
+    }
+    info.addTo(mapPm)
   }
 
   function displayFlyxc() {
@@ -279,7 +278,7 @@ function displayFullMap(track) {
 
   function displayStatus(content) {
     document.getElementById('status').innerHTML = i18n.gettext(content)
-    $('#status').show(); 
+    $('#status').show() 
   }
 
   function hideStatus() {

@@ -58,6 +58,7 @@ iniForm()
 
 function iniForm() {
     try {    
+        document.title = 'Logfly '+store.get('version')  
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'

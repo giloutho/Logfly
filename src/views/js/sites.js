@@ -27,15 +27,16 @@ iniForm()
 
 function iniForm() {
     try {    
-        currLang = store.get('lang')
-        if (currLang != undefined && currLang != 'en') {
-            currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-            let langjson = JSON.parse(content);
-            i18n.setMessages('messages', currLang, langjson)
-            i18n.setLocale(currLang)
-            translateLabels()
-        }
+      document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'   
+      currLang = store.get('lang')
+      if (currLang != undefined && currLang != 'en') {
+          currLangFile = currLang+'.json'
+          let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+          let langjson = JSON.parse(content);
+          i18n.setMessages('messages', currLang, langjson)
+          i18n.setLocale(currLang)
+          translateLabels()
+      }
     } catch (error) {
         log.error('[problem.js] Error while loading the language file')
     }      
