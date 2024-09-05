@@ -163,7 +163,7 @@ function iniForm() {
     // pour la suite voir https://stackoverflow.com/questions/53954508/jquery-inputmask-latitude-longitude-validation-and-masking
     // avec les "definitions"
     btnCancel.addEventListener('click',(event)=>{
-        ipcRenderer.sendTo(1,"back_waypform", null)
+        ipcRenderer.sendTo(1,'back_waypform', null)
         window.close()
     })  
     btnOk.addEventListener('click',(event)=>{validFields()}) 
@@ -426,20 +426,4 @@ function translateLabels() {
     document.getElementById('lb-move').innerHTML = i18n.gettext("Move marker to change coordinates")
     waitSrtm.innerHTML = i18n.gettext('Wait for the digital elevation file to download')
     btnCancel.innerHTML = i18n.gettext('Cancel')
-}
-
-function winClose(update) {
-    if (update) {
-        // https://stackoverflow.com/questions/40251411/communication-between-2-browser-windows-in-electron
-        // The number in sendTo is the ID of the window. Windows in electron are numbered automatically 
-        // in ascending order from what I've noticed. This means that first window you create has an ID of 1, 
-        // the second window has an ID of 2 and so on...
-        // if the original window is sites.html, originWindow = 1, only one window sites.html
-        // if the original window is nogpsflight.html, originWindow = 2, two windows import.html -> nogpsflight.html
-        ipcRenderer.sendTo(originWindow, "back_siteform", editWayp)
-    } else {
-        // pour debug
-        ipcRenderer.sendTo(originWindow, "back_siteform", editWayp)
-    }
-    window.close()
 }

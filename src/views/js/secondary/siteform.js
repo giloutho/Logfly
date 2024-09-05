@@ -6,6 +6,7 @@ const Store = require('electron-store')
 const store = new Store();
 const inputMask = require('inputmask');
 const Position = require('../../../utils/geo/position.js')
+const SyncTileSet = require('srtm-elevation').SyncTileSet
 
 let currLang
 let currPosition = new Position()
@@ -14,7 +15,9 @@ const tiles = require('../../../leaflet/tiles.js')
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
 let mapPm
+let marker
 let editSite
+let srtmPath = null
 
 const btnCancel = document.getElementById('bt-cancel')
 const btnOk = document.getElementById('bt-ok')
@@ -34,11 +37,16 @@ const txLongDmm = document.getElementById('tx-long-dmm')
 const txLatDms = document.getElementById('tx-lat-dms')
 const txLongDms = document.getElementById('tx-long-dms')
 
+let originWindow = 1
+
 iniForm()
 
 ipcRenderer.on('current-site', (event, currSite) => {    
     editSite = currSite
+    // if id > 0 a site is updating from  view site
+    // Origin window is main window -> 1
     if (editSite.id > 0) {
+        originWindow = 1
         if (editSite.typeSite == "D") {
             rdTakeoff.checked = true
         } else if (editSite.typeSite == "A") {
@@ -58,6 +66,13 @@ ipcRenderer.on('current-site', (event, currSite) => {
         currPosition.setLongitudeDd(editSite.long.toFixed(5))
         updateCoords(true)
     } else {
+        // if id = 0 a new site creation requested by view site Origin window is main window -> 1
+        // if id = -2 a new site creation requestes by secondary view nogpsflight Origin window is a modal window -> 2
+        if (editSite.id = 0) {
+            originWindow = 1
+        } else if (editSite.id = -2) {
+            originWindow = 2
+        }
         rdTakeoff.checked = true
         let defaultLat 
         let settingLat = store.get('finderlat')
@@ -91,6 +106,19 @@ function iniForm() {
             i18n.setLocale(currLang);            
             translateLabels()
         }
+        // Srtm path test
+        const pathW  = store.get('pathWork')
+        let pathSrtm =  path.join(pathW,'Srtm') 
+        if (fs.existsSync(pathSrtm)) {
+            srtmPath = pathSrtm
+        } else {
+            try {
+                fs.mkdirSync(pathSrtm)
+                srtmPath = pathSrtm
+            } catch (error) {
+                log.error('[fullmap-compute] unable to create '+pathSrtm)
+            }            
+        }        
     } catch (error) {
         log.error('[siteform.js] Error while loading the language file')
     }  
@@ -176,7 +204,7 @@ function iniForm() {
     // pour la suite voir https://stackoverflow.com/questions/53954508/jquery-inputmask-latitude-longitude-validation-and-masking
     // avec les "definitions"
     btnCancel.addEventListener('click',(event)=>{
-        ipcRenderer.send('back_siteform', null)
+        ipcRenderer.sendTo(originWindow,'back_siteform', null)
         window.close()
     })  
     btnOk.addEventListener('click',(event)=>{validFields()}) 
@@ -314,7 +342,8 @@ function displayMap() {
     shadowSize: [41, 41]
     });
 
-    const marker = L.marker([currPosition.latitude,currPosition.longitude],{icon: violetIcon, draggable: true}).addTo(mapPm)
+    marker = L.marker([currPosition.latitude,currPosition.longitude],{icon: violetIcon, draggable: true}).addTo(mapPm)
+    marker.bindPopup(i18n.gettext('Wait for the digital elevation file to download'))
 
     marker.on('dragend', ondragend)
 
@@ -324,7 +353,39 @@ function displayMap() {
         currPosition.setLatitudeDd(marker.getLatLng().lat.toFixed(5))
         currPosition.setLongitudeDd(marker.getLatLng().lng.toFixed(5))
         updateCoords(false)        
+        getElevation()
     }
+}
+
+function getElevation() {
+    $('#lb-srtm').removeClass('d-none')
+    marker.openPopup()
+    let minLat = mapPm.getBounds().getSouth()
+    let maxLat = mapPm.getBounds().getNorth()
+    let minLng = mapPm.getBounds().getWest()
+    let maxLng = mapPm.getBounds().getEast()
+    let tileset = new SyncTileSet(srtmPath, [minLat, minLng], [maxLat, maxLng], function(err) {
+        $('#lb-srtm').addClass('d-none')
+        if (err) {
+            marker.bindPopup(i18n.gettext('Altitude not found, input manually...'))
+        } else {
+            // arrayElevation.push(Math.round(tileset.getElevation([l[0], l[1]])))  
+            let ele = Math.round(tileset.getElevation([currPosition.latitude,currPosition.longitude]))
+            txAlt.value = ele
+            mapPm.closePopup()
+        }
+    }, {
+        // un peu chaud ... Cela ne fonctionnait plus le 27 08 22
+        // upgrade version 2.1.2
+        // cette issue https://github.com/rapomon/srtm-elevation/issues/3
+        //  évoque le problème ou il répond que la nasa fonctionne mal
+        // on change le provider        
+        // provider: "https://srtm.fasma.org/{lat}{lng}.SRTMGL3S.hgt.zip",
+        // username: null,
+        // password: null        
+        username: 'logfly_user',
+        password: 'Logfly22'
+    });    
 }
 
 function updateCoords(updateMap) {
@@ -388,7 +449,9 @@ function validFields() {
                 editSite.comment= document.getElementById('tx-comment').value
                 const updateDate = new Date()
                 editSite.update = updateDate.getFullYear()+'-'+String((updateDate.getMonth()+1)).padStart(2, '0')+'-'+String(updateDate.getDate()).padStart(2, '0') 
-                dbUpdate()                
+                dbUpdate()     
+                ipcRenderer.sendTo(originWindow,'back_siteform', editSite)
+                window.close()              
             }
         }
     }    
@@ -409,20 +472,16 @@ function dbUpdate() {
            //     if (addSite == 1) {
                     // addSite.changes must return 1 for one row added successfully
                     editSite.id = addSite.lastInsertRowid
-                    alert(editSite.id)
                     editSite.newsite = true
           //      }
-            } 
-            winClose(true)                
+            }           
         } catch (error) {
             alert(i18n.gettext('Problem while updating the logbook'))
             log.error('[siteform.js/dbUpadte] error : '+error)  
-            winClose(false)  
         }        
     } else {
         alert(i18n.gettext('Problem while updating the logbook'))
         log.error('[siteform.js/dbUpadte] db not open')  
-        winClose(false) 
     }   
 }
 
@@ -445,14 +504,4 @@ function translateLabels() {
     document.getElementById('lb-comment').innerHTML = i18n.gettext("Comment")
     document.getElementById('lb-move').innerHTML = i18n.gettext("Move marker to change coordinates")
     btnCancel.innerHTML = i18n.gettext('Cancel')
-}
-
-function winClose(update) {
-    if (update) {
-        ipcRenderer.send('back_siteform', editSite)
-    } else {
-        // pour debug
-        ipcRenderer.send('back_siteform', editSite)
-    }
-    window.close()
 }

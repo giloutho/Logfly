@@ -127,13 +127,19 @@ function buildMap() {
   }    
 
   const openKey = listkey.openaip
-  const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/airspaces/{z}/{x}/{y}.png?apiKey=${openKey}`, {
+  // origin const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/airspaces/{z}/{x}/{y}.png?apiKey=${openKey}`, {
+  const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey=${openKey}`, {
     maxZoom: 14,
     minZoom: 4,
     detectRetina: true,
     format: 'image/png',
     transparent: true,
-    opacity: 1
+ //   opacity: 1
+
+    tms: true,
+    subdomains: '12',
+
+
   });
 
 

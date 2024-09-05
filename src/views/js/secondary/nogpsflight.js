@@ -20,10 +20,7 @@ const formattedToday = moment().format('YYYY-MM-DD');
 
 let flightData
 
-let flightDataRec = {
-    date : '2000-01-01',
-    time : '00:00'
-}
+let lastSaved =  '2000-01-01 00:00:00'
 
 let flightSite = {
     id : 0,
@@ -119,11 +116,15 @@ ipcRenderer.on('back_siteform', (_, updateSite) => {
     }
   })
 
+function checkDb() {
+
+}
+
 function updateDb() {
-    if (flightDataRec.date == inputDate.value && flightData.time == inputTime.value) {
+    flightData.sqlDate = inputDate.value+' '+inputTime.value+':00'
+    if (flightData.sqlDate == lastSaved) {
         alert(i18n.gettext('A flight at the same date and time was recorded'))
     } else {
-        flightData.sqlDate = inputDate.value+' '+inputTime.value+':00'
         // in logbook date is displayed as DD-MM-YYYY
         flightData.date = moment(inputDate.value).format('DD-MM-YYYY')
         flightData.time = inputTime.value
@@ -151,8 +152,7 @@ function updateDb() {
                     const stmt = db.prepare(smt1+' VALUES '+smt2)
                     const newFlight = stmt.run(flightData.sqlDate, flightData.duree, flightData.strduree, flightData.lat, flightData.lon, flightData.alti, flightData.nom, flightData.pays, null, 0, flightData.glider, flightData.comment)
                 }     
-                flightDataRec.date = flightData.date
-                flightDataRec.time = flightData.time                         
+                lastSaved = flightData.sqlDate                 
             } catch (error) {
                 alert(i18n.gettext('Inserting in the flights file failed'))
                 log.error('[nogpsflight.js] writing error in the database')

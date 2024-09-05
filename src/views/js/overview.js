@@ -73,7 +73,7 @@ function iniForm() {
     translateLabels()
     browseYears()
     iniGraphe()
-    graphState = 'F'
+    graphState = 'H'
     changeRef()
 }
 
