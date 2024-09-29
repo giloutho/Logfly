@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.6] - 2024-09-29
+
+### Added
+* Operational protocol Flymaster old 
+* Waypoints module added
+* Multiselection for glider modification
+* Flights multiselection display total hours
+
+### Fixed
+* Dynamic flight site creation
+
 ## [6.0.5] - 2023-04-12
 
 ### Added
