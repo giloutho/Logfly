@@ -134,12 +134,9 @@ function buildMap() {
     detectRetina: true,
     format: 'image/png',
     transparent: true,
- //   opacity: 1
-
-    tms: true,
+    opacity: 1,
+  //  tms: true,    must be removed https://groups.google.com/g/openaip/c/Fg8ED96W7O4
     subdomains: '12',
-
-
   });
 
 
