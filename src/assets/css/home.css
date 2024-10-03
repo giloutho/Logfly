@@ -257,7 +257,7 @@ a.article:hover {
     /* https://stackoverflow.com/questions/16543446/how-to-make-leaflet-map-height-variable
        https://www.alsacreations.com/astuce/lire/51-hauteur-100-element.html 
     */
-    height: 70vh;  
+    min-height: 80vh;  
     padding-left: 10px;
     border: 1px solid black;
     border-radius: 8px;  
@@ -364,4 +364,11 @@ table{
     overflow: auto;
     max-height: 85vh;
     color: #38148d;
+}
+
+.comment {
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+    right: 10px;
 }

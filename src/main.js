@@ -7,6 +7,7 @@ const fs = require('fs')
 const {globSync} = require('glob')
 const checkInternetConnected = require('check-internet-connected') 
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
+const Store = require('electron-store')
 
 let mainWindow = null
 let releaseInfo
@@ -33,10 +34,23 @@ const createWindow = () => {
 
   loadMainProcesses() 
 
+  // grab screen size
+  let store = new Store()
+  let screenWidth
+  let screenHeight
+  if (store.get('screenWidth')) {
+    screenWidth = store.get('screenWidth')
+    screenHeight = store.get('screenHeight')
+  } else {
+    screenWidth = 1200
+    screenHeight = 800
+  }
+
+  console.log(screenWidth+'X'+screenHeight)
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
+    width: screenWidth,
+    height: screenHeight,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

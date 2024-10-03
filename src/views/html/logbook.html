@@ -9,6 +9,10 @@
   <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
   <link rel="stylesheet" href="../../../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../../../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
+  
+ <!-- <link href="https://cdn.datatables.net/v/bs4/dt-2.1.7/sl-2.1.0/datatables.min.css" rel="stylesheet"> -->
+ 
+
   <link rel="stylesheet" href="../../../node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.css">
   <link rel="stylesheet" href="../../../node_modules/leaflet/dist/leaflet.css" />  
   <link rel="stylesheet" href="../../../node_modules/bootstrap-select/dist/css/bootstrap-select.css" />  
@@ -20,13 +24,13 @@
     <script>
       let $ = require('jquery');
       // jQuery datatables script
-      const dtbs = require('datatables.net-bs4')()   
-      const dtselect = require( 'datatables.net-select-bs4' )() 
+      const dtbs = require('datatables.net-bs4')(window, $)   
+      const dtselect = require('datatables.net-select-bs4')( window, $ )
       const conmenu = require('jquery-contextmenu')
     </script>
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>
-    <script>require('bootstrap-select');</script>    
+    <script>require('bootstrap-select')</script>    
     <div class="wrapper">
         <!-- Sidebar  -->
         <div id="target-sidebar"></div>
@@ -76,8 +80,8 @@
               </div>     
             </div>     
           </div>
-        <div class="alert alert-primary collapse" role="alert" id="inputdata"></div>  
-        <div class="alert alert-warning collapse" role="alert" id="inputcomment"></div>  
+        <div class="alert alert-primary collapse comment" role="alert" id="inputdata"></div>  
+        <div class="alert alert-warning collapse comment" role="alert" id="inputcomment"></div>  
         <!-- Modal content-->
         <div id="Modal" class="modal fade" role="dialog" aria-hidden="true">
           <div class="modal-dialog">
