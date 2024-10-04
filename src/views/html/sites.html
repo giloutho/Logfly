@@ -21,8 +21,8 @@
     <script>
         let $ = require('jquery');
         // jQuery datatables script
-        const dtbs = require('datatables.net-bs4')()   
-        const dtselect = require( 'datatables.net-select-bs4' )() 
+        const dtbs = require('datatables.net-bs4')(window, $)   
+        const dtselect = require( 'datatables.net-select-bs4' )(window, $)  
         const conmenu = require('jquery-contextmenu')    
     </script>
     <script>require('popper.js');</script>
@@ -78,11 +78,11 @@
                     </div>
                     <div class="col-md-5 ">
                     <!--- Second half content here --->
-                    <div id="mapid" class="map d-none"></div>
+                    <div id="mapid" class="map-site d-none"></div>
                     </div>     
                 </div>
-                <div class="alert alert-primary collapse" role="alert" id="inputdata"></div>  
-                <div class="alert alert-warning collapse" role="alert" id="inputcomment"></div> 
+                <div class="alert alert-primary collapse comment" role="alert" id="inputdata"></div>  
+                <div class="alert alert-warning collapse comment" role="alert" id="inputcomment"></div> 
             </div>
         </div>
         <!-- End of main page content -->

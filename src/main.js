@@ -42,7 +42,7 @@ const createWindow = () => {
     screenWidth = store.get('screenWidth')
     screenHeight = store.get('screenHeight')
   } else {
-    screenWidth = 1200
+    screenWidth = 1280
     screenHeight = 800
   }
 

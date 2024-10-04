@@ -42,8 +42,8 @@ function iniForm() {
   if (store.get('logtablelines')) {
     tableLines = store.get('logtablelines')
   } else { 
-    tableLines = 15
-    store.set('logtablelines',15)
+    tableLines = 14
+    store.set('logtablelines',14)
   } 
   const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
   let countFlights = stmt.get()
@@ -157,11 +157,13 @@ function iniForm() {
 
 function resizeListener() {
   let tableHeight = window.innerHeight *0.85    // the table occupies about 85% of the window height
-  let nbLines = Math.round(tableHeight / 38) - 2   // one line occupies about 38 pixels
-  tableLines = nbLines
+  let logLines = Math.round(tableHeight / 38) - 2   // one line occupies about 38 pixels
+  tableLines = logLines
+  let siteLines = Math.round(tableHeight / 40) - 2  
   store.set('screenWidth',window.innerWidth)
   store.set('screenHeight',window.innerHeight)
-  store.set('logtablelines',nbLines)
+  store.set('logtablelines',logLines)
+  store.set('sitetablelines',siteLines)
   tableStandard()
 }
 
@@ -295,76 +297,70 @@ function tableStandard() {
         reqSQL += 'FROM Vol ORDER BY V_Date DESC'
         const flstmt = db.prepare(reqSQL).all()    
         const dataTableOption = {
-        data: flstmt, 
-        autoWidth : false,
-        columns: [
-            {
-              title : '',
-              data: 'Photo',
-              render: function(data, type, row) {
-                if (data == 'Yes') {
-                  return '<img src="../../assets/img/Camera.png" alt=""></img>'
-                } 
-                return data
-              },          
-              className: "dt-body-center text-center"
-            },       
-            { title : i18n.gettext('Date'), data: 'Day' },
-            { title : i18n.gettext('Time'), data: 'Hour' },
-            { title : 'Duration', data: 'V_sDuree' },
-            { title : 'Site', data: 'V_Site' },
-            { title : i18n.gettext('Glider'), data: 'V_Engin' },     
-            { title : 'Comment', data: 'V_Commentaire' },  
-            { title : 'Id', data: 'V_ID' },
-            { title : 'Seconds', data: 'V_Duree' }  
-        ],      
-        columnDefs : [
-            { "width": "3%", "targets": 0, "orderable": false },
-            // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
-            // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
-            // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
-            // { "width": "6%", "targets": 2, "orderData": 1 },
-            // { "width": "14%", "targets": 1, "bSortable": false},
-            // { "width": "6%", "targets": 2, "bSortable": false },
-            { "width": "14%", "targets": 1 },
-            { "width": "6%", "targets": 2 },
-            { "width": "8%", "targets": 3 },
-            { "width": "30%", className: "text-nowrap", "targets": 4 },
-            { "width": "28%", "targets": 5 },
-            { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
-            { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
-            { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
-        ],      
-        info : false,          // hide "Showing 1 to ...  row selected"
-        lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
-        //searching : false,      // hide search abilities in table
-        ordering: false,        // Sinon la table est triée et écrase le tri sql
-        pageLength: tableLines,         // ce sera à calculer avec la hauteur de la fenêtre
-        pagingType : 'full_numbers',
-        language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
-            paginate: {
-            first: '<<',
-            last: '>>',
-            next: '>', // or '→'
-            previous: '<' // or '←' 
+          data: flstmt, 
+          autoWidth : false,
+          columns: [
+              {
+                title : '',
+                data: 'Photo',
+                render: function(data, type, row) {
+                  if (data == 'Yes') {
+                    return '<img src="../../assets/img/Camera.png" alt=""></img>'
+                  } 
+                  return data
+                },          
+                className: "dt-body-center text-center"
+              },       
+              { title : i18n.gettext('Date'), data: 'Day' },
+              { title : i18n.gettext('Time'), data: 'Hour' },
+              { title : 'Duration', data: 'V_sDuree' },
+              { title : 'Site', data: 'V_Site' },
+              { title : i18n.gettext('Glider'), data: 'V_Engin' },     
+              { title : 'Comment', data: 'V_Commentaire' },  
+              { title : 'Id', data: 'V_ID' },
+              { title : 'Seconds', data: 'V_Duree' }  
+          ],      
+          columnDefs : [
+              { "width": "3%", "targets": 0, "bSortable": false },
+              // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
+              // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
+              // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
+              // { "width": "6%", "targets": 2, "orderData": 1 },
+              // { "width": "14%", "targets": 1, "bSortable": false},
+              // { "width": "6%", "targets": 2, "bSortable": false },
+              { "width": "14%", "targets": 1 },
+              { "width": "6%", "targets": 2 },
+              { "width": "10%", "targets": 3 },
+              { "width": "30%", className: "text-nowrap", "targets": 4 },
+              { "width": "26%", "targets": 5 },
+              { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
+              { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
+              { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
+          ],      
+          bInfo : false,          // hide "Showing 1 to ...  row selected"
+          lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
+          //searching : false,      // hide search abilities in table
+          ordering: false,        // Sinon la table est triée et écrase le tri sql
+          pageLength: tableLines,         // ce sera à calculer avec la hauteur de la fenêtre
+          pagingType : 'full',
+          dom: 'lrtip',
+          language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
+              paginate: {
+              first: '<<',
+              last: '>>',
+              next: '>', // or '→'
+              previous: '<' // or '←' 
+              }
+          },     
+          select: true,            // Activation du plugin select
+          // Line coloring if there is a comment. 
+          // Finally, I don't really like
+          'createdRow': function( row, data, dataIndex ) {
+            if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
+              $(row).addClass('tableredline')
             }
-        },     
-        pagingType : 'full',
-        layout:  { 
-          topStart: null,
-          topEnd: null,
-          bottomStart: null,
-          bottomEnd: 'paging'
-        },
-        select: true,            // Activation du plugin select
-        // Line coloring if there is a comment. 
-        // Finally, I don't really like
-        'createdRow': function( row, data, dataIndex ) {
-          if( data['V_Commentaire'] != null && data['V_Commentaire'] !=''){
-            $(row).addClass('tableredline')
+          },
           }
-        },
-        }
       table = $('#table_id').DataTable(dataTableOption )
       //  table = new dtbs(dataTableOption)
         $('#tx-search').on( 'keyup', function () {

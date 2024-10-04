@@ -21,11 +21,19 @@ const baseMaps = tiles.baseMaps
 let mapPm
 
 let table
+let tableLines
 let currIdSite
 
 iniForm()
 
 function iniForm() {
+    window.addEventListener("resize", resizeListener)
+    if (store.get('sitetablelines')) {
+      tableLines = store.get('sitetablelines')
+    } else { 
+      tableLines = 12
+      store.set('sitetablelines',12)
+    }   
     try {    
       document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'   
       currLang = store.get('lang')
@@ -119,6 +127,18 @@ function iniForm() {
 // Calls up the relevant page 
 function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName);    // main.js
+}
+
+function resizeListener() {
+  let tableHeight = window.innerHeight *0.85    // the table occupies about 85% of the window height
+  let siteLines = Math.round(tableHeight / 42) - 2   // one line occupies about 42 pixels
+  tableLines = siteLines
+  let logLines = Math.round(tableHeight / 38) - 2  
+  store.set('screenWidth',window.innerWidth)
+  store.set('screenHeight',window.innerHeight)
+  store.set('sitetablelines',siteLines)
+  store.set('logtablelines',logLines)
+  tableStandard()
 }
 
 ipcRenderer.on('back_siteform', (_, updateSite) => { 
@@ -215,71 +235,71 @@ function tableStandard(setData) {
         }
         const stmSites = db.prepare(sqlReq).all()
         const dataTableOption = {
-        data: stmSites, 
-        autoWidth : false,
-        columns: [
-            {
-                title : '',
-                data: 'S_Type',
-                render: function(data, type, row) {
-                    let iconType
-                    switch (data) {
-                        case 'D':
-                            iconType = '<img src="../../leaflet/images/windsock22.png" alt=""></img>'
-                            break
-                        case 'A' :
-                            iconType = '<img src="../../leaflet/images/arrivee22.png" alt=""></img>'
-                            break                    
-                        default:
-                            iconType = data
-                            break
-                    }
-                    return iconType
-                },          
-                className: "dt-body-center text-center"
-            },             
-            { title : i18n.gettext('Name'), data: 'S_Nom' },
-            { title : i18n.gettext('Locality'), className: "text-nowrap", data: 'S_Localite' },
-            { title : i18n.gettext('ZIP'), data: 'S_CP' },
-            { title : i18n.gettext('Alt'), data: 'S_Alti' },
-            { title : i18n.gettext('Orientation'), data: 'S_Orientation' },     
-            { title : 'Type', data: 'S_Type' },  
-            { title : 'Lat', data: 'S_Latitude' },
-            { title : 'Long', data: 'S_Longitude' },
-            { title : 'Comment', data: 'S_Commentaire' }, 
-            { title : 'id', data: 'S_ID' }
-        ],      
-        columnDefs : [
-            { "width": "3%", "targets": 0 },
-            { "width": "28%", "targets": 1 },
-            { "width": "29%", "targets": 2 },
-            { "width": "8%", "targets": 3 },
-            { "width": "8%", "targets": 4 },
-            { "width": "24%", "targets": 5 },
-            { "targets": 6, "visible": false, "searchable": false },     
-            { "targets": 7, "visible": false, "searchable": false },   
-            { "targets": 8, "visible": false, "searchable": false },   
-            { "targets": 9, "visible": false, "searchable": false },   
-            { "targets": 10, "visible": false, "searchable": false },  
-        ],      
-        bInfo : false,          // hide "Showing 1 to ...  row selected"
-        lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
-       // searching : false,      // hide search abilities in table
-        dom: 'lrtip',
-       // ordering: false,        // Sinon la table est triée et écrase le tri sql mais ds ce cas addrow le met à la fin
-        order: [[ 1, 'asc' ]],
-        pageLength: 12,         // ce sera à calculer avec la hauteur de la fenêtre
-        pagingType : 'full',
-        language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
-            paginate: {
-            first: '<<',
-            last: '>>',
-            next: '>', // or '→'
-            previous: '<' // or '←' 
-            }
-        },     
-        select: true,            // Activation du plugin select
-        }
+          data: stmSites, 
+          autoWidth : false,
+          columns: [
+              {
+                  title : '',
+                  data: 'S_Type',
+                  render: function(data, type, row) {
+                      let iconType
+                      switch (data) {
+                          case 'D':
+                              iconType = '<img src="../../leaflet/images/windsock22.png" alt=""></img>'
+                              break
+                          case 'A' :
+                              iconType = '<img src="../../leaflet/images/arrivee22.png" alt=""></img>'
+                              break                    
+                          default:
+                              iconType = data
+                              break
+                      }
+                      return iconType
+                  },          
+                  className: "dt-body-center text-center"
+              },             
+              { title : i18n.gettext('Name'), data: 'S_Nom' },
+              { title : i18n.gettext('Locality'), className: "text-nowrap", data: 'S_Localite' },
+              { title : i18n.gettext('ZIP'), data: 'S_CP' },
+              { title : i18n.gettext('Alt'), data: 'S_Alti' },
+              { title : i18n.gettext('Orientation'), data: 'S_Orientation' },     
+              { title : 'Type', data: 'S_Type' },  
+              { title : 'Lat', data: 'S_Latitude' },
+              { title : 'Long', data: 'S_Longitude' },
+              { title : 'Comment', data: 'S_Commentaire' }, 
+              { title : 'id', data: 'S_ID' }
+          ],      
+          columnDefs : [
+              { "width": "3%", "targets": 0 },
+              { "width": "28%", "targets": 1 },
+              { "width": "29%", "targets": 2 },
+              { "width": "8%", "targets": 3 },
+              { "width": "8%", "targets": 4 },
+              { "width": "24%", "targets": 5 },
+              { "targets": 6, "visible": false, "searchable": false },     
+              { "targets": 7, "visible": false, "searchable": false },   
+              { "targets": 8, "visible": false, "searchable": false },   
+              { "targets": 9, "visible": false, "searchable": false },   
+              { "targets": 10, "visible": false, "searchable": false },  
+          ],      
+          bInfo : false,          // hide "Showing 1 to ...  row selected"
+          lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
+         // searching : false,      // hide search abilities in table
+          dom: 'lptir',
+         // ordering: false,        // Sinon la table est triée et écrase le tri sql mais ds ce cas addrow le met à la fin
+          order: [[ 1, 'asc' ]],
+          pageLength: tableLines,         // ce sera à calculer avec la hauteur de la fenêtre
+          pagingType : 'full',
+          language: {             // cf https://datatables.net/examples/advanced_init/language_file.html
+              paginate: {
+              first: '<<',
+              last: '>>',
+              next: '>', // or '→'
+              previous: '<' // or '←' 
+              }
+          },     
+          select: true,            // Activation du plugin select
+          }
         table = $('#table_id').DataTable(dataTableOption )
         $('#tx-search').on( 'keyup', function () {
           table.search( this.value ).draw();
