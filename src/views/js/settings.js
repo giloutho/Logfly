@@ -1,4 +1,4 @@
-var {ipcRenderer} = require('electron')
+const {ipcRenderer} = require('electron')
 const i18n = require('../../lang/gettext.js')()
 const fs = require('fs')
 const jetpack = require('fs-jetpack')
@@ -52,6 +52,7 @@ const selectStart = document.getElementById("sel-start")
 const selectOver = document.getElementById("sel-over")
 const selectMap = document.getElementById("sel-map")
 const selectPhoto = document.getElementById("sel-photos")
+const selectMenu = document.getElementById("sel-menu")
 const txLatDd = document.getElementById('tx-lat-dd')
 const txLongDd = document.getElementById('tx-long-dd')
 
@@ -126,6 +127,26 @@ function iniForm() {
     iniWeb()
 }
 
+$(document).ready(function () {
+  let selectedFixedMenu =  store.get('menufixed') 
+  if (selectedFixedMenu === 'yes') {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    document.getElementById("menucheck").checked = true;
+  }
+})
+
+function changeMenuState(cbmenu) {
+  if (cbmenu.checked) {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    store.set('menufixed','yes') 
+  } else {
+    $("#sidebar").addClass('active')
+    $('#toggleMenu').removeClass('d-none')
+    store.set('menufixed','no') 
+  }
+}
 
 function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName)    // main.js
@@ -297,6 +318,10 @@ function iniGeneral() {
   selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('No'),'no')
   selectPhoto.options[selectPhoto.options.length] = new Option(i18n.gettext('Yes'),'yes')
 
+  selectMenu.innerHTML = null
+  selectMenu.options[selectMenu.options.length] = new Option(i18n.gettext('No'),'no')
+  selectMenu.options[selectMenu.options.length] = new Option(i18n.gettext('Yes'),'yes')
+
   const btnPathImport = document.getElementById('bt-import')
   btnPathImport.addEventListener('click', (event) => {
     const selectedPath = ipcRenderer.sendSync('open-directory')
@@ -347,7 +372,8 @@ function iniGeneral() {
     store.set('pathsyride',document.getElementById('tx-syride').value)    
     if (longDD != 0) store.set('finderlong',longDD)
     if (latDD != 0) store.set('finderlat',latDD)
-    store.set('photo',selectPhoto.value)    
+    store.set('photo',selectPhoto.value) 
+    store.set('menufixed',selectMenu.value)   
     alert(i18n.gettext('Saved changes'))
   })  
 
@@ -635,6 +661,10 @@ function iniGeneralsettings() {
   let selectedPhoto = store.get('photo')
   if (selectedPhoto == '' || selectedPhoto == null) selectedPhoto = 'no'
   selectPhoto.value = selectedPhoto  
+
+  let selectedFixedMenu =  store.get('menufixed') 
+  if (selectedFixedMenu == '' || selectedFixedMenu == null) selectedFixedMenu = 'no'
+  selectMenu.value = selectedFixedMenu  
 
   const pPathImport = store.get('pathimport')
   if (pPathImport == '' || pPathImport == null) 

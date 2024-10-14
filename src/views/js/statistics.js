@@ -36,6 +36,27 @@ function iniForm() {
     document.getElementById('tx_2').innerHTML = i18n.gettext('Coming soon')+'...'
 }
 
+$(document).ready(function () {
+    let selectedFixedMenu =  store.get('menufixed') 
+    if (selectedFixedMenu === 'yes') {
+      $("#sidebar").removeClass('active')
+      $('#toggleMenu').addClass('d-none')
+      document.getElementById("menucheck").checked = true;
+    }
+  })
+  
+  function changeMenuState(cbmenu) {
+    if (cbmenu.checked) {
+      $("#sidebar").removeClass('active')
+      $('#toggleMenu').addClass('d-none')
+      store.set('menufixed','yes') 
+    } else {
+      $("#sidebar").addClass('active')
+      $('#toggleMenu').removeClass('d-none')
+      store.set('menufixed','no') 
+    }
+  }
+
 // Calls up the relevant page 
 function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName);    // main.js

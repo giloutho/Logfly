@@ -175,6 +175,7 @@ ul ul a {
 
 ul.CTAs {
     padding: 20px;
+    margin-top: 100px;
 }
 
 ul.CTAs a {
@@ -383,3 +384,22 @@ table{
     left: 10px;
     right: 10px;
 }
+
+.sidebar-footer {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    display: flex;
+}
+
+.custom-check {
+    font-size: 1.2em;
+    margin-left: 10px;
+    margin-bottom: 30px;
+}
+.label-check {
+    font-size: 1.2em;
+    margin-left: 10px;
+}
+      
+

@@ -50,6 +50,27 @@ let selectedGPS = ''
 
 iniForm()
 
+$(document).ready(function () {
+  let selectedFixedMenu =  store.get('menufixed') 
+  if (selectedFixedMenu === 'yes') {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    document.getElementById("menucheck").checked = true;
+  }
+})
+
+function changeMenuState(cbmenu) {
+  if (cbmenu.checked) {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    store.set('menufixed','yes') 
+  } else {
+    $("#sidebar").addClass('active')
+    $('#toggleMenu').removeClass('d-none')
+    store.set('menufixed','no') 
+  }
+}
+
 ipcRenderer.on('gpsdump-wplist', (event, result) => {
   simpleHideWating()
   if (result != null) {

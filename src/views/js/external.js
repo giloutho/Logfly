@@ -86,6 +86,27 @@ function iniForm() {
     /* END OF DEBUG SESSION */
 }
 
+$(document).ready(function () {
+  let selectedFixedMenu =  store.get('menufixed') 
+  if (selectedFixedMenu === 'yes') {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    document.getElementById("menucheck").checked = true;
+  }
+})
+
+function changeMenuState(cbmenu) {
+  if (cbmenu.checked) {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    store.set('menufixed','yes') 
+  } else {
+    $("#sidebar").addClass('active')
+    $('#toggleMenu').removeClass('d-none')
+    store.set('menufixed','no') 
+  }
+}
+
 function callDisk() {
   const selectedFile = ipcRenderer.sendSync('open-file','')
   if(selectedFile.fullPath != null) {

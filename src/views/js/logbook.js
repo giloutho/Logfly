@@ -151,8 +151,7 @@ function iniForm() {
             "Dupli": {name: i18n.gettext("Edit/Duplicate")}
         }
     })
-})
-  
+  })
 }
 
 function resizeListener() {
@@ -186,12 +185,35 @@ ipcRenderer.on('xc-score-result', (_, result) => {
 
 tableStandard()
 
+
+$(document).ready(function () {
+  let selectedFixedMenu =  store.get('menufixed') 
+  if (selectedFixedMenu === 'yes') {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    document.getElementById("menucheck").checked = true;
+  }
+})
+
 // Calls up the relevant page 
 function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName)    // main.js
 }
 
+function changeMenuState(cbmenu) {
+  if (cbmenu.checked) {
+    $("#sidebar").removeClass('active')
+    $('#toggleMenu').addClass('d-none')
+    store.set('menufixed','yes') 
+  } else {
+    $("#sidebar").addClass('active')
+    $('#toggleMenu').removeClass('d-none')
+    store.set('menufixed','no') 
+  }
+}
+
 btnMenu.addEventListener('click', (event) => {
+  console.log('toggle')
   if (btnMenu.innerHTML === "Menu On") {
       btnMenu.innerHTML = "Menu Off"
   } else {
