@@ -8,6 +8,7 @@ const {globSync} = require('glob')
 const checkInternetConnected = require('check-internet-connected') 
 const settings = require(path.join(__dirname, './settings/settings-manager.js'))
 const Store = require('electron-store')
+const Splashscreen = require('@trodi/electron-splashscreen')
 
 let mainWindow = null
 let releaseInfo
@@ -32,8 +33,6 @@ const createWindow = () => {
 
   const startOk = settings.checkSettings()
 
-  loadMainProcesses() 
-
   // grab screen size
   let store = new Store()
   let screenWidth
@@ -47,15 +46,41 @@ const createWindow = () => {
   }
 
   console.log(screenWidth+'X'+screenHeight)
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
+
+  const windowOptions = {
     width: screenWidth,
-    height: screenHeight,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
+    height: screenHeight,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-    }      
-  })
+    }   
+  }
+
+  // Code without splashscreen
+  // // Create the browser window.
+  // mainWindow = new BrowserWindow({
+  //   width: screenWidth,
+  //   height: screenHeight,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
+  //   show: false,
+  //   webPreferences: {
+  //     nodeIntegration: true,
+  //     contextIsolation: false,
+  //   }      
+  // })
+
+
+  mainWindow = Splashscreen.initSplashScreen({
+    windowOpts: windowOptions,
+    templateUrl: `${__dirname}/views/html/secondary/splash.html`,
+    delay: 0, // force show immediately since example will load fast
+    minVisible: 1500, // show for 1.5s so example is obvious
+    splashScreenOpts: {
+        height: 300,
+        width: 500,
+        transparent: true,
+    },
+})
 
   const macTemplate = [
   {
@@ -113,6 +138,8 @@ const createWindow = () => {
       ]
     }
   ]
+
+  loadMainProcesses() 
 
   // Hide menu bar https://stackoverflow.com/questions/69629262/how-can-i-hide-the-menubar-from-an-electron-app
   //  process.platform === "win32" && mainWindow.removeMenu()
