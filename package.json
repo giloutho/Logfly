@@ -52,13 +52,14 @@
   },
   "dependencies": {
     "@tmcw/togeojson": "^5.8.1",
+    "@trodi/electron-splashscreen": "^1.0.2",
     "@turf/bbox": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
     "@turf/boolean-point-in-polygon": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/points-within-polygon": "^6.5.0",
     "array-smooth": "^1.0.0",
-    "better-sqlite3": "^10.0.0",
+    "better-sqlite3": "^11.3.0",
     "bootstrap": "^4.6.1",
     "bootstrap-select": "^1.13.18",
     "check-internet-connected": "^2.0.6",
@@ -101,13 +102,13 @@
     "zoned-date-time": "^1.1.0"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.65",
-    "@electron-forge/maker-deb": "^6.0.0-beta.63",
-    "@electron-forge/maker-dmg": "^6.0.0-beta.63",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.63",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
-    "@electron-forge/maker-zip": "^6.0.0-beta.63",
-    "electron": "17.1.2",
+    "@electron-forge/cli": "^6.4.2",
+    "@electron-forge/maker-deb": "^6.4.2",
+    "@electron-forge/maker-dmg": "^6.4.2",
+    "@electron-forge/maker-rpm": "^6.4.2",
+    "@electron-forge/maker-squirrel": "^6.4.2",
+    "@electron-forge/maker-zip": "^6.4.2",
+    "electron": "^22.3.27",
     "electron-rebuild": "^3.2.7"
   },
   "directories": {
