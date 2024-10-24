@@ -24,10 +24,16 @@ let table
 let tableLines
 let currIdSite
 
+let timeOutFunctionId
+
 iniForm()
 
 function iniForm() {
-    window.addEventListener("resize", resizeListener)
+    // found on https://www.geeksforgeeks.org/how-to-wait-resize-end-event-and-then-perform-an-action-using-javascript/
+    window.addEventListener("resize", function() {      
+      clearTimeout(timeOutFunctionId)
+      timeOutFunctionId = setTimeout(workAfterResizeIsDone, 500)
+    })
     if (store.get('sitetablelines')) {
       tableLines = store.get('sitetablelines')
     } else { 
@@ -150,16 +156,20 @@ function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName);    // main.js
 }
 
-function resizeListener() {
-  let tableHeight = window.innerHeight *0.85    // the table occupies about 85% of the window height
+function workAfterResizeIsDone() {
+  let tableHeight = Math.round(window.innerHeight *0.85)    // the table occupies about 85% of the window height
   let siteLines = Math.round(tableHeight / 42) - 2   // one line occupies about 42 pixels
   tableLines = siteLines
-  let logLines = Math.round(tableHeight / 38) - 2  
+  let logLines = Math.round(tableHeight / 38) - 2   
   store.set('screenWidth',window.innerWidth)
   store.set('screenHeight',window.innerHeight)
-  store.set('sitetablelines',siteLines)
   store.set('logtablelines',logLines)
-  tableStandard()
+  store.set('sitetablelines',siteLines)
+  let msg = i18n.gettext('New screen size saved\n')
+  msg += window.innerWidth+'x'+window.innerHeight+'  Table : '+logLines
+  msg += '\n\n'+i18n.gettext('If the screen is blank, restart')
+  alert(msg)
+  tableStandard()  
 }
 
 ipcRenderer.on('back_siteform', (_, updateSite) => { 

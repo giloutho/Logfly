@@ -43,9 +43,13 @@ const createWindow = () => {
   } else {
     screenWidth = 1280
     screenHeight = 800
+    store.set('screenWidth',screenWidth)
+    store.set('screenHeight',screenHeight)
+    store.set('logtablelines',14)
+    store.set('sitetablelines',12)
   }
 
-  console.log(screenWidth+'X'+screenHeight)
+  /* Code with splahscreen
 
   const windowOptions = {
     width: screenWidth,
@@ -56,19 +60,6 @@ const createWindow = () => {
       contextIsolation: false,
     }   
   }
-
-  // Code without splashscreen
-  // // Create the browser window.
-  // mainWindow = new BrowserWindow({
-  //   width: screenWidth,
-  //   height: screenHeight,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
-  //   show: false,
-  //   webPreferences: {
-  //     nodeIntegration: true,
-  //     contextIsolation: false,
-  //   }      
-  // })
-
 
   mainWindow = Splashscreen.initSplashScreen({
     windowOpts: windowOptions,
@@ -81,6 +72,23 @@ const createWindow = () => {
         transparent: true,
     },
 })
+
+*/
+
+  //Code without splashscreen
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: screenWidth,
+    height: screenHeight,        // Values determined by looking at this table https://en.wikipedia.org/wiki/Display_resolution
+   // show: false,               // Uncomment with Splashcreen
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    }      
+  })
+
+
+
 
   const macTemplate = [
   {
@@ -151,10 +159,10 @@ const createWindow = () => {
     checkInternetConnected()
       .then((result) => {
         // comment CheckInfo() for debug
-        checkInfo()
+       // checkInfo()
         // and open directly the wanted page
-        //openWindow('wayp')
-        openWindow('logbook')
+       // openWindow('logbook')
+        openWindow('stat')
       })
       .catch((ex) => {
         openWindow('logbook')
@@ -244,6 +252,7 @@ function openWindow(pageName) {
       break              
     case "stat":
       mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'))
+     // mainWindow.webContents.openDevTools() 
       //mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
       break          
     case "sites":

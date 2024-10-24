@@ -1,6 +1,11 @@
 html {
-    font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-family: "Lato", 'Helvetica Neue', Arial, Helvetica, sans-serif;
     font-size: 12px;
+  height: 100%;
+}
+
+body {
+  height: 100%;
 }
 
 h5 {
