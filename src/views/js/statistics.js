@@ -93,27 +93,43 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 function displayYearly() {
-  ySeries = []
+  y1Series = []
+  y2Series = []
   xSeries = []
   coloredYserie = []
   const startYear = selYearBegin.value
   const endYear = selYearEnd.value
-  // Retrieving yearly data
+  // Retrieving yearly flight hours
   let sReq = "select strftime('%Y',V_date) as Year,Sum(V_Duree) as Dur from Vol WHERE strftime('%Y-%m',V_date) >= '"
   sReq += startYear+"-01' AND strftime('%Y-%m',V_date) <= '"+endYear+"-12' group by strftime('%Y',V_date)"    
-  const yearSet = db.prepare(sReq)
-  // for debug
-  let maxValue = 0
-  for (const yr of yearSet.iterate()){
+  const yearHr = db.prepare(sReq)
+  let maxHours = 0
+  for (const yr of yearHr.iterate()){
     const intHours =  Math.round(moment.duration(yr.Dur, 'seconds').asHours())
-    if (intHours > maxValue) maxValue = intHours
-    ySeries.push(intHours)
+    if (intHours > maxHours) maxHours = intHours
+    y1Series.push(intHours)
     xSeries.push(yr.Year)
   }
+
+  // Retrieving yearly flight numbers
+  let sReq2 = "select strftime('%Y',V_date),Count(V_ID) as Flights from Vol WHERE strftime('%Y-%m',V_date) >= '"
+  sReq2 += startYear+"-01' AND strftime('%Y-%m',V_date) <= '"+endYear+"-12' group by strftime('%Y',V_date)"
+  const yearFl = db.prepare(sReq2)
+  let maxFlights = 0
+  for (const yr of yearFl.iterate()){
+    if (yr.Flights > maxFlights) maxFlights = yr.Flights
+    y2Series.push(yr.Flights)
+  }
+
+  // for (let index = 0; index < y2Series.length; index++) {
+  //   console.log(y2Series[index])   
+  // }
+  // console.log(maxFlights)
+
   let chartTitle = i18n.gettext('Yearly')+' '+xSeries[0]+' - '+xSeries[xSeries.length-1]
   document.getElementById('footer-2').innerHTML = '<H2>'+chartTitle+'</H2>'
-  for (let i = 0; i < ySeries.length; i++) {
-    const element = ySeries[i]
+  for (let i = 0; i < y1Series.length; i++) {
+    const element = y1Series[i]
     let columnObj = new Object()
     columnObj.colorValue = element
     columnObj.y = element    
@@ -129,22 +145,34 @@ function displayYearly() {
   }
   Highcharts.chart('container-graphe', {
     chart: {
-      height: chartHeight
+      height: chartHeight,
+      zooming: {
+        type: 'xy'
+      }
     },
     title: {
       text : null
-     // text: 'Yearly 1988 2024',
-//      align: 'center'
     },
     xAxis: {
       categories: xSeries,
       crosshair: true
     },
-    yAxis: {
-      min: 0,
-      title: {
-        text: i18n.gettext('Flight hours')
+    yAxis: [
+      { // primary axis
+        min: 0,
+        title: {
+          text: i18n.gettext('Flight hours')
+        }
+      },
+      { // secondary axis
+        title: {
+          text: i18n.gettext('Number of flights')
+        },
+        opposite: true
       }
+    ],
+    tooltip: {
+      shared: true
     },
     plotOptions: {
       column: {
@@ -152,12 +180,12 @@ function displayYearly() {
         borderWidth: 0
       },
       series: {
-        pointWidth: 12	
+        pointWidth: 20	
       }
     },
     colorAxis: {
       min: 0,
-      max: maxValue,
+      max: maxHours,
       stops: [
         [0.1, '#6FE3E1'],
         [0.2, '#6CD3E1'],
@@ -172,12 +200,27 @@ function displayYearly() {
       ]
   },
   series: [{
-    name: '',
-    type: 'column',
-    colorKey: 'colorValue',
-    //data: ySeries    
-    data : coloredYserie      
-  }]
+      name: i18n.gettext('Flight hours'),
+      type: 'column',
+      colorKey: 'colorValue',
+      yAxis: 1,
+      tooltip: {
+        valueSuffix: ' h'
+      },
+      data : coloredYserie      
+    },
+    {
+      name: i18n.gettext('Flights'),
+      type: 'spline', 
+      colorKey: '#e555d3',
+      tooltip: {
+        valueSuffix: ' '+i18n.gettext('flights')
+      },
+      color: '#e555d3',
+      lineWidth: 3,
+      data : y2Series
+    }
+  ]
 
 
   })    
