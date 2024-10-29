@@ -22,6 +22,11 @@ const currPeriod = {}
 let btnMenu = document.getElementById('toggleMenu')
 let currLang
 
+const monthLabels = {} 
+const monthTemplate = $('#template-month').html()
+const gliderLabels = {} 
+const gliderTemplate = $('#template-glider').html()
+
 iniForm()
 
 function iniForm() {
@@ -41,10 +46,35 @@ function iniForm() {
       }  
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
-        var template = $(templates).filter('#temp-menu').html();  
-        var rendered = Mustache.render(template, menuOptions)
-        document.getElementById('target-sidebar').innerHTML = rendered
+      const template = $(templates).filter('#temp-menu').html();  
+      const rendered = Mustache.render(template, menuOptions)
+      document.getElementById('target-sidebar').innerHTML = rendered
     })
+    Mustache.parse(monthTemplate)
+    monthLabels.Monthly = i18n.gettext('Monthly comparison')
+    monthLabels.dates = '',
+    monthLabels.select = i18n.gettext('you can select one or more months or the whole year')
+    monthLabels.jan = i18n.gettext('Jan')
+    monthLabels.feb = i18n.gettext('Feb')
+    monthLabels.mar = i18n.gettext('Mar')
+    monthLabels.apr = i18n.gettext('Apr')
+    monthLabels.may = i18n.gettext('May')
+    monthLabels.jun = i18n.gettext('Jun')
+    monthLabels.jul = i18n.gettext('Jul')
+    monthLabels.aug = i18n.gettext('Aug')
+    monthLabels.sep = i18n.gettext('Sep')
+    monthLabels.oct = i18n.gettext('Oct')
+    monthLabels.nov = i18n.gettext('Nov')
+    monthLabels.dec = i18n.gettext('Dec')
+    monthLabels.all = i18n.gettext('All')
+    monthLabels.display = i18n.gettext('Display')
+    Mustache.parse(gliderTemplate)
+    gliderLabels.gliders = i18n.gettext('You can select the number of gliders to be displayed in the graph')
+    gliderLabels.top5 = i18n.gettext('Top 5')
+    gliderLabels.top10 = i18n.gettext('Top 10')
+    gliderLabels.top20 = i18n.gettext('Top 20')
+    gliderLabels.all = i18n.gettext('All')
+    gliderLabels.display = i18n.gettext('Display')
     btnGrYearly.innerHTML = i18n.gettext('Yearly chart')
     btnGrYearly.addEventListener('click', (event) => {displayYearly()})
     btnGrMonthly.innerHTML = i18n.gettext('Monthly chart')
@@ -93,6 +123,8 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 function displayYearly() {
+  $('#gr-header-month').addClass('d-none')
+  $('#gr-header-glider').addClass('d-none')
   y1Series = []
   y2Series = []
   xSeries = []
@@ -161,12 +193,28 @@ function displayYearly() {
       { // primary axis
         min: 0,
         title: {
-          text: i18n.gettext('Flight hours')
-        }
+          text: i18n.gettext('Flight hours'),
+          style: {
+            color: Highcharts.getOptions().colors[0]
+          }
+        },
+        labels: {
+          style: {
+              color: Highcharts.getOptions().colors[0]
+          }
+        },
       },
       { // secondary axis
         title: {
-          text: i18n.gettext('Number of flights')
+          text: i18n.gettext('Number of flights'),
+          style: {
+            color: '#e555d3'
+          }
+        },
+        labels: {
+          style: {
+              color: '#e555d3'
+          }
         },
         opposite: true
       }
@@ -228,11 +276,18 @@ function displayYearly() {
 }
 
 function displayMonthly(){
-  alert('Monthly')
+  $('#gr-header-glider').addClass('d-none')
+  $('#gr-header-month').removeClass('d-none')
+  monthLabels.dates = selYearBegin.value+' - '+selYearEnd.value
+  const rendered = Mustache.render(monthTemplate, monthLabels)
+  document.getElementById('gr-header-month').innerHTML = rendered
 }
 
 function displayGlider() {
-  alert('Glider')
+  $('#gr-header-month').addClass('d-none')
+  $('#gr-header-glider').removeClass('d-none')
+  const rendered = Mustache.render(gliderTemplate, gliderLabels)
+  document.getElementById('gr-header-glider').innerHTML = rendered
 }    
 
 function displaySite() {
@@ -417,4 +472,78 @@ function computeDurations(beginDate, endDate) {
   currPeriod.monthes = totalMonthes
   currPeriod.beginDate = moment(firstDay, 'YYYY-MM-DD').format('DD-MM-YYYY')
   currPeriod.endDate = moment(lastDay, 'YYYY-MM-DD').format('DD-MM-YYYY')
+}
+
+function displayMonthlyHeader() {
+  let headerHtml = document.getElementById('gr-header')
+  headerHtml += '<h4>Monthly comparison 2010 - 2024    You can select one or more months or the whole year</h4>'
+  headerHtml += '<form>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check1">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Jan'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check2">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">Feb'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Mar'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check1">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Apr'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check2">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">May'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Jun'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'       
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check1">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Jul'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check2">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">Aug'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Sep'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check1">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Oct'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label" for="check2">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">Nov'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Dec'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'                
+  headerHtml += '  <div class="form-check-inline">'
+  headerHtml += '    <label class="form-check-label">'
+  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">All'
+  headerHtml += '    </label>'
+  headerHtml += '  </div>'                                                                                                             
+  headerHtml += '  <button type="submit" class="btn btn-primary">Submit</button>'
+  headerHtml += '</form>'
+  
 }

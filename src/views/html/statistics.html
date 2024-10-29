@@ -39,7 +39,7 @@
                             </li>
                             <li class="nav-item">
                               <a class="nav-link" id="gr-yearly" href="#"></a>
-                            </li>
+                            </li>                           
                             <li class="nav-item">
                               <a class="nav-link" id="gr-monthly" href="#"></a>
                             </li>
@@ -105,7 +105,108 @@
                             </div>                               
                         </div>    
                         <div class="row">
-                                <div class="card w-100">                                    
+                                <div class="card w-100"> 
+                                    <div class="card-header d-none" style="text-align: center;margin-bottom: 10px;" id="gr-header-month">
+                                        <script id="template-month" type="x-tmpl-mustache">
+                                            <h4>{{Monthly}}  {{dates}}  {{select}}</h4>
+                                            <form>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check1">
+                                                <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">‘{{jan}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check2">
+                                                <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">{{feb}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">{{mar}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check1">
+                                                <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">{{apr}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check2">
+                                                <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">{{may}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">{{jun}}
+                                                </label>
+                                            </div>         
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check1">
+                                                <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">{{jul}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check2">
+                                                <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">{{aug}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">{{sep}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check1">
+                                                <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">{{oct}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check2">
+                                                <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">{{nov}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">{{dec}}
+                                                </label>
+                                            </div>                
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">{{all}}
+                                                </label>
+                                            </div>                                                                                                             
+                                            <button type="submit" class="btn btn-primary">{{display}}</button>
+                                            </form>
+                                        </script>
+                                    </div>
+                                    <div class="card-header d-none" style="text-align: center;margin-bottom: 10px;" id="gr-header-glider">
+                                        <script id="template-glider" type="x-tmpl-mustache">
+                                            <h4>{{gliders}}</h4>
+                                            <form>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check1">
+                                                <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">{{top5}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check2">
+                                                <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">{{top10}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label">
+                                                <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">{{top20}}
+                                                </label>
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="check1">
+                                                <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">{{all}}
+                                                </label>
+                                            </div>                                                                                                           
+                                            <button type="submit" class="btn btn-primary">{{display}}</button>
+                                            </form>
+                                    </script>
+                                    </div>                                                                             
                                     <div class="card-block">                                    
                                         <div id="container-graphe"></div>
                                     </div>
