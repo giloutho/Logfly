@@ -758,7 +758,7 @@ function displayWaiting(typeMsg) {
     let msg
     switch (typeMsg) {
       case 'one':
-        msg = i18n.gettext('Loading the sel ected flight')
+        msg = i18n.gettext('Loading the selected flight')
         break;
       case 'gpsdump' :
         msg = i18n.gettext('Tracks waiting to be received from GPS')

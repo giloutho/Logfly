@@ -193,7 +193,7 @@ function displayLabels() {
     document.getElementById('lg-choose-dbpath').innerHTML = i18n.gettext('Change the path of the logbook(s) folder')
     btnDbPath.innerHTML = i18n.gettext('Select')
     document.getElementById('lg-sel-logbook').innerHTML = i18n.gettext('Select/change the logbook in the chosen folder')
-    document.getElementById('lg-create-logbook').innerHTML = i18n.gettext('Create a newlogbook')
+    document.getElementById('lg-create-logbook').innerHTML = i18n.gettext('Create a new logbook')
     btnCreateLogbook.innerHTML = i18n.gettext('OK')
     document.getElementById('tx-create-logbook').placeholder = i18n.gettext('Enter a name and click Ok')
     document.getElementById('lg-repatriate').innerHTML = i18n.gettext('Repatriate a copy')

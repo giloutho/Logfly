@@ -53,7 +53,7 @@ function iniForm() {
     Mustache.parse(monthTemplate)
     monthLabels.Monthly = i18n.gettext('Monthly comparison')
     monthLabels.dates = '',
-    monthLabels.select = i18n.gettext('you can select one or more months or the whole year')
+    monthLabels.select = i18n.gettext('You can select one or more months or the whole year')
     monthLabels.jan = i18n.gettext('Jan')
     monthLabels.feb = i18n.gettext('Feb')
     monthLabels.mar = i18n.gettext('Mar')

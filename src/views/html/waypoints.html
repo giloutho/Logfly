@@ -20,12 +20,12 @@
     <script>
         let $ = require('jquery')
         // jQuery datatables script
-        const dtbs = require('datatables.net-bs4')()   
-        const dtselect = require( 'datatables.net-select-bs4' )() 
+        const dtbs = require('datatables.net-bs4')(window, $) 
+        const dtselect = require( 'datatables.net-select-bs4')(window, $) 
         const conmenu = require('jquery-contextmenu')     
     </script>
-    <script>require('popper.js');</script>
-    <script>require('bootstrap');</script>  
+    <script>require('popper.js')</script>
+    <script>require('bootstrap')</script>  
     <div class="wrapper">
         <!-- Sidebar  -->
         <div id="target-sidebar"></div>
