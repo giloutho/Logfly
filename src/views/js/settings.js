@@ -232,9 +232,7 @@ function iniLogbook() {
   btnValLog.addEventListener('click', (event)=>{
     // check logbook parameters
     if (checkLogbooks()) {
-      // display menu
-      btnMenu.innerHTML = "Menu Off"
-      $('#sidebar').toggleClass('active')    
+      ipcRenderer.send("changeWindow", 'logbook')    // main.js
     } else {
       alert(i18n.gettext('The new settings are not correct'))
     }
@@ -274,6 +272,7 @@ function iniPilot() {
       store.set('gps',selectGps.value)
       store.set('league',selectLeague.value)
       alert(i18n.gettext('Saved changes'))
+      ipcRenderer.send("changeWindow", 'logbook')    // main.js
     })
   
     btnCancelPil.addEventListener('click',(event)=>{
@@ -375,6 +374,7 @@ function iniGeneral() {
     store.set('photo',selectPhoto.value) 
     store.set('menufixed',selectMenu.value)   
     alert(i18n.gettext('Saved changes'))
+    ipcRenderer.send("changeWindow", 'logbook')    // main.js
   })  
 
   btnCancelGen.addEventListener('click',(event)=>{
@@ -396,6 +396,7 @@ function iniWeb() {
     store.set('urlairspace',document.getElementById('tx-airspace').value)
     store.set('urlcontest',document.getElementById('tx-contest').value)   
     alert(i18n.gettext('Saved changes')) 
+    ipcRenderer.send("changeWindow", 'logbook')    // main.js
   })  
 
   btnCancelWeb.addEventListener('click',(event)=>{
