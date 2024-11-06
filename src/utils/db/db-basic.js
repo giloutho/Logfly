@@ -2,6 +2,7 @@ const log = require('electron-log')
 const fs = require('fs') 
 
 function testDb(dbFullPath) {
+    let resDb
     try {
         if (fs.existsSync(dbFullPath)) {
             const db = require('better-sqlite3')(dbFullPath)     
@@ -11,19 +12,26 @@ function testDb(dbFullPath) {
             // // countTables is an object, the value is recovered with a notation between brackets 
             // let result = countTables['COUNT(*)'] >= 2 ? true : false    
             // return result
-            const stmtFlights = db.prepare('SELECT COUNT(*) FROM Vol')
-            let countFlights = stmtFlights.get()
-            // console.log(`Connected on ${dbFullPath} with ${countFlights['COUNT(*)']} flights`);
-            return true
-
+            // const stmtFlights = db.prepare('SELECT COUNT(*) FROM Vol')
+            // let countFlights = stmtFlights.get()
+            const stmtFlights = db.prepare('SELECT MAX(V_date) FROM Vol')
+            const resFlights = stmtFlights.get()  
+            // console.log(`Connected on ${dbFullPath} with ${resFlights['MAX(V_date)']}`)
+            const lastFlights = resFlights['MAX(V_date)']
+            if (lastFlights != null) {      
+                resDb = lastFlights.substring(2, 4)
+            } else {
+                resDb = ''
+            }
         } else {
             log.error('db file not exist : '+dbFullPath)  
-            return false
+            resDb = null
         }        
     } catch (error) {
         log.error('Error occured during checking of '+dbFullPath+' : '+error)
-        return false  
+        resDb = null
     }
+    return resDb
 }
 
 function createDb(dbFullPath) {

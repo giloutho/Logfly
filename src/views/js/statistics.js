@@ -281,6 +281,53 @@ function displayMonthly(){
   monthLabels.dates = selYearBegin.value+' - '+selYearEnd.value
   const rendered = Mustache.render(monthTemplate, monthLabels)
   document.getElementById('gr-header-month').innerHTML = rendered
+  const startYear = selYearBegin.value
+  const endYear = selYearEnd.value
+  let sReq = "select strftime('%Y',V_date) as year,strftime('%m',V_date) as month,Sum(V_Duree) as dur from Vol "
+  sReq += "WHERE strftime('%Y-%m',V_date) >= '"+startYear+"-01' AND strftime('%Y-%m',V_date) <= '"+endYear+"-12' "
+  sReq += "group by strftime('%Y',V_date),strftime('%m',V_date)"  
+  const dbMonthes = db.prepare(sReq)
+  let currYear = 1900
+  let maxHours = 0
+  let yearsSerie = []
+  let yearsMonthesSerie = []
+  let currMonthSerie = Array(12).fill(0)
+  for (const monthData of dbMonthes.iterate()) {
+    const monthYear = monthData.year
+    const monthNumber = monthData.month
+    const intHours =  Math.round(moment.duration(monthData.dur, 'seconds').asHours())
+    console.log(`ìntHours ${intHours}`)
+    if (intHours > maxHours) maxHours = intHours
+    if (monthYear > currYear) {
+      console.log(`if (monthYear > currYear) ${monthYear}`)
+      if (currYear > 1900) {    // year is finished
+        // on poussait sur une série
+        console.log(`if (currYear > 1900) ${currYear}`)
+        console.log('currMonthesSerie')
+        currMonthSerie.forEach(y => console.log(y))      
+        yearsMonthesSerie.push(currMonthSerie)
+      }
+      // New year      
+      currYear = monthData.year
+      yearsSerie.push(monthYear)
+      console.log(`new year ${currYear}`)
+      // Reset table of twelve monthly values to zero
+      for (let i = 0; i < currMonthSerie.length; i++) {
+        currMonthSerie[i] = 0                
+      }              
+    }
+    // Add to list
+    if (monthNumber > 0 && monthNumber < 13) {
+      const idx = monthNumber - 1                                                        
+      currMonthSerie[idx] = intHours 
+      console.log(`add to list ${idx} ${intHours}`)
+      currMonthSerie.forEach(y => console.log(y))   
+    }
+  }
+  console.log('yearSeries')
+  yearsSerie.forEach(x => console.log(x))
+  console.log('yearsMonthesSerie')
+  yearsMonthesSerie.forEach(y => console.log(y))      
 }
 
 function displayGlider() {

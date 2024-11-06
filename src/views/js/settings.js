@@ -166,7 +166,10 @@ $('#sel-logbook').on('change', function() {
     let newDbName = dbList[this.value]
     let currPathDb = document.getElementById('tx-log-path').value
     let newDbFullPath = path.join(currPathDb,newDbName) 
-    if (dbbasic.testDb(newDbFullPath)) {
+    const resDb = dbbasic.testDb(newDbFullPath)
+    console.log(`settings retour ${resDb}`)
+    if (resDb != null) {
+        store.set('lastyear',resDb)
       document.getElementById("img-dbname").src='../../assets/img/valid.png'       
     } else {
       console.log('retour faux')      

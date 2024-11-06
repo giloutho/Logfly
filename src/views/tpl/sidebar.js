@@ -3,10 +3,14 @@
  * @param {} i18n 
  * @returns 
  */
+const Store = require('electron-store')
+const store = new Store()
+
 function fillMenuOptions(i18n) {
+    const lastYear = store.get('lastyear')
     const menuOptions = {
         logbook : i18n.gettext('Logbook'),
-        overview : i18n.gettext('Overview'),
+        overview : i18n.gettext('Overview')+' '+lastYear,
         import : i18n.gettext('Import'),
         external : i18n.gettext('External track'),
         stat : i18n.gettext('Statistics'),

@@ -252,7 +252,7 @@ function openWindow(pageName) {
       break              
     case "stat":
       mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'))
-     // mainWindow.webContents.openDevTools() 
+      mainWindow.webContents.openDevTools() 
       //mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
       break          
     case "sites":

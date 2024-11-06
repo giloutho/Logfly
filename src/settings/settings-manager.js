@@ -14,7 +14,15 @@ function checkSettings (appPath, progVersion) {
         if (fs.existsSync((store.path))) {
             // Updating environment variables
             getEnv()
-            return dbbasic.testDb(store.get('dbFullPath'))
+            // return dbbasic.testDb(store.get('dbFullPath'))
+            const resDb = dbbasic.testDb(store.get('dbFullPath'))
+            if (resDb != null) {
+                store.set('lastyear',resDb)
+                return true
+            } else {
+                store.set('lastyear','')
+                return false
+            }
         } else {
             iniSettings()   
             // false to check settings with problem page
