@@ -93,7 +93,7 @@ $(document).ready(function () {
       $("#sidebar").removeClass('active')
       $('#toggleMenu').addClass('d-none')
       document.getElementById("menucheck").checked = true;
-    }
+    }   
   })
   
   function changeMenuState(cbmenu) {
@@ -295,22 +295,24 @@ function displayMonthly(){
   for (const monthData of dbMonthes.iterate()) {
     const monthYear = monthData.year
     const monthNumber = monthData.month
-    const intHours =  Math.round(moment.duration(monthData.dur, 'seconds').asHours())
-    console.log(`ìntHours ${intHours}`)
-    if (intHours > maxHours) maxHours = intHours
+    // round to one decimal
+    const decHours =  Math.round(moment.duration(monthData.dur, 'seconds').asHours()*10)/10
+    if (decHours > maxHours) maxHours = decHours
     if (monthYear > currYear) {
-      console.log(`if (monthYear > currYear) ${monthYear}`)
-      if (currYear > 1900) {    // year is finished
-        // on poussait sur une série
-        console.log(`if (currYear > 1900) ${currYear}`)
-        console.log('currMonthesSerie')
-        currMonthSerie.forEach(y => console.log(y))      
-        yearsMonthesSerie.push(currMonthSerie)
+      //console.log(`monthYear > currYear ${monthYear} > ${currYear}`)
+      if (currYear > 1900) {    // year is finished      
+        //console.log(`======= Year finisihed  ${currYear}`)   
+        const newYearMonthes = currMonthSerie.map(hours => hours) 
+        yearsMonthesSerie.push(newYearMonthes)
+       // console.log('yearsMonthesSerie '+yearsMonthesSerie.length)
+       // yearsMonthesSerie.forEach(y => console.log(y)) 
+
       }
-      // New year      
+      // New year    
       currYear = monthData.year
       yearsSerie.push(monthYear)
-      console.log(`new year ${currYear}`)
+      // console.log('###############')
+      // console.log(`new year ${currYear}`)
       // Reset table of twelve monthly values to zero
       for (let i = 0; i < currMonthSerie.length; i++) {
         currMonthSerie[i] = 0                
@@ -319,15 +321,33 @@ function displayMonthly(){
     // Add to list
     if (monthNumber > 0 && monthNumber < 13) {
       const idx = monthNumber - 1                                                        
-      currMonthSerie[idx] = intHours 
-      console.log(`add to list ${idx} ${intHours}`)
-      currMonthSerie.forEach(y => console.log(y))   
+      currMonthSerie[idx] = decHours 
     }
   }
-  console.log('yearSeries')
-  yearsSerie.forEach(x => console.log(x))
-  console.log('yearsMonthesSerie')
-  yearsMonthesSerie.forEach(y => console.log(y))      
+  if (currYear > 1900) {    // we push last year  
+    yearsMonthesSerie.push(currMonthSerie)
+  }
+  //console.log('******** Finished')
+  //console.log('yearSeries')
+  //yearsSerie.forEach(x => console.log(x))
+  //console.log('***************************')
+  //console.log('yearsMonthesSerie '+yearsMonthesSerie.length)
+ // yearsMonthesSerie.forEach(y => console.log(y))    
+  
+  // on veut mars avril
+  for (let i = 0; i < yearsMonthesSerie.length; i++) {
+    console.log(yearsSerie[i]+' '+yearsMonthesSerie[i][2]+' '+yearsMonthesSerie[i][3])
+    
+  }
+
+
+}
+
+function displayMonthGraph() {
+  const ch1 = document.getElementById("check1").checked;
+  const ch2 = document.getElementById("check2").checked;
+  const ch3 = document.getElementById("check3").checked;
+  alert('coucou '+ch1+' '+ch2+' '+ch3)
 }
 
 function displayGlider() {
