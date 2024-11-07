@@ -27,6 +27,9 @@ const monthTemplate = $('#template-month').html()
 const gliderLabels = {} 
 const gliderTemplate = $('#template-glider').html()
 
+let yearsSerie
+let yearsMonthesSerie
+
 iniForm()
 
 function iniForm() {
@@ -85,6 +88,7 @@ function iniForm() {
     btnGrSite.addEventListener('click',(event) => {displaySite()})
     browseYears()
     displayInfoCards()
+    console.log('iniform...')
 }
 
 $(document).ready(function () {
@@ -92,8 +96,9 @@ $(document).ready(function () {
     if (selectedFixedMenu === 'yes') {
       $("#sidebar").removeClass('active')
       $('#toggleMenu').addClass('d-none')
-      document.getElementById("menucheck").checked = true;
+      document.getElementById("menucheck").checked = true
     }   
+    console.log('ready')
   })
   
   function changeMenuState(cbmenu) {
@@ -175,6 +180,13 @@ function displayYearly() {
   } else {
     chartHeight = Math.round(screenHeight * 0.6)
   }
+  console.log(`maxhours : ${maxHours}  maxFlights : ${maxFlights}`)
+  let maxY
+  if (maxHours > maxFlights) {
+    maxY = maxHours
+  } else {
+    maxY = maxFlights
+  }
   Highcharts.chart('container-graphe', {
     chart: {
       height: chartHeight,
@@ -198,6 +210,8 @@ function displayYearly() {
             color: Highcharts.getOptions().colors[0]
           }
         },
+        max: maxY,
+        min : 0,
         labels: {
           style: {
               color: Highcharts.getOptions().colors[0]
@@ -211,6 +225,8 @@ function displayYearly() {
             color: '#e555d3'
           }
         },
+        max: maxY,
+        min : 0,
         labels: {
           style: {
               color: '#e555d3'
@@ -251,16 +267,17 @@ function displayYearly() {
       name: i18n.gettext('Flight hours'),
       type: 'column',
       colorKey: 'colorValue',
-      yAxis: 1,
+      yAxis: 0,
       tooltip: {
         valueSuffix: ' h'
       },
-      data : coloredYserie      
+      data : y1Series    
     },
     {
       name: i18n.gettext('Flights'),
       type: 'spline', 
       colorKey: '#e555d3',
+      yAxis: 1,
       tooltip: {
         valueSuffix: ' '+i18n.gettext('flights')
       },
@@ -289,8 +306,8 @@ function displayMonthly(){
   const dbMonthes = db.prepare(sReq)
   let currYear = 1900
   let maxHours = 0
-  let yearsSerie = []
-  let yearsMonthesSerie = []
+  yearsSerie = []
+  yearsMonthesSerie = []
   let currMonthSerie = Array(12).fill(0)
   for (const monthData of dbMonthes.iterate()) {
     const monthYear = monthData.year
@@ -334,20 +351,75 @@ function displayMonthly(){
   //console.log('yearsMonthesSerie '+yearsMonthesSerie.length)
  // yearsMonthesSerie.forEach(y => console.log(y))    
   
-  // on veut mars avril
-  for (let i = 0; i < yearsMonthesSerie.length; i++) {
-    console.log(yearsSerie[i]+' '+yearsMonthesSerie[i][2]+' '+yearsMonthesSerie[i][3])
-    
-  }
+
 
 
 }
 
 function displayMonthGraph() {
-  const ch1 = document.getElementById("check1").checked;
-  const ch2 = document.getElementById("check2").checked;
-  const ch3 = document.getElementById("check3").checked;
-  alert('coucou '+ch1+' '+ch2+' '+ch3)
+  let monthData = []
+  const ch1 = document.getElementById("check1").checked
+  const ch2 = document.getElementById("check2").checked
+  const ch3 = document.getElementById("check3").checked
+  const ch4 = document.getElementById("check4").checked
+  const ch5 = document.getElementById("check5").checked
+  const ch6 = document.getElementById("check6").checked
+  const ch7 = document.getElementById("check7").checked
+  const ch8 = document.getElementById("check8").checked
+  const ch9 = document.getElementById("check9").checked
+  const ch10 = document.getElementById("check10").checked
+  const ch11 = document.getElementById("check11").checked
+  const ch12 = document.getElementById("check12").checked
+  const chall = document.getElementById("check-all").checked
+  for (let i = 0; i < yearsMonthesSerie.length; i++) {
+    let yearFiltered = []
+    for (let j = 0; j < yearsMonthesSerie[i].length; j++) {
+      const element = yearsMonthesSerie[i][j]
+      switch (j) {
+        case 0:
+          if (ch1) yearFiltered.push(element)
+          break      
+        case 1:
+          if (ch2) yearFiltered.push(element)
+          break
+        case 2:
+          if (ch3) yearFiltered.push(element)
+          break
+        case 3:
+          if (ch4) yearFiltered.push(element)
+          break                
+        case 4 : 
+          if (ch5) yearFiltered.push(element)
+          break;
+        case 5:
+          if (ch6) yearFiltered.push(element)
+          break      
+        case 6:
+          if (ch7) yearFiltered.push(element)
+          break
+        case 7:
+          if (ch8) yearFiltered.push(element)
+          break
+        case 8:
+          if (ch9) yearFiltered.push(element)
+          break                
+        case 9 : 
+          if (ch10) yearFiltered.push(element)
+          break
+        case 10:
+          if (ch11) yearFiltered.push(element)
+          break      
+        case 11:
+          if (ch12) yearFiltered.push(element)
+          break                  
+      }
+    }
+    monthData.push({
+      name: yearsSerie[i],
+      data: yearFiltered    
+    })  
+  }
+  console.log(monthData)
 }
 
 function displayGlider() {
@@ -355,6 +427,8 @@ function displayGlider() {
   $('#gr-header-glider').removeClass('d-none')
   const rendered = Mustache.render(gliderTemplate, gliderLabels)
   document.getElementById('gr-header-glider').innerHTML = rendered
+  // Envisager cette présentation : https://www.highcharts.com/demo/highcharts/bar-race
+  // ou celle là : https://www.highcharts.com/demo/highcharts/column-rotated-labels
 }    
 
 function displaySite() {
