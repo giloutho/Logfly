@@ -27,11 +27,16 @@ const monthLabels = {}
 const monthTemplate = $('#template-month').html()
 const gliderLabels = {} 
 const gliderTemplate = $('#template-glider').html()
+const siteLabels = {}
+const siteTemplate = $('#template-site').html()
 
+let currGraph = null
 let yearsSerie
 let yearsMonthesSerie
 let glidersSerie
 let glidersFlights
+let sitesSerie
+let sitesHours
 
 iniForm()
 
@@ -81,6 +86,13 @@ function iniForm() {
     gliderLabels.top20 = i18n.gettext('Top 20')
     gliderLabels.all = i18n.gettext('All')
     gliderLabels.display = i18n.gettext('Display')
+    Mustache.parse(siteTemplate)
+    siteLabels.sites = i18n.gettext('You can select the number of sites to be displayed in the graph')
+    siteLabels.top5 = i18n.gettext('Top 5')
+    siteLabels.top10 = i18n.gettext('Top 10')
+    siteLabels.top20 = i18n.gettext('Top 20')
+    siteLabels.all = i18n.gettext('All')
+    siteLabels.display = i18n.gettext('Display')  
     btnGrYearly.innerHTML = i18n.gettext('Yearly chart')
     btnGrYearly.addEventListener('click', (event) => {displayYearly()})
     btnGrMonthly.innerHTML = i18n.gettext('Monthly chart')
@@ -91,7 +103,7 @@ function iniForm() {
     btnGrSite.addEventListener('click',(event) => {displaySite()})
     browseYears()
     displayInfoCards()
-    console.log('iniform...')
+    displayMainFooter()
 }
 
 $(document).ready(function () {
@@ -130,10 +142,36 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
+function changeStart() {
+  switch (currGraph) {
+    case 'Y':
+      displayYearly()
+      break;  
+    case 'M':
+      displayMonthGraph()
+      break;   
+    case 'G':
+      displayGlider()
+      break;             
+    case 'S':
+      displaySite
+      break;        
+    default:
+      displayMainFooter()
+      break;
+  }
+}
+
+function changeEnd() {
+  alert(`currGraph : ${currGraph} new : ${selYearEnd.value}`)
+}
+
 function displayYearly() {
   $('#gr-header-month').addClass('d-none')
   $('#gr-header-glider').addClass('d-none')
+  $('#gr-header-site').addClass('d-none')
   $('#container-graphe').removeClass('d-none')
+  currGraph = null
   y1Series = []
   y2Series = []
   xSeries = []
@@ -279,11 +317,12 @@ function displayYearly() {
     }
     ]
   })    
-
+  currGraph = 'Y'
 }
 
 function displayMonthly(){
   $('#gr-header-glider').addClass('d-none')
+  $('#gr-header-site').addClass('d-none')
   $('#gr-header-month').removeClass('d-none')
   $('#container-graphe').addClass('d-none')
   monthLabels.dates = selYearBegin.value+' - '+selYearEnd.value
@@ -334,6 +373,7 @@ function displayMonthly(){
 
 function displayMonthGraph() {
   $('#container-graphe').removeClass('d-none')
+  currGraph = null
   // Compute height of chart
   const chartHeight = computeSizeScreen()
   const [xData,yData] = filterMonthes()
@@ -379,10 +419,12 @@ function displayMonthGraph() {
     },
   series: yData
   })     
+    currGraph = 'M'
 }
 
 function displayGlider() {
   $('#gr-header-month').addClass('d-none')
+  $('#gr-header-site').addClass('d-none')
   $('#gr-header-glider').removeClass('d-none')
   $('#container-graphe').addClass('d-none')
   const rendered = Mustache.render(gliderTemplate, gliderLabels)
@@ -414,10 +456,8 @@ function displayGliderGraph() {
       glidersFlFiltered = glidersFlights.slice(0,rdGliders[i].value)
   } 
   let maxY = 0
-  console.log(`glidersFiltered ${glidersFiltered.length}/${glidersSerie.length}`)  
   for (let i = 0; i < glidersFiltered.length; i++) {
     if (glidersFiltered[i][1] > maxY) maxY = glidersFiltered[i][1]    
-    console.log(i+' '+glidersFlFiltered[i])
   }
   // Compute height of chart
   let chartHeight
@@ -428,6 +468,7 @@ function displayGliderGraph() {
     chartHeight = Math.round(screenHeight * 0.5)
   }
   $('#container-graphe').removeClass('d-none')
+  currGraph = null
   Highcharts.chart('container-graphe', {
     chart: {
       height: chartHeight,
@@ -472,12 +513,14 @@ function displayGliderGraph() {
       data:  glidersFiltered
     }]
   })  
+    currGraph = 'G'
 }
 
 function displayGlidersGraph2(glidersSerie, maxY) {
   // Envisager cette présentation : https://www.highcharts.com/demo/highcharts/bar-race
   // ou celle là : https://www.highcharts.com/demo/highcharts/column-rotated-labels
   $('#container-graphe').removeClass('d-none')
+  currGraph = null
   // Compute height of chart
   let chartHeight
   let screenHeight = store.get('screenHeight')
@@ -544,8 +587,97 @@ function displayGlidersGraph2(glidersSerie, maxY) {
 }
 
 function displaySite() {
+  $('#gr-header-month').addClass('d-none')
+  $('#gr-header-glider').addClass('d-none')
   $('#container-graphe').addClass('d-none')
-  alert('Site')
+  $('#gr-header-site').removeClass('d-none')
+  const rendered = Mustache.render(siteTemplate, siteLabels)
+  document.getElementById('gr-header-site').innerHTML = rendered
+  const startYear = selYearBegin.value
+  const endYear = selYearEnd.value
+  let chartTitle = i18n.gettext('Sites')+' '+startYear+' - '+endYear
+  document.getElementById('footer-2').innerHTML = '<H2>'+chartTitle+'</H2>' 
+  let sReq = "SELECT V_Site,Count(V_ID) AS nb,Sum(V_Duree) AS dur FROM Vol WHERE strftime('%Y-%m',V_date) >= '"+startYear+"-01'"
+  sReq += " AND strftime('%Y-%m',V_date) <= '"+endYear+"-12' GROUP BY upper(V_Site) ORDER BY nb DESC"
+  const dbSites = db.prepare(sReq)
+  sitesSerie = []
+  sitesHours = []
+  for (const si of dbSites.iterate()){
+    const decHours =  Math.round(moment.duration(si.dur, 'seconds').asHours()*10)/10
+    const siteData = [si.V_Site,si.nb]
+    sitesSerie.push(siteData)
+    sitesHours.push(decHours)
+  }
+}
+
+function displaySiteGraph() {
+  let sitesFiltered
+  let sitesHrFiltered
+  const rdSites = document.getElementsByName('rdSites')
+  for (i = 0; i < rdSites.length; i++) {
+    if (rdSites[i].checked)
+      sitesFiltered = sitesSerie.slice(0,rdSites[i].value)
+      sitesHrFiltered = sitesHours.slice(0,rdSites[i].value)
+  } 
+  let maxY = 0
+  for (let i = 0; i < sitesFiltered.length; i++) {
+    if (sitesFiltered[i][1] > maxY) maxY = sitesFiltered[i][1]    
+  }
+  // Compute height of chart
+  let chartHeight
+  let screenHeight = store.get('screenHeight')
+  if (screenHeight == null) {
+    chartHeight = 480   // the base height is 800 -> 800 * 0.5 = 400
+  } else {
+    chartHeight = Math.round(screenHeight * 0.5)
+  }
+  $('#container-graphe').removeClass('d-none')
+  currGraph = null
+  Highcharts.chart('container-graphe', {
+    chart: {
+      height: chartHeight,
+      type: 'bar',
+      zooming: {
+        type: 'xy'
+      }     
+    },
+    title: {
+      text : null
+    },
+    xAxis: {
+      type: 'category'
+    },
+    yAxis: {
+      min: 0,
+      max: maxY,
+      alignTicks: false,   //https://stackoverflow.com/questions/33931775/min-max-yaxis-not-working-correctly-in-highcharts
+      endOnTick: false,
+      title: {
+          text: i18n.gettext('Number of flights')
+      },
+      labels: {
+        overflow: 'justify'
+      },
+    },
+    legend: {
+      enabled: false
+    },
+    tooltip: {
+      formatter: function() {
+        let additionalString = ''
+        let index = this.point.index
+        if (index > -1 && sitesHrFiltered.length) {          
+          additionalString = ' <i>'+ sitesHrFiltered[index]+' h</i>'         
+        }
+        return '<b>'+this.y+' '+i18n.gettext('flights')+'</b>'+additionalString
+      }     
+    },
+    series: [{
+      colorByPoint: true,
+      data: sitesFiltered
+    }]
+  })  
+  currGraph = 'S'
 }
 
 function displayInfoCards() {
@@ -783,7 +915,11 @@ function getDatesOfSelection() {
   } catch (error) {
     log.error('getDatesOfSelection] error during database request')  
   }
+}
 
+function displayMainFooter() {
+  let chartTitle = i18n.gettext('Display interval')+' '+selYearBegin.value+' - '+selYearEnd.value
+  document.getElementById('footer-2').innerHTML = '<H4>'+chartTitle+'</H4>'
 }
 
 function getNbFlights() {

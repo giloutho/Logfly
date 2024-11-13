@@ -32,10 +32,10 @@
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="nav navbar-nav ml-auto">
                             <li class="nav-item">
-                                <select class="nav-link" style="margin-right: 20px;" id="sel-year-begin" onchange="changeRef()"></select>
+                                <select class="nav-link" style="margin-right: 20px;" id="sel-year-begin" onchange="changeStart()"></select>
                             </li>
                             <li class="nav-item">
-                                <select class="nav-link" style="margin-right: 20px;" id="sel-year-end" onchange="changeRef()"></select>
+                                <select class="nav-link" style="margin-right: 20px;" id="sel-year-end" onchange="changeEnd()"></select>
                             </li>
                             <li class="nav-item">
                               <a class="nav-link" id="gr-yearly" href="#"></a>
@@ -202,7 +202,31 @@
                                             <button type="button" class="btn btn-primary" onclick="displayGliderGraph()">{{display}}</button>
                                             </form>
                                     </script>
-                                    </div>                                                                             
+                                    </div>           
+                                    <div class="card-header d-none" style="text-align: center;margin-bottom: 10px;" id="gr-header-site">
+                                        <script id="template-site" type="x-tmpl-mustache">
+                                            <h4>{{sites}}</h4>
+                                            <form>
+                                            <div class="form-check form-check-inline">
+                                                <label class="form-check-label" for="rds1"></label>
+                                                <input class="form-check-input" type="radio" name="rdSites" id="rds1" value="5" checked>{{top5}}                                                
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="rds2"></label>
+                                                <input class="form-check-input" type="radio" name="rdSites" id="rds2" value="10">{{top10}}
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="rds3"></label>
+                                                <input class="form-check-input" type="radio" name="rdSites" id="rdg4" value="20">{{top20}}
+                                            </div>
+                                            <div class="form-check-inline">
+                                                <label class="form-check-label" for="rdsall"></label>
+                                                <input class="form-check-input" type="radio" name="rdSites" id="rdsall" value="1000">{{all}}
+                                            </div>                                                                                                           
+                                            <button type="button" class="btn btn-primary" onclick="displaySiteGraph()">{{display}}</button>
+                                            </form>
+                                    </script>
+                                    </div>                                                                                                          
                                     <div class="card-block">                                    
                                         <div id="container-graphe"></div>
                                     </div>
