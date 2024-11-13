@@ -11,7 +11,8 @@ const log = require('electron-log');
 const Store = require('electron-store')
 const store = new Store()
 const db = require('better-sqlite3')(store.get('dbFullPath'))
-let menuFill = require('../../views/tpl/sidebar.js')
+let menuFill = require('../../views/tpl/sidebar.js');
+const { point } = require('leaflet');
 const btnGrYearly = document.getElementById('gr-yearly')
 const btnGrMonthly = document.getElementById('gr-monthly')
 const btnGrGlider = document.getElementById('gr-glider')
@@ -29,6 +30,8 @@ const gliderTemplate = $('#template-glider').html()
 
 let yearsSerie
 let yearsMonthesSerie
+let glidersSerie
+let glidersFlights
 
 iniForm()
 
@@ -130,6 +133,7 @@ btnMenu.addEventListener('click', (event) => {
 function displayYearly() {
   $('#gr-header-month').addClass('d-none')
   $('#gr-header-glider').addClass('d-none')
+  $('#container-graphe').removeClass('d-none')
   y1Series = []
   y2Series = []
   xSeries = []
@@ -158,11 +162,6 @@ function displayYearly() {
     y2Series.push(yr.Flights)
   }
 
-  // for (let index = 0; index < y2Series.length; index++) {
-  //   console.log(y2Series[index])   
-  // }
-  // console.log(maxFlights)
-
   let chartTitle = i18n.gettext('Yearly')+' '+xSeries[0]+' - '+xSeries[xSeries.length-1]
   document.getElementById('footer-2').innerHTML = '<H2>'+chartTitle+'</H2>'
   for (let i = 0; i < y1Series.length; i++) {
@@ -172,15 +171,9 @@ function displayYearly() {
     columnObj.y = element    
     coloredYserie.push(columnObj)
   }
-  // Compute height of chart
-  let chartHeight
-  let screenHeight = store.get('screenHeight')
-  if (screenHeight == null) {
-    chartHeight = 480   // the base height is 800 -> 800 * 0.6 = 480
-  } else {
-    chartHeight = Math.round(screenHeight * 0.6)
-  }
-  console.log(`maxhours : ${maxHours}  maxFlights : ${maxFlights}`)
+
+  const chartHeight = computeSizeScreen()
+
   let maxY
   if (maxHours > maxFlights) {
     maxY = maxHours
@@ -203,7 +196,6 @@ function displayYearly() {
     },
     yAxis: [
       { // primary axis
-        min: 0,
         title: {
           text: i18n.gettext('Flight hours'),
           style: {
@@ -285,9 +277,7 @@ function displayYearly() {
       lineWidth: 3,
       data : y2Series
     }
-  ]
-
-
+    ]
   })    
 
 }
@@ -295,11 +285,14 @@ function displayYearly() {
 function displayMonthly(){
   $('#gr-header-glider').addClass('d-none')
   $('#gr-header-month').removeClass('d-none')
+  $('#container-graphe').addClass('d-none')
   monthLabels.dates = selYearBegin.value+' - '+selYearEnd.value
   const rendered = Mustache.render(monthTemplate, monthLabels)
   document.getElementById('gr-header-month').innerHTML = rendered
   const startYear = selYearBegin.value
   const endYear = selYearEnd.value
+  let chartTitle = i18n.gettext('Monthly view')+' '+startYear+' - '+endYear
+  document.getElementById('footer-2').innerHTML = '<H2>'+chartTitle+'</H2>'
   let sReq = "select strftime('%Y',V_date) as year,strftime('%m',V_date) as month,Sum(V_Duree) as dur from Vol "
   sReq += "WHERE strftime('%Y-%m',V_date) >= '"+startYear+"-01' AND strftime('%Y-%m',V_date) <= '"+endYear+"-12' "
   sReq += "group by strftime('%Y',V_date),strftime('%m',V_date)"  
@@ -316,20 +309,13 @@ function displayMonthly(){
     const decHours =  Math.round(moment.duration(monthData.dur, 'seconds').asHours()*10)/10
     if (decHours > maxHours) maxHours = decHours
     if (monthYear > currYear) {
-      //console.log(`monthYear > currYear ${monthYear} > ${currYear}`)
-      if (currYear > 1900) {    // year is finished      
-        //console.log(`======= Year finisihed  ${currYear}`)   
+      if (currYear > 1900) {    // year is finished       
         const newYearMonthes = currMonthSerie.map(hours => hours) 
         yearsMonthesSerie.push(newYearMonthes)
-       // console.log('yearsMonthesSerie '+yearsMonthesSerie.length)
-       // yearsMonthesSerie.forEach(y => console.log(y)) 
-
       }
       // New year    
       currYear = monthData.year
       yearsSerie.push(monthYear)
-      // console.log('###############')
-      // console.log(`new year ${currYear}`)
       // Reset table of twelve monthly values to zero
       for (let i = 0; i < currMonthSerie.length; i++) {
         currMonthSerie[i] = 0                
@@ -344,94 +330,221 @@ function displayMonthly(){
   if (currYear > 1900) {    // we push last year  
     yearsMonthesSerie.push(currMonthSerie)
   }
-  //console.log('******** Finished')
-  //console.log('yearSeries')
-  //yearsSerie.forEach(x => console.log(x))
-  //console.log('***************************')
-  //console.log('yearsMonthesSerie '+yearsMonthesSerie.length)
- // yearsMonthesSerie.forEach(y => console.log(y))    
-  
-
-
-
 }
 
 function displayMonthGraph() {
-  let monthData = []
-  const ch1 = document.getElementById("check1").checked
-  const ch2 = document.getElementById("check2").checked
-  const ch3 = document.getElementById("check3").checked
-  const ch4 = document.getElementById("check4").checked
-  const ch5 = document.getElementById("check5").checked
-  const ch6 = document.getElementById("check6").checked
-  const ch7 = document.getElementById("check7").checked
-  const ch8 = document.getElementById("check8").checked
-  const ch9 = document.getElementById("check9").checked
-  const ch10 = document.getElementById("check10").checked
-  const ch11 = document.getElementById("check11").checked
-  const ch12 = document.getElementById("check12").checked
-  const chall = document.getElementById("check-all").checked
-  for (let i = 0; i < yearsMonthesSerie.length; i++) {
-    let yearFiltered = []
-    for (let j = 0; j < yearsMonthesSerie[i].length; j++) {
-      const element = yearsMonthesSerie[i][j]
-      switch (j) {
-        case 0:
-          if (ch1) yearFiltered.push(element)
-          break      
-        case 1:
-          if (ch2) yearFiltered.push(element)
-          break
-        case 2:
-          if (ch3) yearFiltered.push(element)
-          break
-        case 3:
-          if (ch4) yearFiltered.push(element)
-          break                
-        case 4 : 
-          if (ch5) yearFiltered.push(element)
-          break;
-        case 5:
-          if (ch6) yearFiltered.push(element)
-          break      
-        case 6:
-          if (ch7) yearFiltered.push(element)
-          break
-        case 7:
-          if (ch8) yearFiltered.push(element)
-          break
-        case 8:
-          if (ch9) yearFiltered.push(element)
-          break                
-        case 9 : 
-          if (ch10) yearFiltered.push(element)
-          break
-        case 10:
-          if (ch11) yearFiltered.push(element)
-          break      
-        case 11:
-          if (ch12) yearFiltered.push(element)
-          break                  
+  $('#container-graphe').removeClass('d-none')
+  // Compute height of chart
+  const chartHeight = computeSizeScreen()
+  const [xData,yData] = filterMonthes()
+   Highcharts.chart('container-graphe', {
+    chart: {
+      height: chartHeight,
+      type: 'column'     
+    },
+    title: {
+      text : null
+    },
+    xAxis: {
+      categories: xData,
+      crosshair: true
+    },
+    yAxis: [
+      { // primary axis
+        title: {
+          text: i18n.gettext('Flight hours'),
+          style: {
+            color: Highcharts.getOptions().colors[0]
+          }
+        },
+        min : 0,
+        labels: {
+          style: {
+              color: Highcharts.getOptions().colors[0]
+          }
+        },
       }
-    }
-    monthData.push({
-      name: yearsSerie[i],
-      data: yearFiltered    
-    })  
-  }
-  console.log(monthData)
+    ],
+    tooltip: {
+      shared: true
+    },
+    plotOptions: {
+      column: {
+        pointPadding: 0.2,
+        borderWidth: 0
+      },
+      series: {
+        pointWidth: 20	
+      }
+    },
+  series: yData
+  })     
 }
 
 function displayGlider() {
   $('#gr-header-month').addClass('d-none')
   $('#gr-header-glider').removeClass('d-none')
+  $('#container-graphe').addClass('d-none')
   const rendered = Mustache.render(gliderTemplate, gliderLabels)
   document.getElementById('gr-header-glider').innerHTML = rendered
-  // Envisager cette présentation : https://www.highcharts.com/demo/highcharts/bar-race
-  // ou celle là : https://www.highcharts.com/demo/highcharts/column-rotated-labels
+  const startYear = selYearBegin.value
+  const endYear = selYearEnd.value
+  let chartTitle = i18n.gettext('Gliders')+' '+startYear+' - '+endYear
+  document.getElementById('footer-2').innerHTML = '<H2>'+chartTitle+'</H2>'
+  let sReq = "SELECT V_Engin,Count(V_ID) AS nb,Sum(V_Duree) AS dur FROM Vol WHERE strftime('%Y-%m',V_date) >= '"+startYear+"-01'"
+  sReq += " AND strftime('%Y-%m',V_date) <= '"+endYear+"-12' GROUP BY upper(V_Engin) ORDER BY Sum(V_Duree) DESC"
+  const dbGliders = db.prepare(sReq)
+  glidersSerie = []
+  glidersFlights = []
+  for (const gl of dbGliders.iterate()){
+    const decHours =  Math.round(moment.duration(gl.dur, 'seconds').asHours()*10)/10
+    const gliderData = [gl.V_Engin,decHours]
+    glidersSerie.push(gliderData)
+    glidersFlights.push(gl.nb)
+  }
 }    
 
+function displayGliderGraph() {
+  let glidersFiltered
+  let glidersFlFiltered
+  const rdGliders = document.getElementsByName('rdGliders')
+  for (i = 0; i < rdGliders.length; i++) {
+    if (rdGliders[i].checked)
+      glidersFiltered = glidersSerie.slice(0,rdGliders[i].value)
+      glidersFlFiltered = glidersFlights.slice(0,rdGliders[i].value)
+  } 
+  let maxY = 0
+  console.log(`glidersFiltered ${glidersFiltered.length}/${glidersSerie.length}`)  
+  for (let i = 0; i < glidersFiltered.length; i++) {
+    if (glidersFiltered[i][1] > maxY) maxY = glidersFiltered[i][1]    
+    console.log(i+' '+glidersFlFiltered[i])
+  }
+  // Compute height of chart
+  let chartHeight
+  let screenHeight = store.get('screenHeight')
+  if (screenHeight == null) {
+    chartHeight = 480   // the base height is 800 -> 800 * 0.5 = 400
+  } else {
+    chartHeight = Math.round(screenHeight * 0.5)
+  }
+  $('#container-graphe').removeClass('d-none')
+  Highcharts.chart('container-graphe', {
+    chart: {
+      height: chartHeight,
+      type: 'bar',
+      zooming: {
+        type: 'xy'
+      }     
+    },
+    title: {
+      text : null
+    },
+    xAxis: {
+      type: 'category'
+    },
+    yAxis: {
+      min: 0,
+      max: maxY,
+      alignTicks: false,   //https://stackoverflow.com/questions/33931775/min-max-yaxis-not-working-correctly-in-highcharts
+      endOnTick: false,
+      title: {
+          text: i18n.gettext('Flight hours')
+      },
+      labels: {
+        overflow: 'justify'
+      },
+    },
+    legend: {
+      enabled: false
+    },
+    tooltip: {
+      formatter: function() {
+        let additionalString = ''
+        let index = this.point.index
+        if (index > -1 && glidersFlFiltered.length) {          
+          additionalString = ' <i>'+glidersFlFiltered[index]+' '+i18n.gettext('Flights')+'</i>'         
+        }
+        return i18n.gettext('Flight hours')+' : <b>'+this.y+' h</b>'+additionalString
+      }     
+    },
+    series: [{
+      colorByPoint: true,
+      data:  glidersFiltered
+    }]
+  })  
+}
+
+function displayGlidersGraph2(glidersSerie, maxY) {
+  // Envisager cette présentation : https://www.highcharts.com/demo/highcharts/bar-race
+  // ou celle là : https://www.highcharts.com/demo/highcharts/column-rotated-labels
+  $('#container-graphe').removeClass('d-none')
+  // Compute height of chart
+  let chartHeight
+  let screenHeight = store.get('screenHeight')
+  if (screenHeight == null) {
+    chartHeight = 480   // the base height is 800 -> 800 * 0.6 = 480
+  } else {
+    chartHeight = Math.round(screenHeight * 0.5)
+  }
+  Highcharts.chart('container-graphe', {
+    chart: {
+      height: chartHeight,
+      type: 'column',
+      zooming: {
+        type: 'xy'
+      }       
+    },
+    title: {
+      text : null
+    },
+    xAxis: {
+      type: 'category',
+      labels: {
+          autoRotation: [-45, -90],
+          style: {
+              fontSize: '13px',
+              fontFamily: 'Verdana, sans-serif'
+          }
+      }
+    },
+    yAxis: {
+      min: 0,
+      max: maxY,
+      alignTicks: false,   //https://stackoverflow.com/questions/33931775/min-max-yaxis-not-working-correctly-in-highcharts
+      endOnTick: false,
+      title: {
+          text: i18n.gettext('Flight hours')
+      }
+    },
+    legend: {
+        enabled: false
+    },
+    tooltip: {
+      pointFormat: i18n.gettext('Flight hours')+' : <b>'+this.y+' h</b> '+i18n.gettext('Flights')+' :'
+    },
+    series: [{
+      colorByPoint: true,
+      groupPadding: 0,
+      data:  glidersSerie,
+      dataLabels: {
+          enabled: true,
+          rotation: -90,
+          color: '#FFFFFF',
+          inside: true,
+          verticalAlign: 'top',
+          format: '{point.y:.1f}', // one decimal
+          y: 30, // 15 pixels down from the top
+          style: {
+              fontSize: '10px',
+              fontFamily: 'Verdana, sans-serif'
+          }
+      }
+    }]
+  })
+}
+
 function displaySite() {
+  $('#container-graphe').addClass('d-none')
   alert('Site')
 }
 
@@ -459,6 +572,174 @@ function displayInfoCards() {
   } catch (error) {
     
   }
+}
+
+function computeSizeScreen() {
+    // Compute height of chart
+    let chartHeight
+    let screenHeight = store.get('screenHeight')
+    if (screenHeight == null) {
+      chartHeight = 480   // the base height is 800 -> 800 * 0.6 = 480
+    } else {
+      chartHeight = Math.round(screenHeight * 0.6)
+    }
+    return chartHeight
+}
+
+function checkgAll() {
+  if (document.getElementById("checkg-all").checked == true){
+    document.getElementById("checkg1").checked = true
+    document.getElementById("checkg2").checked = true
+    document.getElementById("checkg3").checked = true
+  } else {
+    document.getElementById("checkg1").checked = false
+    document.getElementById("checkg2").checked = false
+    document.getElementById("checkg3").checked = false
+  }  
+}
+
+function checkAll() {
+  if (document.getElementById("check-all").checked == true){
+    document.getElementById("check1").checked = true
+    document.getElementById("check2").checked = true
+    document.getElementById("check3").checked = true
+    document.getElementById("check4").checked = true
+    document.getElementById("check5").checked = true
+    document.getElementById("check6").checked = true
+    document.getElementById("check7").checked = true
+    document.getElementById("check8").checked = true
+    document.getElementById("check9").checked = true
+    document.getElementById("check10").checked = true
+    document.getElementById("check11").checked = true
+    document.getElementById("check12").checked = true
+  } else {
+    document.getElementById("check1").checked = false
+    document.getElementById("check2").checked = false
+    document.getElementById("check3").checked = false
+    document.getElementById("check4").checked = false
+    document.getElementById("check5").checked = false
+    document.getElementById("check6").checked = false
+    document.getElementById("check7").checked = false
+    document.getElementById("check8").checked = false
+    document.getElementById("check9").checked = false
+    document.getElementById("check10").checked = false
+    document.getElementById("check11").checked = false
+    document.getElementById("check12").checked = false
+  }
+}
+
+function filterMonthes() {
+  let monthData = []
+  let monthLabels = []
+  const ch1 = document.getElementById("check1").checked
+  const ch2 = document.getElementById("check2").checked
+  const ch3 = document.getElementById("check3").checked
+  const ch4 = document.getElementById("check4").checked
+  const ch5 = document.getElementById("check5").checked
+  const ch6 = document.getElementById("check6").checked
+  const ch7 = document.getElementById("check7").checked
+  const ch8 = document.getElementById("check8").checked
+  const ch9 = document.getElementById("check9").checked
+  const ch10 = document.getElementById("check10").checked
+  const ch11 = document.getElementById("check11").checked
+  const ch12 = document.getElementById("check12").checked
+  for (let i = 0; i < 12; i++) {
+    switch (i) {
+      case 0:
+        if (ch1) monthLabels.push(i18n.gettext('Jan'))
+        break      
+      case 1:
+        if (ch2)monthLabels.push(i18n.gettext('Feb'))        
+        break
+      case 2:
+        if (ch3) monthLabels.push(i18n.gettext('Mar'))
+        break
+      case 3:
+        if (ch4) monthLabels.push(i18n.gettext('Apr'))
+        break                
+      case 4 : 
+        if (ch5) monthLabels.push(i18n.gettext('May'))
+        break;
+      case 5:
+        if (ch6) monthLabels.push(i18n.gettext('Jun'))
+        break      
+      case 6:
+        if (ch7) monthLabels.push(i18n.gettext('Jul'))
+        break
+      case 7:
+        if (ch8) monthLabels.push(i18n.gettext('Aug'))
+        break
+      case 8:
+        if (ch9) monthLabels.push(i18n.gettext('Sep'))
+        break                
+      case 9 : 
+        if (ch10) monthLabels.push(i18n.gettext('Oct'))
+        break
+      case 10:
+        if (ch11) monthLabels.push(i18n.gettext('Nov'))
+        break      
+      case 11:
+        if (ch12) monthLabels.push(i18n.gettext('Dec'))
+        break                  
+    }    
+  }
+
+  /*
+  * We don't use array.filter because we don't find a solution to keep zero values
+  * From the Array.prototype.filter() documentation:
+  * filter() calls a provided callback function once for each element in an array, 
+  * and constructs a new array of all the values 
+  * for which callback returns a value that coerces to true
+  */
+  for (let i = 0; i < yearsMonthesSerie.length; i++) {
+    let yearFiltered = []
+    for (let j = 0; j < yearsMonthesSerie[i].length; j++) {
+      const element = yearsMonthesSerie[i][j]
+      switch (j) {
+        case 0:
+          if (ch1) yearFiltered.push(element)          
+          break      
+        case 1:
+          if (ch2) yearFiltered.push(element)            
+          break
+        case 2:
+          if (ch3) yearFiltered.push(element)          
+          break
+        case 3:
+          if (ch4) yearFiltered.push(element)            
+          break                
+        case 4 : 
+          if (ch5) yearFiltered.push(element)
+          break;
+        case 5:
+          if (ch6) yearFiltered.push(element)
+          break      
+        case 6:
+          if (ch7) yearFiltered.push(element)
+          break
+        case 7:
+          if (ch8) yearFiltered.push(element)            
+          break
+        case 8:
+          if (ch9) yearFiltered.push(element)
+          break                
+        case 9 : 
+          if (ch10) yearFiltered.push(element)
+          break
+        case 10:
+          if (ch11) yearFiltered.push(element)
+          break      
+        case 11:
+          if (ch12) yearFiltered.push(element)
+          break                  
+      }
+    }
+    monthData.push({
+      name: yearsSerie[i],
+      data: yearFiltered    
+    })  
+  }
+  return [monthLabels,monthData]
 }
 
 /* 
@@ -613,78 +894,4 @@ function computeDurations(beginDate, endDate) {
   currPeriod.monthes = totalMonthes
   currPeriod.beginDate = moment(firstDay, 'YYYY-MM-DD').format('DD-MM-YYYY')
   currPeriod.endDate = moment(lastDay, 'YYYY-MM-DD').format('DD-MM-YYYY')
-}
-
-function displayMonthlyHeader() {
-  let headerHtml = document.getElementById('gr-header')
-  headerHtml += '<h4>Monthly comparison 2010 - 2024    You can select one or more months or the whole year</h4>'
-  headerHtml += '<form>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check1">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Jan'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check2">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">Feb'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Mar'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check1">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Apr'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check2">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">May'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Jun'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'       
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check1">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Jul'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check2">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">Aug'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Sep'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check1">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check1" name="vehicle1" value="something">Oct'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label" for="check2">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" id="check2" name="vehicle2" value="something">Nov'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">Dec'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'                
-  headerHtml += '  <div class="form-check-inline">'
-  headerHtml += '    <label class="form-check-label">'
-  headerHtml += '      <input type="checkbox" class="form-check-input" d="check2" name="vehicle2" value="something">All'
-  headerHtml += '    </label>'
-  headerHtml += '  </div>'                                                                                                             
-  headerHtml += '  <button type="submit" class="btn btn-primary">Submit</button>'
-  headerHtml += '</form>'
-  
 }
