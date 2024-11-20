@@ -95,7 +95,7 @@
     "reverse-line-reader": "^0.2.6",
     "save": "^2.9.0",
     "serialport": "^10.4.0",
-    "sharp": "^0.30.7",
+    "sharp": "^0.33.5",
     "spherical-geometry-js": "2.0.0",
     "srtm-elevation": "^2.1.0",
     "togpx": "^0.5.4",

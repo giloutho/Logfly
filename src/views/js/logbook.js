@@ -548,10 +548,6 @@ function photoUpload(flightId, rowNum) {
             .toBuffer()
             .then(function(outputBuffer) {
               let rawSrc = outputBuffer.toString('base64')
-              let src = `data:image/pngbase64,${outputBuffer.toString('base64')}`
-              document.getElementById('modalwin').setAttribute("style",`width:${wantedWidth}pxheight: ${wantedHeight}px`)                        
-              $(".modal-img").prop("src",src)
-              $('#Modal').modal('show')
               if (db.open) {
                 try {
                   const stmt = db.prepare('UPDATE Vol SET V_Photos= ? WHERE V_ID = ?')
@@ -563,27 +559,52 @@ function photoUpload(flightId, rowNum) {
                   log.error('Error during flight update '+error)
                   displayStatus('Error during flight update')
                 }
+                let src = 'data:image/png;base64,'+rawSrc
+                let i = new Image() 
+                  i.onload = function(){
+                    let winWidth = i.width
+                    let winHeight = i.height+30
+                    document.getElementById('modalwin').setAttribute("style",`width:${winWidth}px;height: ${winHeight}px;`)
+                }
+                i.src = src 
+                // https://stackoverflow.com/questions/49536873/display-image-on-single-bootstrap-modal
+                $(".modal-img").prop("src",src)
+                $('#Modal').modal('show')            
               }          
             })
             .catch(function(err){
               log.error('Got Error during sharp process')
               displayStatus('Got Error during sharp process')
             })            
-          })                 
+          })
+          .catch(function(err){
+            log.error('Got Error during sharp process')
+            displayStatus('Got Error during sharp process')
+          })                      
   }
 }
 
 function deleteFlights() {
-  let rows = table.rows('.selected')
-  if(rows.data().length > 0 && db.open) {
-    table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
-      let flightId = table.cell(this, 7).data()
-      let smt = 'DELETE FROM Vol WHERE V_ID = ?'            
-      const stmt = db.prepare(smt)
-      const delFlight = stmt.run(flightId)    
-    })
-    tableStandard()
+  const dialogLang = {
+    title: i18n.gettext('Please confirm'),
+    message: i18n.gettext('Are you sure you want to continue')+' ?',
+    yes : i18n.gettext('Yes'),
+    no : i18n.gettext('No')
   }
+  ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
+    if (result) {
+      let rows = table.rows('.selected')
+      if(rows.data().length > 0 && db.open) {
+        table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
+          let flightId = table.cell(this, 7).data()
+          let smt = 'DELETE FROM Vol WHERE V_ID = ?'            
+          const stmt = db.prepare(smt)
+          const delFlight = stmt.run(flightId)    
+        })
+        tableStandard()
+      }
+    }
+  })
 }
 
 function multiCount() {

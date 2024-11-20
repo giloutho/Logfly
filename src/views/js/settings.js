@@ -167,12 +167,10 @@ $('#sel-logbook').on('change', function() {
     let currPathDb = document.getElementById('tx-log-path').value
     let newDbFullPath = path.join(currPathDb,newDbName) 
     const resDb = dbbasic.testDb(newDbFullPath)
-    console.log(`settings retour ${resDb}`)
     if (resDb != null) {
         store.set('lastyear',resDb)
       document.getElementById("img-dbname").src='../../assets/img/valid.png'       
     } else {
-      console.log('retour faux')      
       alert(i18n.gettext('Reading problem in logbook'))
     }
   }
@@ -570,7 +568,6 @@ function moveLogbooksOld(pathDest) {
     fs.readdir(pathDb, function(err, files) {
       let nbMoved = 0
       const dbFiles = files.filter(el => path.extname(el) === '.db')
-      console.log(dbFiles.length+ ' à transférer ')
       btnMove.classList.remove('btn-outline-info')
       btnMove.classList.add('btn-danger')
       let msgWait = i18n.gettext('Waiting')
@@ -600,8 +597,9 @@ function checkLogbooks() {
   if (fs.existsSync(pathDb)) {      
       let dbName = $('#sel-logbook :selected').text()
       if (dbName != undefined && dbName != '') {
-        let newDbFullPath = path.join(pathDb,dbName)            
-            if (dbbasic.testDb(newDbFullPath)) {
+        let newDbFullPath = path.join(pathDb,dbName)  
+        const resTest = dbbasic.testDb(newDbFullPath)         
+            if (resTest != null) {
               store.set('dbName',dbName)
 	            store.set('pathdb',pathDb)
 		          store.set('pathWork', document.getElementById('tx-work-path').value)

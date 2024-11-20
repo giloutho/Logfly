@@ -61,6 +61,12 @@ function iniForm() {
       const rendered = Mustache.render(template, menuOptions)
       document.getElementById('target-sidebar').innerHTML = rendered
     })
+    
+    // Is the logbook empty?
+    const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
+    let countFlights = stmt.get()
+    if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights') 
+
     Mustache.parse(monthTemplate)
     monthLabels.Monthly = i18n.gettext('Monthly comparison')
     monthLabels.dates = '',

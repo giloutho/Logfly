@@ -51,7 +51,6 @@ let cumCurrSites
 iniForm()
 
 function iniForm() {
-    // pas de vols -> direction le Mont Blanc
     document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'   
     try {    
         currLang = store.get('lang')
@@ -71,6 +70,11 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
+    // Is the logbook empty?
+    const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
+    let countFlights = stmt.get()
+    if (countFlights['COUNT(*)'] < 1) ipcRenderer.send("changeWindow", 'noflights') 
+    
     translateLabels()
     browseYears()
     iniGraphe()
@@ -380,8 +384,15 @@ function fillDataGliders(currYear) {
   for (const gl of GliderSet.iterate()) {
       let duration = moment.duration(gl.Dur, 'seconds')
       const hTime = duration.format('HH[h]mm[mn]')
-      cumCurrHours += gl.Dur
-      $('#right-table').append('<tr><td>'+gl.V_Engin+'</td><td style="text-align: center;">'+gl.Nb+'</td><td>'+hTime+'</td></tr>')
+      cumCurrHours += gl.Dur      
+      let totalGlider = ''
+      const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
+      const result = stmt.get(gl.V_Engin)
+      if (result.seconds != null && result.seconds > 0) {    
+        let totDuration = moment.duration(result.seconds, 'seconds')
+        totalGlider = totDuration.format('HH[h]mm[mn]') 
+      }
+      $('#right-table').append('<tr><td>'+gl.V_Engin+'<br><b>'+totalGlider+'</b></td><td style="text-align: center;">'+gl.Nb+'</td><td>'+hTime+'</td></tr>')
   }
   const cumCurrDuration = moment.duration(cumCurrHours, 'seconds')
   const cumCurrTime = cumCurrDuration.format('h[h]mm[mn]')
