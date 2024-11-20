@@ -161,8 +161,7 @@ const createWindow = () => {
         // comment CheckInfo() for debug
        // checkInfo()
         // and open directly the wanted page
-       // openWindow('logbook')
-        openWindow('stat')
+        openWindow('logbook')
       })
       .catch((ex) => {
         openWindow('logbook')
@@ -252,7 +251,7 @@ function openWindow(pageName) {
       break              
     case "stat":
       mainWindow.loadFile(path.join(__dirname, './views/html/statistics.html'))
-      mainWindow.webContents.openDevTools() 
+      //mainWindow.webContents.openDevTools() 
       //mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
       break          
     case "sites":

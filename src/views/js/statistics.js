@@ -151,10 +151,10 @@ function changeStart() {
       displayMonthGraph()
       break;   
     case 'G':
-      displayGlider()
+      displayGliderGraph()
       break;             
     case 'S':
-      displaySite
+      displaySiteGraph()
       break;        
     default:
       displayMainFooter()
@@ -163,7 +163,23 @@ function changeStart() {
 }
 
 function changeEnd() {
-  alert(`currGraph : ${currGraph} new : ${selYearEnd.value}`)
+  switch (currGraph) {
+    case 'Y':
+      displayYearly()
+      break;  
+    case 'M':
+      displayMonthGraph()
+      break;   
+    case 'G':
+      displayGliderGraph()
+      break;             
+    case 'S':
+      displaySiteGraph()
+      break;        
+    default:
+      displayMainFooter()
+      break;
+  }
 }
 
 function displayYearly() {
@@ -325,9 +341,12 @@ function displayMonthly(){
   $('#gr-header-site').addClass('d-none')
   $('#gr-header-month').removeClass('d-none')
   $('#container-graphe').addClass('d-none')
-  monthLabels.dates = selYearBegin.value+' - '+selYearEnd.value
   const rendered = Mustache.render(monthTemplate, monthLabels)
   document.getElementById('gr-header-month').innerHTML = rendered
+}
+
+function displayMonthGraph() {
+  monthLabels.dates = selYearBegin.value+' - '+selYearEnd.value
   const startYear = selYearBegin.value
   const endYear = selYearEnd.value
   let chartTitle = i18n.gettext('Monthly view')+' '+startYear+' - '+endYear
@@ -369,9 +388,7 @@ function displayMonthly(){
   if (currYear > 1900) {    // we push last year  
     yearsMonthesSerie.push(currMonthSerie)
   }
-}
 
-function displayMonthGraph() {
   $('#container-graphe').removeClass('d-none')
   currGraph = null
   // Compute height of chart
@@ -429,6 +446,9 @@ function displayGlider() {
   $('#container-graphe').addClass('d-none')
   const rendered = Mustache.render(gliderTemplate, gliderLabels)
   document.getElementById('gr-header-glider').innerHTML = rendered
+}    
+
+function displayGliderGraph() {
   const startYear = selYearBegin.value
   const endYear = selYearEnd.value
   let chartTitle = i18n.gettext('Gliders')+' '+startYear+' - '+endYear
@@ -444,9 +464,6 @@ function displayGlider() {
     glidersSerie.push(gliderData)
     glidersFlights.push(gl.nb)
   }
-}    
-
-function displayGliderGraph() {
   let glidersFiltered
   let glidersFlFiltered
   const rdGliders = document.getElementsByName('rdGliders')
@@ -593,6 +610,9 @@ function displaySite() {
   $('#gr-header-site').removeClass('d-none')
   const rendered = Mustache.render(siteTemplate, siteLabels)
   document.getElementById('gr-header-site').innerHTML = rendered
+}
+
+function displaySiteGraph() {
   const startYear = selYearBegin.value
   const endYear = selYearEnd.value
   let chartTitle = i18n.gettext('Sites')+' '+startYear+' - '+endYear
@@ -607,10 +627,7 @@ function displaySite() {
     const siteData = [si.V_Site,si.nb]
     sitesSerie.push(siteData)
     sitesHours.push(decHours)
-  }
-}
-
-function displaySiteGraph() {
+  }  
   let sitesFiltered
   let sitesHrFiltered
   const rdSites = document.getElementsByName('rdSites')
