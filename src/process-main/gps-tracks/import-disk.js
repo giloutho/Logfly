@@ -12,6 +12,10 @@ ipcMain.on('tracks-disk', (event,importPath) => {
     scanFolders(event,importPath)
 })
 
+ipcMain.on('tracks-igc', (event,importPath) => {
+  scanOnlyIgc(event,importPath)
+})
+
 function scanFolders(event,importPath) {  
     log.info('[scanFolders] for '+importPath)
     const searchIgc = runSearchIgc(importPath)
@@ -49,6 +53,29 @@ function scanFolders(event,importPath) {
         })       
     }
     event.sender.send('tracks-result', searchIgc)  
+}
+
+function scanOnlyIgc(event,importPath) {  
+  log.info('[scanOnlyIgc] for '+importPath)
+  const searchIgc = runSearchIgc(importPath)
+  searchIgc.totalIGC =searchIgc.igcForImport.length
+  log.info('Igc : '+searchIgc.igcForImport.length)
+  if (searchIgc.igcForImport.length > 0) {
+      let nbInsert = 0
+      searchIgc.igcForImport.forEach(element => {
+      if (element.forImport === true ) {
+          nbInsert++
+      }
+      })       
+      searchIgc.totalInsert = nbInsert
+      console.log('nbInsert '+searchIgc.totalInsert)
+      searchIgc.igcForImport.sort((a, b) => {
+      let da = a.dateStart,
+          db = b.dateStart
+      return db - da
+      })       
+  }
+  event.sender.send('tracks-result', searchIgc)  
 }
 
 function runSearchIgc(importPath) {
