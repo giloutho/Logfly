@@ -418,6 +418,12 @@ function tableStandard() {
               currIdFlight = dt.row(indexes).data().V_ID
               currGlider = dt.row(indexes).data().V_Engin
               readIgc(currIdFlight, currGlider)
+              let isPhoto = dt.row(indexes).data().Photo
+              if (isPhoto === 'Yes') {
+                if (store.get('photo') === 'yes') {              
+                  photoDecoding(currIdFlight, indexes)
+                }
+              }
             }        
         } )
         table.row(':eq(0)').select()    // Sélectionne la première lmigne
