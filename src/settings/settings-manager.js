@@ -286,6 +286,7 @@ function defaultSettings() {
         store.set('photo','no')
         store.set('priorpilot', false)
         store.set('priorglider',false)
+        store.set('gpsnewflights',true)
         if (!fs.existsSync(logflyPath)) {
             fs.mkdirSync(logflyPath)    
             let logflyDbPath  = path.join(logflyPath, 'Logfly.db')  

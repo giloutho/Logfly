@@ -271,6 +271,7 @@ function iniPilot() {
       store.set('pilotid',document.getElementById('tx-login').value)
       store.set('pilotpass',document.getElementById('tx-pass').value)
       store.set('gps',selectGps.value)
+      store.set('gpsnewflights',document.getElementById('check-gps-limit').checked)
       store.set('league',selectLeague.value)
       alert(i18n.gettext('Saved changes'))
       ipcRenderer.send("changeWindow", 'logbook')    // main.js
@@ -637,7 +638,10 @@ function iniPilotSettings() {
   let selectedGPS = store.get('gps')
   if (selectedGPS == '' || selectedGPS == null) selectedGPS = 'none'
   selectGps.value = selectedGPS
-
+  if (store.get('gpsnewflights'))
+    document.getElementById('check-gps-limit').checked = true
+  else
+    document.getElementById('check-gps-limit').checked = false
   let selectedLeague = store.get('league')
   if (selectedLeague == '' || selectedLeague == null) selectedLeague = 'FR'
   selectLeague.value = selectedLeague 
@@ -747,8 +751,11 @@ function translateLabels() {
   btnDbPath.innerHTML = i18n.gettext('Modify')
   document.getElementById('lg_pilot').innerHTML = i18n.gettext('Pilot')
   document.getElementById('lg-pilotname').innerHTML = i18n.gettext('Pilot name')
+  document.getElementById('lg-pil-check').innerHTML = i18n.gettext('Priority on IGC field')
+  document.getElementById('lg-gl-check').innerHTML = i18n.gettext('Priority on IGC field')
   document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
   document.getElementById('lg-currgps').innerHTML = i18n.gettext('Usual GPS')
+  document.getElementById('lg-gps-limit').innerHTML = i18n.gettext('Only display new flights')
   document.getElementById('lg-pilotmail').innerHTML = i18n.gettext('Pilot mail')
   document.getElementById('lg-league').innerHTML = i18n.gettext('League')
   document.getElementById('lg-login').innerHTML = i18n.gettext('Login')

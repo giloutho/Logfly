@@ -21,6 +21,7 @@ function fillMenuOptions(i18n) {
         settings : i18n.gettext('Settings'),
         support : i18n.gettext('Support'),
         utils : i18n.gettext('Utilities'),
+        still : '  '+i18n.gettext('Still menu'),
     };  
 
     return menuOptions

@@ -271,19 +271,25 @@ function displayDiskResult(searchIgc) {
   clearTable()
   let statusReport = currStatusContent
   if (searchIgc.igcForImport.length > 0) {
-    // result display
-   // console.dir(searchIgc, { depth: null })
-    const filteredImport =  searchIgc.igcForImport.filter(function(igcItem) {
-      return igcItem.forImport == true
-    })
     statusReport += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
     statusReport += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
     statusReport += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
     currStatusContent = statusReport
     statusReport += searchIgc.totalInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
     displayStatus(statusReport,true)
-    //tableStandard(searchIgc.igcForImport)      
-    tableStandard(filteredImport)    
+    let typeDisplay = store.get('gpsnewflights')
+    if (typeDisplay === undefined) {
+      typeDisplay = true
+      store.set('gpsnewflights',true)
+    }
+    if (typeDisplay) {
+      const filteredImport =  searchIgc.igcForImport.filter(function(igcItem) {
+        return igcItem.forImport == true
+      })
+      tableStandard(filteredImport) 
+    } else {
+      tableStandard(searchIgc.igcForImport)
+    }         
   } else {
     currStatusContent += ' '+'No tracks decoded'
     displayStatus(currStatusContent,false)
@@ -373,12 +379,19 @@ function callFlightList(gpsCom, gpsModel) {
     if (typeof flightList !== 'undefined') { 
       if (Array.isArray(flightList.flights)) {        
         if (flightList.flights.length > 0) {       
-          //console.dir(flightList.flights, { depth: null })
-          const filteredImport =  flightList.flights.filter(function(igcItem) {
-            return igcItem.new == true
-          })
-         // tableFromGpsDump(flightList.flights, flightList.model)
-          tableFromGpsDump(filteredImport, flightList.model)
+          let typeDisplay = store.get('gpsnewflights')
+          if (typeDisplay === undefined) {
+            typeDisplay = true
+            store.set('gpsnewflights',true)
+          }
+          if (typeDisplay) {
+            const filteredImport =  flightList.flights.filter(function(igcItem) {
+              return igcItem.new == true
+            })
+            tableFromGpsDump(filteredImport, flightList.model)
+          } else {
+            tableFromGpsDump(flightList.flights, flightList.model)
+          }      
         } else {
           let errorMsg = '['+flightList.model+' callFlihtList] returned an empty flightList.flights array'
           if (flightList.otherlines.length > 0) {
