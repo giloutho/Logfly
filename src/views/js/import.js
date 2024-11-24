@@ -362,7 +362,7 @@ function serialGpsCall(gpsModel) {
         }
       }
     } else {
-      log.error(ms+' No serial port found')
+      log.error(msg+' No serial port found')
     }
     if (gpsCom.length > 0) {      
       callFlightList(gpsCom, gpsModel)  

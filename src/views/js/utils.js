@@ -13,6 +13,7 @@ const btnMenu = document.getElementById('toggleMenu')
 const btnOption1 = document.getElementById('option1')
 const btnOption2 = document.getElementById('option2')
 const btnOption3 = document.getElementById('option3')
+const btnOption4 = document.getElementById('option4')
 const statusContent = document.getElementById("status")
 let currLang
 
@@ -43,15 +44,11 @@ function iniForm() {
     btnOption1.innerHTML = i18n.gettext('Logbook copy')
     btnOption2.innerHTML = i18n.gettext('Json export')
     btnOption3.innerHTML = i18n.gettext('Csv import')
-    // btnOption1.addEventListener('click',(event) => {callDiskImport()})
-    // btnOption2.addEventListener('click',(event) => {clearStatus()})
-    btnOption3.addEventListener('click',(event) => {
-        const msg1 = i18n.gettext('This option is reserved for files exported by Logfly 5')
-        const mgs2 = i18n.gettext('Choose a file')
-        let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="loadCsv()" id="btn-export">'
-        msg += mgs2+'</button>'
-        displayStatus(msg)  
-    })
+    btnOption4.innerHTML = i18n.gettext('Serial ports')
+    btnOption1.addEventListener('click',(event) => {logbookCopy()})
+    btnOption2.addEventListener('click',(event) => {jsonExport()})
+    btnOption3.addEventListener('click',(event) => {csvChoose()})
+    btnOption4.addEventListener('click',(event) => {listSerialPorts()})
 }
 
 $(document).ready(function () {
@@ -89,61 +86,118 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active');
 })
 
+function logbookCopy() {
+    $('#status').hide()
+    $('#div_text').removeClass('d-none')
+}
+
+function jsonExport() {
+    $('#status').hide();
+    $('#div_text').removeClass('d-none')
+}
+
+function csvChoose() {
+    clearStatus()
+    $('#div_text').addClass('d-none')
+    const msg1 = i18n.gettext('This option is reserved for files exported by Logfly 5')
+    const mgs2 = i18n.gettext('Choose a file')
+    let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="loadCsv()" id="btn-export">'
+    msg += mgs2+'</button>'
+    displayStatus(msg)     
+}
+
 function loadCsv() {
     const selectedFile = ipcRenderer.sendSync('open-file','')
     if(selectedFile.fullPath != null) {
-        let content = fs.readFileSync(selectedFile.fullPath, 'utf8')
-        let arrData = CSVToArray(content,';')
-        if (arrData.length > 0) {
-            const regexDuree = /^([0-1]?[0-9]|2[0-3])h([0-5]?[0-9])mn$/     
-            let arrFlights = []
-            arrData.forEach(element => {
-                /* norme bug de Logfly5 qui ne prenait pas le premier caractère pour l'heure
-                * En partant de 2008-08-21 11:06:00
-                * on obtenait pour l'élément[0] "2008-08-21 " avec un espace
-                * on obtenait pour l'élément[1] "1:06:00" où le premier caractère était tronqué
-                * on reconstitue sqlDate en ajoutant systématiquement un 1
-                */
-                let iDuree= 0
-                if (element[0] != '' && element[0] != 'Date') {
-                    if (element[3].match(regexDuree)) {
-                        let arrDuree = regexDuree.exec(element[3])
-                        try {
-                            let hours = arrDuree[1]
-                            let min = arrDuree[2]
-                            let sec = (hours*3600)+(min*60)
-                            iDuree = sec 
-                        } catch (error) {
-                            iDuree = 0
+        let selExt = selectedFile.fileExt.toUpperCase()
+        if (selExt == 'CSV') {
+            let content = fs.readFileSync(selectedFile.fullPath, 'utf8')
+            let arrData = CSVToArray(content,';')
+            if (arrData.length > 0) {
+                const regexDuree = /^([0-1]?[0-9]|2[0-3])h([0-5]?[0-9])mn$/     
+                let arrFlights = []
+                arrData.forEach(element => {
+                    /* norme bug de Logfly5 qui ne prenait pas le premier caractère pour l'heure
+                    * En partant de 2008-08-21 11:06:00
+                    * on obtenait pour l'élément[0] "2008-08-21 " avec un espace
+                    * on obtenait pour l'élément[1] "1:06:00" où le premier caractère était tronqué
+                    * on reconstitue sqlDate en ajoutant systématiquement un 1
+                    */
+                    let iDuree= 0
+                    if (element[0] != '' && element[0] != 'Date') {
+                        if (element[3].match(regexDuree)) {
+                            let arrDuree = regexDuree.exec(element[3])
+                            try {
+                                let hours = arrDuree[1]
+                                let min = arrDuree[2]
+                                let sec = (hours*3600)+(min*60)
+                                iDuree = sec 
+                            } catch (error) {
+                                iDuree = 0
+                            }
+                        } 
+                        const flight = { 
+                            sqlDate : element[0]+'1'+element[1],            // V_date
+                            utc : element[2] != '' ? element[2] : 0,        // V_UTC                
+                            sduree : element[3],                            // V_sDuree
+                            duree : iDuree,                                 // V_Duree
+                            site : element[4],                              // V_Site
+                            pays : element[5],                              // V_Pays
+                            alt : element[6],                               // V_AltDeco
+                            lat : element[7],                               // V_LatDeco 
+                            long : element[8],                              // V_LongDeco
+                            engin : element[9],                             // V_Engin
+                            comment : element[10]                          // V_Commentaire
                         }
-                    } 
-                    const flight = { 
-                        sqlDate : element[0]+'1'+element[1],            // V_date
-                        utc : element[2] != '' ? element[2] : 0,        // V_UTC                
-                        sduree : element[3],                            // V_sDuree
-                        duree : iDuree,                                 // V_Duree
-                        site : element[4],                              // V_Site
-                        pays : element[5],                              // V_Pays
-                        alt : element[6],                               // V_AltDeco
-                        lat : element[7],                               // V_LatDeco 
-                        long : element[8],                              // V_LongDeco
-                        engin : element[9],                             // V_Engin
-                        comment : element[10]                          // V_Commentaire
+                        console.log(flight.sqlDate+' '+flight.comment)
+                        arrFlights.push(flight)                
                     }
-                    console.log(flight.sqlDate+' '+flight.comment)
-                    arrFlights.push(flight)                
+                })
+                if (arrFlights.length > 0) {
+                    let nbInserted = dbadd.importFlights(arrFlights)            
+                    alert(nbInserted+' '+i18n.gettext('flights inserted in logbook'))
+                } else {
+                    alert(i18n.gettext('Decoding problem'))
                 }
-            })
-            if (arrFlights.length > 0) {
-                let nbInserted = dbadd.importFlights(arrFlights)            
-                alert(nbInserted+' '+i18n.gettext('flights inserted in logbook'))
             } else {
-                alert(i18n.gettext('Decoding problem'))
+                alert(i18n.gettext('File decoding problem'))
             }
         } else {
-            alert(i18n.gettext('File decoding problem'))
+            alert(i18n.gettext('You must select a csv file'))
         }
     }
+}
+
+function listSerialPorts() {
+    clearStatus()
+    $('#div_text').addClass('d-none')
+    let msg =''
+    const regexProlif = /prolific/i
+    const regexFlym = /flymas/i
+    const regexFlymOld = /FTDI/i
+    ipcRenderer.invoke('ports-list').then((result) => {
+        if (result instanceof Array) { 
+            msg = result.length+' '+i18n.gettext('ports detected')+'<br>'
+            msg += '<table><tr><th>Serial Number</th><th>Path</th><th>Manufacturer</th></tr>'
+            for (let i = 0; i < result.length; i++) {
+                let manuF = ''
+                if (typeof result[i].manufacturer != 'undefined') {
+                    if (result[i].manufacturer.search(regexProlif) >= 0) {
+                        manuF = result[i].manufacturer+' (Flytec)'
+                    } else if (result[i].manufacturer.search(regexFlym) >= 0) {
+                        manuF = result[i].manufacturer+' (Flymaster)'
+                    } else if (result[i].manufacturer.search(regexFlymOld) >= 0) {
+                        manuF = result[i].manufacturer+' (Flymaster Old)'     
+                    }
+                }               
+                msg += ' <tr><td>'+result[i].serialNumber+'</td><td>'+result[i].path+'</td><td>'+manuF+'</td></tr>'                             
+            }         
+            msg += '</table>'
+        } else {
+          msg =(' No serial port found')
+        }
+        displayStatus(msg)
+      })    
 }
 
 function displayStatus(content) {
@@ -153,7 +207,7 @@ function displayStatus(content) {
 
 function clearStatus() {
     statusContent.innerHTML = ''
-    $('#status').hide();
+    $('#status').hide()
 }
 
 // ref: http://stackoverflow.com/a/1293163/2343
