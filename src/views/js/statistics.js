@@ -149,6 +149,7 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 function changeStart() {
+  displayInfoCards()
   switch (currGraph) {
     case 'Y':
       displayYearly()
@@ -169,6 +170,7 @@ function changeStart() {
 }
 
 function changeEnd() {
+  displayInfoCards()
   switch (currGraph) {
     case 'Y':
       displayYearly()
