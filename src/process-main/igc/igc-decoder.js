@@ -78,33 +78,38 @@ class IGCDecoder {
   	// il y a des champs à enlever aussi que l'on remet dans IGCAnalyzer.
 	parse(extracalculations = false, filter = false){
 		// https://github.com/Turbo87/igc-parser/pull/20    Implement `lenient` parsing modet
-		let result = IGCParser.parse(this.igcData, { lenient: true });
 		try {
-		// on passe de YYYY-MM-DD à DD/MM/YYYY
-		this.info.date =  result.date.split("-").reverse().join("/")
-		this.info.numFlight = result.numFlight
-		this.info.pilot = result.pilot
-		this.info.gliderType = result.gliderType
-		this.info.registration = result.registration
-		this.info.callsign = result.callsign
-		this.info.competitionClass = result.competitionClass
-		this.info.loggerId = result.loggerId
-		this.info.loggerManufacturer = result.loggerManufacturer
-		this.info.loggerType = result.loggerType
-		this.info.security = result.security   
-		this.fixes = result.fixes  
-		if (this.fixes.length > 2) {
-			// original code commented
-			this.info.offsetUTC = offset.computeOffsetUTC(this.fixes[0].latitude, this.fixes[0].longitude, this.fixes[1].timestamp)
-			// this.computeOffsetUTC()    
-			// to temporarily solve the problem, we give a null default value to offsetUTC
-			//this.info.offsetUTC = 0
-			this.analyzeFixes()
-		} else {
-			this.info.parsingError = 'No points after decoding'
-		}
+			let result = IGCParser.parse(this.igcData, { lenient: true });
+			try {
+			// on passe de YYYY-MM-DD à DD/MM/YYYY
+			this.info.date =  result.date.split("-").reverse().join("/")
+			this.info.numFlight = result.numFlight
+			this.info.pilot = result.pilot
+			this.info.gliderType = result.gliderType
+			this.info.registration = result.registration
+			this.info.callsign = result.callsign
+			this.info.competitionClass = result.competitionClass
+			this.info.loggerId = result.loggerId
+			this.info.loggerManufacturer = result.loggerManufacturer
+			this.info.loggerType = result.loggerType
+			this.info.security = result.security   
+			this.fixes = result.fixes  
+			if (this.fixes.length > 2) {
+				// original code commented
+				this.info.offsetUTC = offset.computeOffsetUTC(this.fixes[0].latitude, this.fixes[0].longitude, this.fixes[1].timestamp)
+				// this.computeOffsetUTC()    
+				// to temporarily solve the problem, we give a null default value to offsetUTC
+				//this.info.offsetUTC = 0
+				this.analyzeFixes()
+			} else {
+				this.info.parsingError = 'No points after decoding'
+			}
+			} catch (error) {
+				this.info.parsingError = error
+			}
 		} catch (error) {
-		this.info.parsingError = error
+			console.log(error)
+			//console.log()
 		}
   	}
 

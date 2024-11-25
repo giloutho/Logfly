@@ -173,6 +173,7 @@ function workAfterResizeIsDone() {
   msg += '\n\n'+i18n.gettext('If the screen is blank, restart')
   //alert('tableHeight '+tableHeight+' logLines '+logLines+' tableLines '+tableLines)
   alert(msg)
+  $('#tx-search').val('')
   tableStandard()  
 }
 
@@ -1165,14 +1166,21 @@ function readIgc(igcID, dbGlider) {
       let req ='SELECT V_IGC, V_LatDeco, V_LongDeco, V_AltDeco, V_Site FROM Vol WHERE V_ID = ?'
       try {
         const stmt = db.prepare(req)
-        const selIgc = stmt.get(igcID)
+        const selIgc = stmt.get(igcID)       
         if (selIgc.V_IGC === undefined || selIgc.V_IGC == "" || selIgc.V_IGC == null) {
           noGpsFlight = true
           mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
         } else {
           noGpsFlight = false
           currIgcText = selIgc.V_IGC
-          igcDisplay(currIgcText, dbGlider)
+          // In some cases, the A record may be missing
+          // bug introduced in V4 with merged flights
+          if (currIgcText.substring(0, 1) === 'A') {
+            igcDisplay(currIgcText, dbGlider)
+          } else {
+            noGpsFlight = true
+            mapWithoutIgc(selIgc.V_LatDeco, selIgc.V_LongDeco, selIgc.V_AltDeco, selIgc.V_Site) 
+          }
         }
       } catch (err) {
         displayStatus('Database error')        
