@@ -89,6 +89,9 @@ btnMenu.addEventListener('click', (event) => {
 function logbookCopy() {
     $('#status').hide()
     $('#div_text').removeClass('d-none')
+    document.getElementById('tx_1').innerHTML = 'test OpenAIP'
+    document.getElementById('tx_2').innerHTML = '...'
+    testOpenAIP()
 }
 
 function jsonExport() {
@@ -199,6 +202,64 @@ function listSerialPorts() {
         displayStatus(msg)
       })    
 }
+
+async function testOpenAIP() {
+    const airspaces = await downloadAirspaces()
+   // console.dir(airspaces)
+    console.log('airspaces length '+airspaces.length)
+    const filename = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
+    console.log(filename)
+    fs.writeFileSync(filename, JSON.stringify(airspaces))
+    // ipcRenderer.invoke('openaip',airspaces).then((result) => {
+    //     console.log('Ouf...')
+    //   })
+
+
+/*     for (let i = 0; i < airspaces.length; i++) {
+        const element = airspaces[i];
+        console.log('type '+element.type)
+    } */
+   // let airspaceObj = JSON.parse(airspaces)
+   // console.log(airspaceObj.length)
+}
+
+async function downloadAirspaces() {
+    const OPENAIP_AIRSPACE_ENDPOINT = `https://api.core.openaip.net/api/airspaces?limit=1000&apiKey={key}&page={page}`;
+    const openAipKey = '11241005d00b083e0a4ed1e66fdf05d3'
+    const airspaces = [];
+    let delayMs = 10;
+    let page = 1;
+    let totalPages = 1;
+    while (page <= totalPages) {
+    // const url = OPENAIP_AIRSPACE_ENDPOINT.replace(`{key}`, openAipKey).replace(`{page}`, String(page))
+    // test Annecy
+    //const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&pos=45.863,6.1725&dist=35000&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
+    // test bbox planfait veyrier
+     const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.17943333,45.83916,6.2298,45.8935&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
+     // test gourdon
+   //  const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.941416666666667,43.700183333333335,7.019166666666667,43.7297&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
+      try {
+        console.log(`fetching page ${page}/${totalPages}`);
+        const response = await fetch(url);
+        // Delay to avoid too many requests.
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        if (response.ok) {
+          const info = await response.json();
+          totalPages = info.totalPages;
+          airspaces.push(...info.items);
+     //     console.dir(airspaces)
+          page++;
+          delayMs = 10;        
+        } else {
+          delayMs *= 2;
+          console.error(`HTTP status ${response.status}`);
+        }
+      } catch (e) {
+        console.error(`Error`, e);
+      }
+    }
+    return airspaces;
+  }
 
 function displayStatus(content) {
     statusContent.innerHTML = content

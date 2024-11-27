@@ -348,6 +348,7 @@ function buildMap() {
   //setTimeout(function(){ map.fitBounds(geojsonLayer.getBounds()); }, 1000);
   // on supprime pour l'instant, on y va sans timeout
   map.fitBounds(geojsonLayer.getBounds())
+  console.log('bbox : '+geojsonLayer.getBounds().toBBoxString())
 }
 
 function createPopThermal(feature, layer) {
