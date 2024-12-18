@@ -8,7 +8,8 @@ const log = require('electron-log');
 const Store = require('electron-store')
 const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
-const dbadd = require('../../utils/db/db-add.js')
+const dbadd = require('../../utils/db/db-add.js');
+const { geoJSON } = require('leaflet');
 const btnMenu = document.getElementById('toggleMenu')
 const btnOption1 = document.getElementById('option1')
 const btnOption2 = document.getElementById('option2')
@@ -205,11 +206,29 @@ function listSerialPorts() {
 
 async function testOpenAIP() {
     const airspaces = await downloadAirspaces()
-   // console.dir(airspaces)
-    console.log('airspaces length '+airspaces.length)
-    const filename = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
-    console.log(filename)
-    fs.writeFileSync(filename, JSON.stringify(airspaces))
+    const nbDownl = airspaces.length
+    const filejson = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
+    // console.log(filename)
+    fs.writeFileSync(filejson, JSON.stringify(airspaces))
+    if (Array.isArray(airspaces)) {
+        ipcRenderer.invoke('openaip',airspaces,true).then((aipGeojson) => {      
+            const nbAip = aipGeojson.features.length        
+            if (nbAip > 0) {
+                alert(`${nbAip} concernés / ${nbDownl} reçus  `)
+            } else {
+                alert(`Pas d'espaces concernés / ${nbDownl} reçus  `)
+            }
+            // debugging
+            const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json');
+            fs.writeFileSync(filename, JSON.stringify(aipGeojson))
+            console.log('Ecriture OK...')
+        })
+    } 
+
+
+    // const filename = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
+    // console.log(filename)
+    // fs.writeFileSync(filename, JSON.stringify(airspaces))
     // ipcRenderer.invoke('openaip',airspaces).then((result) => {
     //     console.log('Ouf...')
     //   })
@@ -224,23 +243,40 @@ async function testOpenAIP() {
 }
 
 async function downloadAirspaces() {
-    const OPENAIP_AIRSPACE_ENDPOINT = `https://api.core.openaip.net/api/airspaces?limit=1000&apiKey={key}&page={page}`;
+  //  const OPENAIP_AIRSPACE_ENDPOINT = `https://api.core.openaip.net/api/airspaces?limit=1000&apiKey={key}&page={page}`;
     const openAipKey = '11241005d00b083e0a4ed1e66fdf05d3'
+    // Semnoz
+ //   const bbox = '6.0345,45.780233,6.102883,45.8245333'
+    // planfait veyrier
+   // const bbox = '6.17943333,45.83916,6.2298,45.8935'
+   // on teste avec une marge de 11 km soit 0.1 degrés
+   // mini -0.1   maxi +0.1
+   const bbox = '6.079433,45.73916,6.3298,45.9935'
+    //6.179433333333334,45.839166666666664,6.2298,45.8935
+    // Governador
+    //const bbox ='-41.985783,-18.993833,-41.903100,-18.869367'
     const airspaces = [];
     let delayMs = 10;
     let page = 1;
     let totalPages = 1;
-    while (page <= totalPages) {
-    // const url = OPENAIP_AIRSPACE_ENDPOINT.replace(`{key}`, openAipKey).replace(`{page}`, String(page))
+    const openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&bbox=${bbox}&apiKey=${openAipKey}`
+    console.log(openAip_Url)
+    while (page <= totalPages) {       
+    
     // test Annecy
     //const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&pos=45.863,6.1725&dist=35000&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
     // test bbox planfait veyrier
-     const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.17943333,45.83916,6.2298,45.8935&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
+   //  const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.17943333,45.83916,6.2298,45.8935&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
+   // test Planfait veyrier avec une marge de 11km soit 0,1 degrés
+
+     // planfait + petit
+     //               https://api.core.openaip.net/api/airspaces?page=1limit=1000&bbox=6.0345,45.780233,6.102883,45.8245333&apiKey=1124100…
+   //   const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=1000&bbox=6.0345,45.780233,6.102883,45.8245333&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
      // test gourdon
    //  const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.941416666666667,43.700183333333335,7.019166666666667,43.7297&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
       try {
         console.log(`fetching page ${page}/${totalPages}`);
-        const response = await fetch(url);
+        const response = await fetch(openAip_Url);
         // Delay to avoid too many requests.
         await new Promise((resolve) => setTimeout(resolve, delayMs));
         if (response.ok) {

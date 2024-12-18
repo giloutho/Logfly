@@ -2,6 +2,7 @@ const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-pars
 const smooth = require('array-smooth')
 const trigo = require('../../utils/geo/trigo.js')
 const offset = require('../../utils/geo/offset-utc.js')
+const turfbbox = require('@turf/bbox').default
 
 class IGCDecoder {
 
@@ -60,6 +61,7 @@ class IGCDecoder {
 				'properties' : {
 					'name':'',
 					'time':'',
+					'bbox' :'',
 					'_gpxType':'trk',
 					'coordTimes': []
 				},
@@ -192,7 +194,15 @@ class IGCDecoder {
 		if (this.fixes[i].longitude < this.stat.longMini) this.stat.longMini = this.fixes[i].longitude;   		
 		this.params.push(pointData)			
     }
-	
+	// Compute bbox and store it in geojson
+	let bboxTrack = turfbbox(this.GeoJSON)
+	const minX = (Math.round(bboxTrack[0] * 1000000) / 1000000).toFixed(6)
+	const minY = (Math.round(bboxTrack[1] * 1000000) / 1000000).toFixed(6)
+	const maxX = (Math.round(bboxTrack[2] * 1000000) / 1000000).toFixed(6)
+	const maxY = (Math.round(bboxTrack[3] * 1000000) / 1000000).toFixed(6)
+	const bboxStr = minX+','+minY+','+maxX+','+maxY
+	this.GeoJSON.features[0]["properties"]["bbox"] = bboxStr
+	console.log('bboxStr : '+bboxStr)
     this.stat.duration = flTime // Flight time computed in seconds 
 	this.stat.interval = Math.round(this.stat.duration/this.fixes.length)
 		// console.log('flTime : '+flTime+' Calcul intervalle : '+this.stat.duration+' / '+this.fixes.length+'  interval : '+this.stat.interval)

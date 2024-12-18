@@ -7,6 +7,8 @@ const store = new Store()
 const dblog = require('../../../utils/db/db-search.js')
 const pieGnerator = require('../../../utils/graphic/pie-generator.js')
 const configkey  = require ('../../../../config/config.js')
+const turfBoolean = require('@turf/boolean-point-in-polygon').default
+const turfHelper = require('@turf/helpers')
 const listkey = configkey.access
 
 let mainTrack
@@ -26,6 +28,7 @@ const mapSidebar = require('../../../leaflet/sidebar-tabless.js')
 
 const btnClose = document.getElementById('bt-close')
 const btnInfos  = document.getElementById('bt-infos')
+const btnAip = document.getElementById('bt-aip')
 const btnMeasure  = document.getElementById('bt-mes')
 
 let currlang
@@ -39,6 +42,7 @@ let map
 let layerControl
 let scoreGroup
 let airspGroup
+let aipGroup
 let geoScore
 let currOAFile
 
@@ -343,13 +347,104 @@ function buildMap() {
       }      
     ]
 });
+
+map.on('click',function(e){
+  lat = e.latlng.lat
+  lon = e.latlng.lng
+//   let titleText = i18n.gettext('Lat')+' : '+(Math.round(lat * 1000) / 1000).toFixed(3)+'   '+i18n.gettext('Long')+' : '+(Math.round(lon * 1000) / 1000).toFixed(3)     
+  let pointClick = [e.latlng.lng, e.latlng.lat]
+  map.eachLayer(function(layer){
+    if (layer.hasOwnProperty('feature')) {
+      // console.log(JSON.stringify(layer.feature))
+      // if (turfBoolean(pointClick, layer.feature)) {
+         if (layer.feature.hasOwnProperty('properties')) {
+          console.log(JSON.stringify(layer.feature.geometry))
+          if (layer.feature.geometry.type == 'Polygon') { 
+            if (turfBoolean(pointClick, layer.feature)) {
+              console.log('Ok')
+            }
+        }
+      //     if (layer.feature.properties.Class != undefined) {
+      //     console.log(JSON.stringify(layer.feature.properties))
+      //       //console.log('Name '+JSON.stringify(layer.feature.properties.name))
+      //     }
+  
+      //     }
+      }
+
+
+
+
+      //     alert('click good')
+      //     // if (turfBoolean(pointClick, layer.feature)) {
+      //     //     infoPanel += infoLayout(layer.feature.properties)
+      //     //   }
+      
+    }
+    
+  })
+ })
+
 // est ce nécessaire  ? a voir sur un ordi moins rapide
 // j'imagine que je l'avais placé pour attendre la création de la carte
   //setTimeout(function(){ map.fitBounds(geojsonLayer.getBounds()); }, 1000);
   // on supprime pour l'instant, on y va sans timeout
   map.fitBounds(geojsonLayer.getBounds())
-  console.log('bbox : '+geojsonLayer.getBounds().toBBoxString())
+  //console.log('bbox : '+geojsonLayer.getBounds().toBBoxString())
 }
+
+function clickHandler(e) {
+
+  let pointClick = [e.latlng.lng, e.latlng.lat]
+  console.log(pointClick)
+  map.eachLayer(function(layer){
+      // if (layer.hasOwnProperty('feature')) {
+      //     if (turfBoolean(pointClick, layer.feature)) {
+      //         console.log(layer.feature.properties)
+      //       }
+      // }
+    
+  })
+
+
+
+  // var clickBounds = L.latLngBounds(e.latlng, e.latlng);
+
+  // var intersectingFeatures = []
+  //   for (let l in map._layers) {
+  //   const overlay = map._layers[l]
+  //   if (overlay._layers) {
+  //     for (let f in overlay._layers) {
+  //       const feature = overlay._layers[f]
+  //       let bounds
+  //       if (feature.getBounds) bounds = feature.getBounds()
+  //       else if (feature._latlng) {
+  //         bounds = L.latLngBounds(feature._latlng, feature._latlng)
+  //       }
+  //       if (bounds && clickBounds.intersects(bounds)) {
+  //         intersectingFeatures.push(feature)
+  //       }
+  //     }
+  //   }
+  // }
+  // let html = ''
+  // for (let i = 0; i < intersectingFeatures.length; i++) {
+  //   const element = intersectingFeatures[i]
+  //   if (element.feature != undefined) {
+  //      if (element.feature.properties != undefined) {
+  //   //   //  console.log(element.feature.properties)
+  //       console.log(JSON.stringify(element.feature.properties.Name))
+  //   //     html += '['+JSON.stringify(element.feature.properties.Class)+' '+JSON.stringify(element.feature.properties.type)+']<br/>'
+  //     } 
+  //    }
+  // }
+  // if (html != '') {
+  //   map.openPopup(html, e.latlng, {
+  //     offset: L.point(0, -24)
+  //   })
+  // }
+}
+
 
 function createPopThermal(feature, layer) {
   let htmlTable = '<table><caption>'+feature.properties.alt_gain+'m - '+feature.properties.avg_climb+'m/s</caption>';                
@@ -445,6 +540,10 @@ function iniForm() {
   btnMeasure.innerHTML = i18n.gettext('Measure')
   btnMeasure.addEventListener('click',(event) => {
     locMeasure._toggleMeasure()
+  })
+  btnAip.innerHTML = i18n.gettext('Airspaces')
+  btnAip.addEventListener('click',(event) => {
+    reqOpenAip()
   })
 }
 
@@ -632,6 +731,14 @@ function fillSidebarChecking() {
   htmlText += '</div>'
   htmlText += '<br><br>'
   htmlText += '<div id="check-result" class="d-none" style="font-size:16px;"></div>'
+  htmlText += '<br>'
+  htmlText += '<div class="d-flex align-items-center">'
+  htmlText += '     <button type="button" class="btn-light btn-sm mr-3" onclick="checkOpenAip()">'+i18n.gettext('OpenAIP online')+'</button>'
+  htmlText += '     <div id="check-file" class="d-none" style="font-size:16px;">Bazile_last.txt</div>'
+  htmlText += '     <div class="spinner-border text-danger ml-auto d-none" role="status" id="waiting-check">'
+  htmlText += '        <span class="sr-only">Loading...</span>'
+  htmlText += '     </div>'
+  htmlText += '</div>'
 
   return htmlText  
 }
@@ -988,6 +1095,100 @@ function displaySegment(lat1,long1,lat2,long2) {
   map.fitBounds([[lat1, long1],[lat2, long2]]);      
 }   
 
+// ****************** openAIP section *********************
+// function reqOpenAip() {
+//   sidebar.open('check')
+// }
+
+async function reqOpenAip() {
+    const airspaces = await downloadAirspaces()
+    const nbDownl = airspaces.length
+    if (Array.isArray(airspaces)) {
+        ipcRenderer.invoke('openaip',airspaces,true).then((totalGeoJson) => {      
+            const nbAip = totalGeoJson.length        
+            if (nbAip > 0) {
+                alert(`${nbAip} concernés / ${nbDownl} reçus  `)
+                displayAip(totalGeoJson) 
+            } else {
+                alert(`Pas d'espaces concernés / ${nbDownl} reçus  `)
+            }
+            // debugging
+            const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json');
+            fs.writeFileSync(filename, JSON.stringify(totalGeoJson))
+            // console.log('Ecriture OK...')
+        })
+    } 
+}
+
+async function downloadAirspaces() {
+  const openAipKey = listkey.openaip
+  console.log('bbox : '+mainTrack.GeoJSON.features[0].properties.bbox)
+  const bbox = mainTrack.GeoJSON.features[0].properties.bbox
+  const airspaces = [];
+  let delayMs = 10;
+  let page = 1;
+  let totalPages = 1;
+  const openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&bbox=${bbox}&apiKey=${openAipKey}`
+  console.log(openAip_Url)
+  while (page <= totalPages) {       
+      try {
+        console.log(`fetching page ${page}/${totalPages}`);
+        const response = await fetch(openAip_Url);
+        // Delay to avoid too many requests.
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        if (response.ok) {
+          const info = await response.json();
+          totalPages = info.totalPages;
+          airspaces.push(...info.items);
+          page++;
+          delayMs = 10;        
+        } else {
+          delayMs *= 2;
+          console.error(`HTTP status ${response.status}`);
+        }
+      } catch (e) {
+        console.error(`Error`, e);
+      }
+    }
+    return airspaces;
+}
+
+function displayAip(totalGeoJson) {
+  if (typeof aipGroup !== "undefined") {
+    map.removeLayer(aipGroup)
+  }
+  aipGroup = new L.LayerGroup()
+  for (let index = 0; index < totalGeoJson.length; index++) {
+    const element = totalGeoJson[index]
+   console.log(element.properties.Name+' '+element.properties.id)
+    //let airSpace = L.geoJson(element,{ style: styleAip, onEachFeature: aipPopup})
+    let airSpace = new L.geoJson(element,{ style: styleAip})
+    aipGroup.addLayer(airSpace)
+  }  
+  aipGroup.addTo(map)
+
+
+  // const geojsonLayer = L.geoJson(aipGeojson,{ style: aipOptions })
+  // aipGroup = new L.LayerGroup()
+  // aipGroup.addTo(map);
+  // aipGroup.addLayer(geojsonLayer);
+    // // airspaces GeoJson added to the map 
+    // for (let index = 0; index < checkResult.airGeoJson.length; index++) {
+    //   const element = checkResult.airGeoJson[index]
+    //   report += element.properties.Name+cr
+    //   airSpace = L.geoJson(element,{ style: styleAirsp, onEachFeature: airSpPopup })
+    //   airspGroup.addLayer(airSpace)
+    // }
+    //airspGroup.addTo(map)
+    // layerControl.addOverlay( airspGroup, i18n.gettext('Checking'))
+    // report += '<p><span style="background-color: #DA4453; color: white;"> &nbsp;&nbsp;&nbsp;'
+    // report += i18n.gettext('violation(s)')+' : '+nbBadPoints+' '+i18n.gettext('points')+'&nbsp;&nbsp;&nbsp;&nbsp;</span></p>'
+    // report += '<i>'+i18n.gettext('Click on an airspace to display the description')+'</i>'
+}
+
+
+// Openair section
+
 function checkAirspace() {
   const selectedFile = ipcRenderer.sendSync('open-file','')
   if(selectedFile.fullPath != null) {    
@@ -1088,6 +1289,26 @@ function showAirspReport(content) {
 function airSpPopup(feature, layer) {
   if (feature.properties) {
       layer.bindPopup('<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name+'<BR/>Floor : '+feature.properties.Floor+'<BR/>Ceiling : '+feature.properties.Ceiling+'<BR/>'+feature.properties.Comment)
+  }
+}
+
+function aipPopup(feature, layer) {
+  if (feature.properties) {
+      let popupMsg = '<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name
+      popupMsg += '<BR/>Floor : '+feature.properties.Floor+'  '+feature.properties.FloorLabel
+      popupMsg += '<BR/>Ceiling : '+feature.properties.Ceiling+'  '+feature.properties.CeilingLabel
+      layer.bindPopup(popupMsg)
+  }
+}
+
+
+function styleAip(feature) {
+  return{      
+    fillColor: feature.properties.Color,
+    fillOpacity: 0.4,
+    weight: 1,
+    opacity: 1,
+    color: 'white'
   }
 }
 

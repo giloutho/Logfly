@@ -161,8 +161,7 @@ const createWindow = () => {
         // comment CheckInfo() for debug
        // checkInfo()
         // and open directly the wanted page
-        //openWindow('logbook')
-        openWindow('utils')
+        openWindow('logbook')
       })
       .catch((ex) => {
         openWindow('logbook')
