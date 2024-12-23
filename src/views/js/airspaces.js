@@ -703,8 +703,8 @@ function downloadBazile() {
             ipcRenderer.send('dl-file-progress', baziUrl)
         })
         .catch((ex) => {
-            alert(i18n.gettext('Bad download URL'))
-        });
+            alert(i18n.gettext('Server or url problem'))
+        })
 }
 
 function displaySubNavbar() {

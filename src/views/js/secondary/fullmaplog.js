@@ -9,6 +9,7 @@ const pieGnerator = require('../../../utils/graphic/pie-generator.js')
 const configkey  = require ('../../../../config/config.js')
 const turfBoolean = require('@turf/boolean-point-in-polygon').default
 const turfHelper = require('@turf/helpers')
+const checkInternetConnected = require('check-internet-connected')
 const listkey = configkey.access
 
 let mainTrack
@@ -28,7 +29,6 @@ const mapSidebar = require('../../../leaflet/sidebar-tabless.js')
 
 const btnClose = document.getElementById('bt-close')
 const btnInfos  = document.getElementById('bt-infos')
-const btnAip = document.getElementById('bt-aip')
 const btnMeasure  = document.getElementById('bt-mes')
 
 let currlang
@@ -91,96 +91,95 @@ ipcRenderer.on('xc-score-result', (_, result) => {
 })
 
 ipcRenderer.on('check-result', (event, checkResult) => {
+  console.log('retour check-result')
   $('#waiting-check').addClass('d-none')
   displayAirCheck(checkResult)
 })
 
 function buildMap() {
-
   // https://stackoverflow.com/questions/54331439/how-to-map-json-object-to-array
 	// pour mieux comprendre map : https://www.digitalocean.com/community/tutorials/4-uses-of-javascripts-arraymap-you-should-know-fr
-  const arrayAlti = mainTrack.GeoJSON.features[0]['geometry']['coordinates'].map(coord => coord[2]);
+  const arrayAlti = mainTrack.GeoJSON.features[0]['geometry']['coordinates'].map(coord => coord[2])
   // times contained in the GeoJSon are only strings
   // conversion to date object is necessary for Highcharts.dateFormat to work on the x axis
-  const arrayHour = mainTrack.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour));
-  map = L.map('carte').setView([0, 0], 5);
+  const arrayHour = mainTrack.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour))
+  map = L.map('carte').setView([0, 0], 5)
 
   const defaultMap = store.get('map')
   switch (defaultMap) {
     case 'open':
         baseMaps.OpenTopo.addTo(map)  
-        break;
+        break
       case 'ign':
         baseMaps.IGN.addTo(map)  
-        break;      
+        break      
       case 'osm':
         baseMaps.OSM.addTo(map) 
-        break;
+        break
       case 'mtk':
         baseMaps.MTK.addTo(map)  
-        break;  
+        break  
       case '4u':
         baseMaps.UMaps.addTo(map)
-        break;     
+        break     
       case 'out':
         baseMaps.Outdoor.addTo(map)           
-        break;           
+        break           
       default:
         baseMaps.OSM.addTo(map)        
-        break;   
+        break   
   }    
 
-  const openKey = listkey.openaip
-  // origin const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/airspaces/{z}/{x}/{y}.png?apiKey=${openKey}`, {
-  const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey=${openKey}`, {
-    maxZoom: 14,
-    minZoom: 4,
-    detectRetina: true,
-    format: 'image/png',
-    transparent: true,
-    opacity: 1,
-  //  tms: true,    must be removed https://groups.google.com/g/openaip/c/Fg8ED96W7O4
-    subdomains: '12',
-  });
+  // const openKey = listkey.openaip
+  // // origin const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/airspaces/{z}/{x}/{y}.png?apiKey=${openKey}`, {
+  // const openaip_cached_basemap = new L.TileLayer(`https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey=${openKey}`, {
+  //   maxZoom: 14,
+  //   minZoom: 4,
+  //   detectRetina: true,
+  //   format: 'image/png',
+  //   transparent: true,
+  //   opacity: 1,
+  // //  tms: true,    must be removed https://groups.google.com/g/openaip/c/Fg8ED96W7O4
+  //   subdomains: '12',
+  // })
 
+  let mousemarker = null
 
-  let mousemarker = null;
-
-  locMeasure.addTo(map);
+  locMeasure.addTo(map)
 
   const trackOptions = {
     color: 'red',
     weight: 2,
     opacity: 0.85
-  };
+  }
 
   const thermOptions = {
     color: 'yellow',
     weight: 6,
     opacity: 0.50
-  };
+  }
 
   const glideOptions = {
     color: '#848484',
     weight: 3, 
     dashArray: '10,5', 
     opacity: 1
-  };
+  }
 
-  map.removeLayer(L.geoJson);
+  map.removeLayer(L.geoJson)
   const geojsonLayer = L.geoJson(mainTrack.GeoJSON,{ style: trackOptions })
-  const tracksGroup = new L.LayerGroup();
-  tracksGroup.addTo(map);
-  tracksGroup.addLayer(geojsonLayer);
+  const tracksGroup = new L.LayerGroup()
+  tracksGroup.addTo(map)
+  tracksGroup.addLayer(geojsonLayer)
 
   const thermalLayerOption = {
     style: thermOptions, 
     pointToLayer: thermalIcon,
     onEachFeature: createPopThermal // the code comes from a mine of snippet Leaflet https://gist.github.com/geog4046instructor
   }
-  const geoThermals =  L.geoJson(anaTrack.geoThermals,thermalLayerOption);
-  const thermalGroup = new L.LayerGroup();
-  thermalGroup.addLayer(geoThermals);
+  const geoThermals =  L.geoJson(anaTrack.geoThermals,thermalLayerOption)
+  const thermalGroup = new L.LayerGroup()
+  thermalGroup.addLayer(geoThermals)
 
   const glideLayerOption = {
     style: glideOptions, 
@@ -188,8 +187,25 @@ function buildMap() {
     onEachFeature: createPopGlide
   }
   const geoGlides =  L.geoJson(anaTrack.geoGlides,glideLayerOption)
-  const GlidesGroup = new L.LayerGroup();
-  GlidesGroup.addLayer(geoGlides);
+  const GlidesGroup = new L.LayerGroup()
+  GlidesGroup.addLayer(geoGlides)
+
+  const openaip_layer =  new L.LayerGroup()
+
+  openaip_layer.on('add',(e)=>{
+    if (typeof aipGroup !== "undefined") {
+      map.addLayer(aipGroup)
+    } else {
+      reqOpenAip()
+    }
+  })
+
+  openaip_layer.on('remove',(e)=>{
+    if (typeof aipGroup !== "undefined") {
+      map.removeLayer(aipGroup)
+    }
+  })
+
 
   let mAisrpaces = i18n.gettext('openAIP')
   let mTrack = i18n.gettext('Track')
@@ -198,13 +214,13 @@ function buildMap() {
   let mScore = i18n.gettext('Score')
 
   let Affichage = {
-    [mAisrpaces] : openaip_cached_basemap,  
+    [mAisrpaces] : openaip_layer,  
     [mTrack] : tracksGroup,
     [mThermal] : thermalGroup,
     [mTrans]: GlidesGroup,
   }
 
-  layerControl = new L.control.layers(baseMaps,Affichage).addTo(map);
+  layerControl = new L.control.layers(baseMaps,Affichage).addTo(map)
   
   const StartIcon = new L.Icon({
     iconUrl: '../../../leaflet/images/windsock22.png',
@@ -213,10 +229,10 @@ function buildMap() {
     iconAnchor: [0, 18],
     popupAnchor: [1, -34],
     shadowSize: [25, 25]
-  });
+  })
 
   startLatlng = L.latLng(mainTrack.fixes[0].latitude, mainTrack.fixes[0].longitude)
-  L.marker(startLatlng,{icon: StartIcon}).addTo(map);
+  L.marker(startLatlng,{icon: StartIcon}).addTo(map)
 
   const EndIcon = new L.Icon({
     iconUrl: '../../../leaflet/images/Arrivee22.png',
@@ -225,17 +241,17 @@ function buildMap() {
     iconAnchor: [4, 18],
     popupAnchor: [1, -34],
     shadowSize: [25, 25]
-  });
+  })
 
   endLatlng = L.latLng(mainTrack.fixes[mainTrack.fixes.length - 1].latitude, mainTrack.fixes[mainTrack.fixes.length - 1].longitude)
-  L.marker(endLatlng,{icon: EndIcon}).addTo(map);
+  L.marker(endLatlng,{icon: EndIcon}).addTo(map)
 
   sidebar = L.control.sidebar({
     autopan: false,       // whether to maintain the centered map point when opening the sidebar
     closeButton: true,    // whether t add a close button to the panes
     container: 'sidebar', // the DOM container or #ID of a predefined sidebar container that should be used
     position: 'left',     // left or right
-  }).addTo(map);
+  }).addTo(map)
 
   buildSidePanels()
   // by default sidebar is open on tab "summary"
@@ -243,7 +259,7 @@ function buildMap() {
 
   const labelAlt = i18n.gettext('Alt')
   const labelSpeed = i18n.gettext('Spd')
-  const labelGround = i18n.gettext('Gnd')
+  const labelGround = i18n.gettext('Gnd H')
 
   hgChart = new Highcharts.Chart({
     chart: {      
@@ -265,32 +281,32 @@ function buildMap() {
             point: {
                 events: {
                     mouseOver: function () {
-                        posMarker = new L.LatLng(mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0]);
+                        posMarker = new L.LatLng(mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0])
                         if (mousemarker == null) {
                           // Le x correspond à l'index, ça tombe bien...
                           // https://gis.stackexchange.com/questions/318400/adding-a-start-and-end-marker-to-a-geojson-linestring                                
-                            mousemarker = new L.marker(posMarker).addTo(map);
+                            mousemarker = new L.marker(posMarker).addTo(map)
                         }
                         else {
-                            mousemarker.setLatLng(posMarker);
+                            mousemarker.setLatLng(posMarker)
                         }
-                      //  info.update(Heure[this.x]+'<br/>Alt : '+altiVal[this.x]+'m<br/>Vz : '+Vario[this.x]+'m/s<br/>Vit : '+Speed[this.x]+' km/h');
+                      //  info.update(Heure[this.x]+'<br/>Alt : '+altiVal[this.x]+'m<br/>Vz : '+Vario[this.x]+'m/s<br/>Vit : '+Speed[this.x]+' km/h')
                     },
                     click: function () {
                         // On peut préciser un niveau de zoom
                         // On peut utiliser map.setView
                         //console.log('x '+this.x+'  Lat '+mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1]+' Long '+mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0])
                        // console.log(arrayHour[this.x])
-                        panMarker = new L.LatLng(mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0]);
-                        map.panTo(panMarker);
+                        panMarker = new L.LatLng(mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][1], mainTrack.GeoJSON.features[0]['geometry']['coordinates'][this.x][0])
+                        map.panTo(panMarker)
                     }
                 }
             },
             events: {
                 mouseOut: function () {
                     if (mousemarker != null) {
-                        map.removeLayer(mousemarker);
-                        mousemarker = null;
+                        map.removeLayer(mousemarker)
+                        mousemarker = null
                     }
                 }
             }
@@ -303,14 +319,14 @@ function buildMap() {
     tooltip: {
       formatter: function (tooltip) {
           if (this.point.isNull) {
-              return 'Null';
+              return 'Null'
           }
-          let index = this.point.index;
-          //var tooltip = Heure[index]+'<br/>Alt : '+altiVal[index]+'m<br/>HS : '+groundVal[index]+'m<br/>Vz : '+Vario[index]+'m/s<br/>Vit : '+Speed[index]+' km/h';
+          let index = this.point.index
+          //var tooltip = Heure[index]+'<br/>Alt : '+altiVal[index]+'m<br/>HS : '+groundVal[index]+'m<br/>Vz : '+Vario[index]+'m/s<br/>Vit : '+Speed[index]+' km/h'
           let gndH = ''
-          if (anaTrack.elevation[index] != undefined) gndH = anaTrack.elevation[index]
+          if (anaTrack.elevation[index] != undefined) gndH = arrayAlti[index]- anaTrack.elevation[index]
           tooltip = Highcharts.dateFormat('%H:%M:%S', arrayHour[index])+'<br/>'+labelAlt+' : '+arrayAlti[index]+'m<br/>'+labelGround+' : '+gndH+'m<br/>Vz : '+mainTrack.vz[index].toFixed(2)+'m/s<br/>'+labelSpeed+' : '+mainTrack.speed[index].toFixed(0)+' km/h'
-          return tooltip;
+          return tooltip
       },
       crosshairs: true
     },    
@@ -318,7 +334,7 @@ function buildMap() {
       categories: arrayHour,
       labels: {
         formatter: function() {
-          return Highcharts.dateFormat('%H:%M', this.value);
+          return Highcharts.dateFormat('%H:%M', this.value)
         }
       },       
 
@@ -346,43 +362,32 @@ function buildMap() {
         data: anaTrack.elevation
       }      
     ]
-});
+})
 
 map.on('click',function(e){
   lat = e.latlng.lat
   lon = e.latlng.lng
-//   let titleText = i18n.gettext('Lat')+' : '+(Math.round(lat * 1000) / 1000).toFixed(3)+'   '+i18n.gettext('Long')+' : '+(Math.round(lon * 1000) / 1000).toFixed(3)     
+  let html = ''
   let pointClick = [e.latlng.lng, e.latlng.lat]
   map.eachLayer(function(layer){
     if (layer.hasOwnProperty('feature')) {
-      // console.log(JSON.stringify(layer.feature))
-      // if (turfBoolean(pointClick, layer.feature)) {
-         if (layer.feature.hasOwnProperty('properties')) {
-          console.log(JSON.stringify(layer.feature.geometry))
-          if (layer.feature.geometry.type == 'Polygon') { 
-            if (turfBoolean(pointClick, layer.feature)) {
-              console.log('Ok')
-            }
+      if (layer.feature.hasOwnProperty('properties')) {
+        if (layer.feature.geometry.type == 'Polygon') { 
+          if (turfBoolean(pointClick, layer.feature)) {
+                html += '<i class="fa fa-space-shuttle"></i>&nbsp;'+layer.feature.properties.Class+'&nbsp;&nbsp;['+layer.feature.properties.type+']&nbsp;&nbsp;'
+                html += layer.feature.properties.Name+'<br/>'
+                html += '<i class="fa fa-arrow-down"></i>&nbsp;'+layer.feature.properties.FloorLabel+'('+layer.feature.properties.Floor+'m )&nbsp;&nbsp;&nbsp;'
+                html += '<i class="fa fa-arrow-up"></i>&nbsp;'+layer.feature.properties.CeilingLabel+' ('+layer.feature.properties.Ceiling+'m )</br></br>'
+          }
         }
-      //     if (layer.feature.properties.Class != undefined) {
-      //     console.log(JSON.stringify(layer.feature.properties))
-      //       //console.log('Name '+JSON.stringify(layer.feature.properties.name))
-      //     }
-  
-      //     }
       }
-
-
-
-
-      //     alert('click good')
-      //     // if (turfBoolean(pointClick, layer.feature)) {
-      //     //     infoPanel += infoLayout(layer.feature.properties)
-      //     //   }
-      
-    }
-    
+    }    
   })
+  if (html != '') {
+    map.openPopup(html, e.latlng, {
+      offset: L.point(0, -24)
+    })
+  }
  })
 
 // est ce nécessaire  ? a voir sur un ordi moins rapide
@@ -390,81 +395,27 @@ map.on('click',function(e){
   //setTimeout(function(){ map.fitBounds(geojsonLayer.getBounds()); }, 1000);
   // on supprime pour l'instant, on y va sans timeout
   map.fitBounds(geojsonLayer.getBounds())
-  //console.log('bbox : '+geojsonLayer.getBounds().toBBoxString())
 }
-
-function clickHandler(e) {
-
-  let pointClick = [e.latlng.lng, e.latlng.lat]
-  console.log(pointClick)
-  map.eachLayer(function(layer){
-      // if (layer.hasOwnProperty('feature')) {
-      //     if (turfBoolean(pointClick, layer.feature)) {
-      //         console.log(layer.feature.properties)
-      //       }
-      // }
-    
-  })
-
-
-
-  // var clickBounds = L.latLngBounds(e.latlng, e.latlng);
-
-  // var intersectingFeatures = []
-  //   for (let l in map._layers) {
-  //   const overlay = map._layers[l]
-  //   if (overlay._layers) {
-  //     for (let f in overlay._layers) {
-  //       const feature = overlay._layers[f]
-  //       let bounds
-  //       if (feature.getBounds) bounds = feature.getBounds()
-  //       else if (feature._latlng) {
-  //         bounds = L.latLngBounds(feature._latlng, feature._latlng)
-  //       }
-  //       if (bounds && clickBounds.intersects(bounds)) {
-  //         intersectingFeatures.push(feature)
-  //       }
-  //     }
-  //   }
-  // }
-  // let html = ''
-  // for (let i = 0; i < intersectingFeatures.length; i++) {
-  //   const element = intersectingFeatures[i]
-  //   if (element.feature != undefined) {
-  //      if (element.feature.properties != undefined) {
-  //   //   //  console.log(element.feature.properties)
-  //       console.log(JSON.stringify(element.feature.properties.Name))
-  //   //     html += '['+JSON.stringify(element.feature.properties.Class)+' '+JSON.stringify(element.feature.properties.type)+']<br/>'
-  //     } 
-  //    }
-  // }
-  // if (html != '') {
-  //   map.openPopup(html, e.latlng, {
-  //     offset: L.point(0, -24)
-  //   })
-  // }
-}
-
 
 function createPopThermal(feature, layer) {
-  let htmlTable = '<table><caption>'+feature.properties.alt_gain+'m - '+feature.properties.avg_climb+'m/s</caption>';                
-  htmlTable +='<tr><td>'+i18n.gettext('Altitude gain')+'</td><td>'+feature.properties.alt_gain+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Average climb')+'</td><td>'+feature.properties.avg_climb+'m/s</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Maximum climb')+'</td><td>'+feature.properties.max_climb+'m/s</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Peak climb')+'</td><td>'+feature.properties.peak_climb+'m/s</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Efficiency')+'</td><td>'+feature.properties.efficiency+'%</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Start altitude')+'</td><td>'+feature.properties.start_alt+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Finish altitude')+'</td><td>'+feature.properties.finish_alt+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Start time')+'</td><td>'+feature.properties.start_time+'</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Finish time')+'</td><td>'+feature.properties.finish_time+'</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Duration')+'</td><td>'+feature.properties.duration+'</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude gain')+'</td><td>'+feature.properties.acc_gain+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude loss')+'</td><td>'+feature.properties.acc_loss+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Drift')+'</td><td>'+feature.properties.drift+'</td></tr>';
-  htmlTable += '</table>';
- // htmlTable = '<table><caption>1028m - 1,3 m/s</caption><tr><td>Altitude gain</td><td>1028m</td></tr><tr><td>Average climb</td><td>1,3m/s</td></tr><tr><td>Maximum climb</td><td>2,7m/s</td></tr><tr><td>Peak climb</td><td>5,0m/s</td></tr><tr><td>Efficiency</td><td>50%</td></tr><tr><td>Start altitude</td><td>1845m</td></tr><tr><td>Finish altitude</td><td>2873m</td></tr><tr><td>Start time</td><td>13:00:17</td></tr><tr><td>Finish time</td><td>13:13:04</td></tr><tr><td>Duration</td><td>12mn47s</td></tr><tr><td>Accumulated altitude gain</td><td>1081m</td></tr><tr><td>Accumulated altitude loss</td><td>-53m</td></tr><tr><td>Drift</td><td>7,5km/h SW</td></tr></table>';
-  layer.bindPopup(htmlTable);
-  //layer.bindPopup('<h1>'+feature.properties.alt_gain+'</h1><p>name: '+feature.properties.avg_climb+'</p>');
+  let htmlTable = '<table><caption>'+feature.properties.alt_gain+'m - '+feature.properties.avg_climb+'m/s</caption>'                
+  htmlTable +='<tr><td>'+i18n.gettext('Altitude gain')+'</td><td>'+feature.properties.alt_gain+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Average climb')+'</td><td>'+feature.properties.avg_climb+'m/s</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Maximum climb')+'</td><td>'+feature.properties.max_climb+'m/s</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Peak climb')+'</td><td>'+feature.properties.peak_climb+'m/s</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Efficiency')+'</td><td>'+feature.properties.efficiency+'%</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Start altitude')+'</td><td>'+feature.properties.start_alt+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Finish altitude')+'</td><td>'+feature.properties.finish_alt+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Start time')+'</td><td>'+feature.properties.start_time+'</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Finish time')+'</td><td>'+feature.properties.finish_time+'</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Duration')+'</td><td>'+feature.properties.duration+'</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude gain')+'</td><td>'+feature.properties.acc_gain+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude loss')+'</td><td>'+feature.properties.acc_loss+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Drift')+'</td><td>'+feature.properties.drift+'</td></tr>'
+  htmlTable += '</table>'
+ // htmlTable = '<table><caption>1028m - 1,3 m/s</caption><tr><td>Altitude gain</td><td>1028m</td></tr><tr><td>Average climb</td><td>1,3m/s</td></tr><tr><td>Maximum climb</td><td>2,7m/s</td></tr><tr><td>Peak climb</td><td>5,0m/s</td></tr><tr><td>Efficiency</td><td>50%</td></tr><tr><td>Start altitude</td><td>1845m</td></tr><tr><td>Finish altitude</td><td>2873m</td></tr><tr><td>Start time</td><td>13:00:17</td></tr><tr><td>Finish time</td><td>13:13:04</td></tr><tr><td>Duration</td><td>12mn47s</td></tr><tr><td>Accumulated altitude gain</td><td>1081m</td></tr><tr><td>Accumulated altitude loss</td><td>-53m</td></tr><tr><td>Drift</td><td>7,5km/h SW</td></tr></table>'
+  layer.bindPopup(htmlTable)
+  //layer.bindPopup('<h1>'+feature.properties.alt_gain+'</h1><p>name: '+feature.properties.avg_climb+'</p>')
   
 }
 
@@ -475,34 +426,34 @@ function openNav() {
   // https://stackoverflow.com/questions/4787527/how-to-find-the-width-of-a-div-using-vannilla-javascript
   // http://jsfiddle.net/juxy42ev/    -> Toggle sidebar
   let screenWidth = document.getElementById('graphe').offsetWidth
-  document.getElementById("sideNavigation").style.width = "260px";
-  document.getElementById("carte").style.marginLeft = "260px";
-  document.getElementById("carte").style.width = screenWidth - 260 + 'px';
-  document.getElementById("graphe").style.marginLeft = "260px";
-  document.getElementById('graphe').style.width = screenWidth - 260 + 'px';
-  hgChart.reflow();
-  $('.leaflet-control-layers-selector')[9].click();   // see line 722 index is modified for 8 and 9
-  $('.leaflet-control-layers-selector')[10].click();
+  document.getElementById("sideNavigation").style.width = "260px"
+  document.getElementById("carte").style.marginLeft = "260px"
+  document.getElementById("carte").style.width = screenWidth - 260 + 'px'
+  document.getElementById("graphe").style.marginLeft = "260px"
+  document.getElementById('graphe').style.width = screenWidth - 260 + 'px'
+  hgChart.reflow()
+  $('.leaflet-control-layers-selector')[9].click()   // see line 722 index is modified for 8 and 9
+  $('.leaflet-control-layers-selector')[10].click()
 }
 
 function createPopGlide(feature, layer) {
-  let htmlTable = '<table><caption>'+feature.properties.distance+'km - ['+feature.properties.avg_glide+'] '+feature.properties.avg_speed+'km/h</caption>';                
-  htmlTable +='<tr><td>'+i18n.gettext('Altitude change')+'</td><td>'+feature.properties.alt_change+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Average descent')+'</td><td>'+feature.properties.avg_descent+'m/s</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Distance')+'</td><td>'+feature.properties.distance+'km</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Average glide ratio')+'</td><td>'+feature.properties.avg_glide+':1</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Average speed')+'</td><td>'+feature.properties.avg_speed+'km/h</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Start altitude')+'</td><td>'+feature.properties.start_alt+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Finish altitude')+'</td><td>'+feature.properties.finish_alt+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Start time')+'</td><td>'+feature.properties.start_time+'</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Finish time')+'</td><td>'+feature.properties.finish_time+'</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Duration')+'</td><td>'+feature.properties.duration+'</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude gain')+'</td><td>'+feature.properties.acc_gain+'m</td></tr>';
-  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude loss')+'</td><td>'+feature.properties.acc_loss+'m</td></tr>';
-  htmlTable += '</table>';
- // htmlTable = '<table><caption>1028m - 1,3 m/s</caption><tr><td>Altitude gain</td><td>1028m</td></tr><tr><td>Average climb</td><td>1,3m/s</td></tr><tr><td>Maximum climb</td><td>2,7m/s</td></tr><tr><td>Peak climb</td><td>5,0m/s</td></tr><tr><td>Efficiency</td><td>50%</td></tr><tr><td>Start altitude</td><td>1845m</td></tr><tr><td>Finish altitude</td><td>2873m</td></tr><tr><td>Start time</td><td>13:00:17</td></tr><tr><td>Finish time</td><td>13:13:04</td></tr><tr><td>Duration</td><td>12mn47s</td></tr><tr><td>Accumulated altitude gain</td><td>1081m</td></tr><tr><td>Accumulated altitude loss</td><td>-53m</td></tr><tr><td>Drift</td><td>7,5km/h SW</td></tr></table>';
-  layer.bindPopup(htmlTable);
-  //layer.bindPopup('<h1>'+feature.properties.alt_gain+'</h1><p>name: '+feature.properties.avg_climb+'</p>');
+  let htmlTable = '<table><caption>'+feature.properties.distance+'km - ['+feature.properties.avg_glide+'] '+feature.properties.avg_speed+'km/h</caption>'                
+  htmlTable +='<tr><td>'+i18n.gettext('Altitude change')+'</td><td>'+feature.properties.alt_change+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Average descent')+'</td><td>'+feature.properties.avg_descent+'m/s</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Distance')+'</td><td>'+feature.properties.distance+'km</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Average glide ratio')+'</td><td>'+feature.properties.avg_glide+':1</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Average speed')+'</td><td>'+feature.properties.avg_speed+'km/h</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Start altitude')+'</td><td>'+feature.properties.start_alt+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Finish altitude')+'</td><td>'+feature.properties.finish_alt+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Start time')+'</td><td>'+feature.properties.start_time+'</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Finish time')+'</td><td>'+feature.properties.finish_time+'</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Duration')+'</td><td>'+feature.properties.duration+'</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude gain')+'</td><td>'+feature.properties.acc_gain+'m</td></tr>'
+  htmlTable += '<tr><td>'+i18n.gettext('Accumulated altitude loss')+'</td><td>'+feature.properties.acc_loss+'m</td></tr>'
+  htmlTable += '</table>'
+ // htmlTable = '<table><caption>1028m - 1,3 m/s</caption><tr><td>Altitude gain</td><td>1028m</td></tr><tr><td>Average climb</td><td>1,3m/s</td></tr><tr><td>Maximum climb</td><td>2,7m/s</td></tr><tr><td>Peak climb</td><td>5,0m/s</td></tr><tr><td>Efficiency</td><td>50%</td></tr><tr><td>Start altitude</td><td>1845m</td></tr><tr><td>Finish altitude</td><td>2873m</td></tr><tr><td>Start time</td><td>13:00:17</td></tr><tr><td>Finish time</td><td>13:13:04</td></tr><tr><td>Duration</td><td>12mn47s</td></tr><tr><td>Accumulated altitude gain</td><td>1081m</td></tr><tr><td>Accumulated altitude loss</td><td>-53m</td></tr><tr><td>Drift</td><td>7,5km/h SW</td></tr></table>'
+  layer.bindPopup(htmlTable)
+  //layer.bindPopup('<h1>'+feature.properties.alt_gain+'</h1><p>name: '+feature.properties.avg_climb+'</p>')
   
 }
 
@@ -513,10 +464,10 @@ function iniForm() {
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
-        let content = fs.readFileSync(path.join(__dirname, '../../../lang/',currLangFile));
-        let langjson = JSON.parse(content);
+        let content = fs.readFileSync(path.join(__dirname, '../../../lang/',currLangFile))
+        let langjson = JSON.parse(content)
         i18n.setMessages('messages', currLang, langjson)
-        i18n.setLocale(currLang);
+        i18n.setLocale(currLang)
     }
   } catch (error) {
       log.error('[fullmap.js] Error while loading the language file')
@@ -541,15 +492,11 @@ function iniForm() {
   btnMeasure.addEventListener('click',(event) => {
     locMeasure._toggleMeasure()
   })
-  btnAip.innerHTML = i18n.gettext('Airspaces')
-  btnAip.addEventListener('click',(event) => {
-    reqOpenAip()
-  })
 }
 
 // from https://gist.github.com/geog4046instructor/80ee78db60862ede74eacba220809b64
 function thermalIcon (feature, latlng) {
-  let myIcon;
+  let myIcon
   if (feature.properties.best_thermal) {
     myIcon = L.AwesomeMarkers.icon({icon: 'fa-thumbs-up', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'})
   } else {
@@ -560,7 +507,7 @@ function thermalIcon (feature, latlng) {
 
 // from https://gist.github.com/geog4046instructor/80ee78db60862ede74eacba220809b64
 function glideIcon (feature, latlng) {
-  let myIcon;
+  let myIcon
   if (feature.properties.glideToRight) {
     myIcon = L.AwesomeMarkers.icon({icon: 'fa-angle-right', markerColor: 'red', prefix: 'fa', iconColor: 'white'})
   } else {
@@ -631,10 +578,10 @@ function fillSidebarInfo() {
   const dTkOff = String(dateTkoff.getDate()).padStart(2, '0')+'/'+String((dateTkoff.getMonth()+1)).padStart(2, '0')+'/'+dateTkoff.getFullYear()     
   const hTkoff =  Highcharts.dateFormat('%H:%M:%S',dateTkoff)
   const dateLand = new Date(mainTrack.GeoJSON.features[0].properties.coordTimes[mainTrack.GeoJSON.features[0].properties.coordTimes.length - 1])
- // const dateLand = new Date(mainTrack.fixes[mainTrack.fixes.length - 1].timestamp);
+ // const dateLand = new Date(mainTrack.fixes[mainTrack.fixes.length - 1].timestamp)
   const hLand = Highcharts.dateFormat('%H:%M:%S',dateLand)    
-  const durationFormatted = new Date(mainTrack.stat.duration*1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
-  const arrTakeOff = tkoffSite.split("*");
+  const durationFormatted = new Date(mainTrack.stat.duration*1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0]
+  const arrTakeOff = tkoffSite.split("*")
   let formattedSite
   if (arrTakeOff.length > 1)
     formattedSite = arrTakeOff[0]+' ('+arrTakeOff[1]+')'
@@ -733,8 +680,14 @@ function fillSidebarChecking() {
   htmlText += '<div id="check-result" class="d-none" style="font-size:16px;"></div>'
   htmlText += '<br>'
   htmlText += '<div class="d-flex align-items-center">'
+  htmlText += '     <button type="button" class="btn-light btn-sm mr-3" onclick="dlBazile()">'+i18n.gettext('Download Bazile')+'</button>'
+  htmlText += '     <div class="spinner-border text-danger ml-auto d-none" role="status" id="waiting-check">'
+  htmlText += '        <span class="sr-only">Loading...</span>'
+  htmlText += '     </div>'
+  htmlText += '</div>'
+    htmlText += '<br>'
+  htmlText += '<div class="d-flex align-items-center">'
   htmlText += '     <button type="button" class="btn-light btn-sm mr-3" onclick="checkOpenAip()">'+i18n.gettext('OpenAIP online')+'</button>'
-  htmlText += '     <div id="check-file" class="d-none" style="font-size:16px;">Bazile_last.txt</div>'
   htmlText += '     <div class="spinner-border text-danger ml-auto d-none" role="status" id="waiting-check">'
   htmlText += '        <span class="sr-only">Loading...</span>'
   htmlText += '     </div>'
@@ -746,38 +699,38 @@ function fillSidebarChecking() {
 
 function fillSidebarSummary() {
   
-  let percThermals = Math.round(anaTrack.percThermals*100);
+  let percThermals = Math.round(anaTrack.percThermals*100)
   let percGlides = Math.round(anaTrack.percGlides*100)
   let percDives = Math.round(anaTrack.percDives*100)
   let percVarious = Math.round(100-(percThermals+percGlides+percDives))
 
-  let data  = [];
-  let color = [];
-  data.push({ value: percThermals });
-  color.push('#F6BB42');
-  data.push({ value: percGlides });
-  color.push('#8CC152');
-  data.push({ value: percVarious });
-  color.push('#DA4453');
+  let data  = []
+  let color = []
+  data.push({ value: percThermals })
+  color.push('#F6BB42')
+  data.push({ value: percGlides })
+  color.push('#8CC152')
+  data.push({ value: percVarious })
+  color.push('#DA4453')
   if (percDives > 0) {
-    data.push({ value: percDives });
-    color.push('#967ADC');
+    data.push({ value: percDives })
+    color.push('#967ADC')
   }
-  const centerX = 125;
-  const centerY = 125;
-  const radius = 105;
-  let mysvg = '';
-  let arr = pieGnerator.pie(centerX, centerY, radius, data);
+  const centerX = 125
+  const centerY = 125
+  const radius = 105
+  let mysvg = ''
+  let arr = pieGnerator.pie(centerX, centerY, radius, data)
   for (let i = 0; i < arr.length; i++) {
-      let item = arr[i];  
-      mysvg +=`<g transform="${item.transform}"><path d="${item.d}" fill="${color[i]}" /><text fill="white" font-size="14" ${item.text}">${item.value}%</text></g>`;
+      let item = arr[i]  
+      mysvg +=`<g transform="${item.transform}"><path d="${item.d}" fill="${color[i]}" /><text fill="white" font-size="14" ${item.text}">${item.value}%</text></g>`
   }
 
   let htmlText = fillSidebarButtons()
   htmlText +='<br>'
-  htmlText += '<div style="text-align: center;"><svg id="onePieDiv" width="250" height="250">';
-  htmlText += mysvg;
-  htmlText += '</svg></div>';
+  htmlText += '<div style="text-align: center"><svg id="onePieDiv" width="250" height="250">'
+  htmlText += mysvg
+  htmlText += '</svg></div>'
   htmlText +='<p align="center"><span style="margin-left:10px;font-size:16px;background-color:  #F6BB42; color: white;">&nbsp;&nbsp;&nbsp;'+i18n.gettext('Thermal')+'&nbsp;&nbsp;'+percThermals+'&nbsp;%&nbsp;&nbsp;&nbsp;</span>'
   htmlText +='<span style="margin-left:10px;font-size:16px;background-color:  #8CC152; color: white;">&nbsp;&nbsp;&nbsp;'+i18n.gettext('Glide')+'&nbsp;&nbsp;'+percGlides+'&nbsp;%&nbsp;&nbsp;&nbsp;</span>'
   htmlText +='</p>'
@@ -799,23 +752,23 @@ function fillSidebarSummary() {
   }
   const avgThermalClimb = (Math.round(anaTrack.avgThermalClimb * 100) / 100).toFixed(2)
   let avgTransSpeed =  (Math.round(anaTrack.avgTransSpeed * 100) / 100).toFixed(0)
-  const  h = Math.floor(anaTrack.extractTime / 3600);
-  const m = Math.floor(anaTrack.extractTime % 3600 / 60);
-  const s = Math.floor(anaTrack.extractTime % 3600 % 60);
-  const hDisplay = h > 0 ? h + (h == 1 ? "h" : "h") : "";
-  const mDisplay = m > 0 ? m + (m == 1 ? "mn" : "mn") : "";
-  const sDisplay = s > 0 ? s + (s == 1 ? "s" : "s") : "";
-  let hExtractTime = hDisplay + mDisplay + sDisplay;    
+  const  h = Math.floor(anaTrack.extractTime / 3600)
+  const m = Math.floor(anaTrack.extractTime % 3600 / 60)
+  const s = Math.floor(anaTrack.extractTime % 3600 % 60)
+  const hDisplay = h > 0 ? h + (h == 1 ? "h" : "h") : ""
+  const mDisplay = m > 0 ? m + (m == 1 ? "mn" : "mn") : ""
+  const sDisplay = s > 0 ? s + (s == 1 ? "s" : "s") : ""
+  let hExtractTime = hDisplay + mDisplay + sDisplay    
   htmlText +='<p style="font-size:16px;">'+i18n.gettext('Avg th efficiency')+'&nbsp;&nbsp;<span style="margin-right:10px; font-size:14px;background-color: #'+efficiencyColor+'; color: white;">&nbsp;&nbsp;'+Math.ceil(anaTrack.avgThermalEffi)+'%</span>'+htmlIcon+'<br>'
   htmlText += i18n.gettext('Avg thermal climb')+'&nbsp;&nbsp;'+avgThermalClimb+'&nbsp;m/s<br>'
   htmlText += i18n.gettext('Max gain')+'&nbsp;&nbsp;'+anaTrack.bestGain+' m<br>'
   htmlText += i18n.gettext('Extraction time')+'&nbsp;&nbsp;'+hExtractTime+'<br>'
   htmlText += i18n.gettext('Avg transition speed')+'&nbsp;&nbsp;'+avgTransSpeed+'&nbsp;km/h<br>'
   htmlText += i18n.gettext('Max speed')+'&nbsp;&nbsp;'+mainTrack.stat.maxspeed+' km/h<br>' 
-  htmlText += i18n.gettext('Alt max GPS')+'&nbsp;&nbsp;'+mainTrack.stat.maxalt.gps+'m&nbsp;&nbsp;&nbsp'
+  htmlText += i18n.gettext('Alt max GPS')+'&nbsp;&nbsp;'+mainTrack.stat.maxalt.gps+'m&nbsp;&nbsp;&nbsp;'
   htmlText += '<span style="margin-left:10px">'+i18n.gettext('Min GPS Alt')+'&nbsp;&nbsp;'+mainTrack.stat.minialt.gps+'m&nbsp;&nbsp;&nbsp</span><br>'  
-  htmlText += i18n.gettext('Max climb')+'&nbsp;&nbsp;'+mainTrack.stat.maxclimb+' m/s&nbsp;&nbsp;&nbsp' 
-  htmlText += '<span style="margin-left:10px">'+i18n.gettext('Max sink')+'&nbsp;&nbsp;'+mainTrack.stat.maxsink+' m/s&nbsp;&nbsp;&nbsp<br>' 
+  htmlText += i18n.gettext('Max climb')+'&nbsp;&nbsp;'+mainTrack.stat.maxclimb+' m/s&nbsp;&nbsp;&nbsp;' 
+  htmlText += '<span style="margin-left:10px">'+i18n.gettext('Max sink')+'&nbsp;&nbsp;'+mainTrack.stat.maxsink+' m/s&nbsp;&nbsp;&nbsp;<br>' 
   htmlText +='</p>'
 
   return htmlText
@@ -826,11 +779,11 @@ function fillSidebarSummary() {
  * The problem is that there is no specific div to receive the highchart object
  */
 function hightchartSummary() {
-  let percThermals = Math.round(anaTrack.percThermals*100);
+  let percThermals = Math.round(anaTrack.percThermals*100)
   let percGlides = Math.round(anaTrack.percGlides*100)
   let percDives = Math.round(anaTrack.percDives*100)
   let percVarious = Math.round(100-(percThermals+percGlides+percDives))
-  const summaryData = new Array(percThermals, percGlides, percDives, percVarious);
+  const summaryData = new Array(percThermals, percGlides, percDives, percVarious)
 
   pieChart = new Highcharts.Chart({
 
@@ -849,7 +802,7 @@ function hightchartSummary() {
       dataLabels: {
           enabled: true,
           // formatter: function() {
-          //     return Math.round(this.percentage*100)/100 + ' %';
+          //     return Math.round(this.percentage*100)/100 + ' %'
           // },
           format: '<b>{point.name}</b><br> {point.percentage:.1f} %',
           distance: -50,
@@ -899,7 +852,7 @@ function fillSidebarPathway() {
         lineAlt = '<td>'+cr.alt+'</td>'
       //  lineInfo = '<td>'+i18n.gettext('Take off')+'</td>'
         lineInfo = '<td></td>'
-        break;
+        break
       case 'T':
           // Thermal
           //lineCatIcon = '<td><i class="fa fa-cloud-upload fa-2x"></i></td>' 
@@ -910,7 +863,7 @@ function fillSidebarPathway() {
           lineAlt = '<td>'+cr.alt+'</td>'
           climb2dec = (Math.round(cr.data2 * 100) / 100).toFixed(2)
           lineInfo = '<td>[+'+cr.data1+'m '+climb2dec+'m/s]</td>'    
-          break;    
+          break    
       case 'G':
         // Glide
         //lineCatIcon = '<td><i class="fa fa-arrow-right fa-2x"></i></td>' 
@@ -920,7 +873,7 @@ function fillSidebarPathway() {
         lineElapsed = '<td>'+cr.elapsed+'</td>'
         lineAlt = '<td>'+cr.alt+'</td>'
         lineInfo = '<td>[+'+cr.data1+'km '+cr.data2+'km/h]</td>'     
-        break;            
+        break            
       case 'L':
         // Landing
        // lineCatIcon = '<td><i class="fa fa-flag fa-2x"></i></td>' 
@@ -933,7 +886,7 @@ function fillSidebarPathway() {
         lineAlt = '<td>'+cr.alt+'</td>'
         //lineInfo = '<td>'+i18n.gettext('Landing')+'</td>'
         lineInfo = '<td></td>'
-        break;
+        break
         }
     //htmlText += '      <tr>'+lineCatIcon+lineTime+lineElapsed+lineAlt+lineInfo+'</tr>'     
     htmlText += '      <tr>'+lineTime+lineElapsed+lineAlt+lineCatIcon+lineInfo+'</tr>'     
@@ -953,7 +906,7 @@ function changeScoring() {
         stroke: true,
         color: currColor,
         weight: 4
-      };
+      }
     },
     onEachFeature: onEachFeature
   })
@@ -983,23 +936,23 @@ function displayScoring() {
       case 0:
         document.getElementById("sc-leg1").innerHTML = leg.name
         document.getElementById("sc-legd1").innerHTML = leg.d+' km'
-        break;
+        break
       case 1:
         document.getElementById("sc-leg2").innerHTML = leg.name
         document.getElementById("sc-legd2").innerHTML = leg.d+' km'
-        break;
+        break
       case 2:
         document.getElementById("sc-leg3").innerHTML = leg.name
         document.getElementById("sc-legd3").innerHTML = leg.d+' km'
-        break;
+        break
       case 3:
         document.getElementById("sc-leg4").innerHTML = leg.name
         document.getElementById("sc-legd4").innerHTML = leg.d+' km'
-      break;
+      break
       case 4:
         document.getElementById("sc-leg5").innerHTML = leg.name
         document.getElementById("sc-legd5").innerHTML = leg.d+' km'
-      break;
+      break
     }
    }
   $('#score_table').removeClass('d-none')
@@ -1010,15 +963,15 @@ function displayScoring() {
           stroke: true,
           color: currColor,
           weight: 4
-        };
+        }
       },
       onEachFeature: onEachFeature
   })
   scoreGroup = new L.LayerGroup()
   scoreGroup.addTo(map)
   scoreGroup.addLayer(geoScore)
-  layerControl.addOverlay(scoreGroup, i18n.gettext('Score'));
-  sidebar.open('score');
+  layerControl.addOverlay(scoreGroup, i18n.gettext('Score'))
+  sidebar.open('score')
 }
 
 function fillSidebarButtons() {
@@ -1036,7 +989,7 @@ function fillSidebarButtons() {
 function onEachFeature(feature, layer) {
   // does this feature have a property named popupContent?
   if (feature.properties && feature.properties.popupContent) {
-      layer.bindPopup(feature.properties.popupContent);
+      layer.bindPopup(feature.properties.popupContent)
   }
 }
 
@@ -1067,90 +1020,115 @@ function getColor() {
       break 
     default:
       selColor = 'yellow'
-      break;
+      break
   }
   return selColor
 }
 
 // Display Thermals
 function openPathway() {
-  $('.leaflet-control-layers-selector')[8].click();
-  $('.leaflet-control-layers-selector')[9].click();
+  $('.leaflet-control-layers-selector')[8].click()
+  $('.leaflet-control-layers-selector')[9].click()
   sidebar.open('pathway')
 }
 
 
 // Centering on takeoff
 function displayTakeOff() {
-    map.fitBounds([startLatlng]);      
+    map.fitBounds([startLatlng])      
   } 
 
 // Centering on landing
 function displayLanding() {
-  map.fitBounds([endLatlng]);      
+  map.fitBounds([endLatlng])      
 }    
 
 // Display a segment of the track
 function displaySegment(lat1,long1,lat2,long2) {
-  map.fitBounds([[lat1, long1],[lat2, long2]]);      
+  map.fitBounds([[lat1, long1],[lat2, long2]])      
 }   
 
 // ****************** openAIP section *********************
-// function reqOpenAip() {
-//   sidebar.open('check')
-// }
-
 async function reqOpenAip() {
+    if (navigator.offLine) {
+      alert(i18n.gettext('No Internet connection'))  
+    } else {
+      const airspaces = await downloadAirspaces()
+      // debugging
+         // const filejson = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
+          //fs.writeFileSync(filejson, JSON.stringify(airspaces))
+        // end debugging
+      const nbDownl = airspaces.length
+      if (Array.isArray(airspaces)) {
+          ipcRenderer.invoke('openaip',airspaces,true).then((totalGeoJson) => {      
+              const nbAip = totalGeoJson.length        
+              if (nbAip > 0) {
+                  displayAip(totalGeoJson) 
+              } else {
+                const noAip = i18n.gettext('No airspace involved')+'/ '+nbDownl+' '+i18n.gettext('received')
+                alert(noAip)
+              }
+              // debugging
+              // const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json')
+              // fs.writeFileSync(filename, JSON.stringify(totalGeoJson))
+          })
+      } 
+  }
+}
+
+async function checkOpenAip() {
+  if (navigator.offLine) {
+    alert(i18n.gettext('No Internet connection'))  
+  } else {
     const airspaces = await downloadAirspaces()
     const nbDownl = airspaces.length
     if (Array.isArray(airspaces)) {
-        ipcRenderer.invoke('openaip',airspaces,true).then((totalGeoJson) => {      
-            const nbAip = totalGeoJson.length        
-            if (nbAip > 0) {
-                alert(`${nbAip} concernés / ${nbDownl} reçus  `)
-                displayAip(totalGeoJson) 
-            } else {
-                alert(`Pas d'espaces concernés / ${nbDownl} reçus  `)
-            }
-            // debugging
-            const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json');
-            fs.writeFileSync(filename, JSON.stringify(totalGeoJson))
-            // console.log('Ecriture OK...')
-        })
+      let checkRequest = {
+        jsonaip : airspaces,
+        track : mainTrack,
+        ground : anaTrack.elevation
+      }
+      currOAFile = ''
+      $('#waiting-check').removeClass('d-none')
+      ipcRenderer.invoke('check-aip',checkRequest).then((checkResult) => {     
+        $('#waiting-check').addClass('d-none')
+        displayAirCheck(checkResult)       
+      })
+      // const checking = ipcRenderer.send('check-aip', checkRequest)
     } 
+  }
 }
 
 async function downloadAirspaces() {
   const openAipKey = listkey.openaip
-  console.log('bbox : '+mainTrack.GeoJSON.features[0].properties.bbox)
   const bbox = mainTrack.GeoJSON.features[0].properties.bbox
-  const airspaces = [];
-  let delayMs = 10;
-  let page = 1;
-  let totalPages = 1;
+  const airspaces = []
+  let delayMs = 10
+  let page = 1
+  let totalPages = 1
   const openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&bbox=${bbox}&apiKey=${openAipKey}`
-  console.log(openAip_Url)
+  log.info(openAip_Url)
   while (page <= totalPages) {       
       try {
-        console.log(`fetching page ${page}/${totalPages}`);
-        const response = await fetch(openAip_Url);
+        //console.log(`fetching page ${page}/${totalPages}`)
+        const response = await fetch(openAip_Url)
         // Delay to avoid too many requests.
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
         if (response.ok) {
-          const info = await response.json();
-          totalPages = info.totalPages;
-          airspaces.push(...info.items);
-          page++;
-          delayMs = 10;        
+          const info = await response.json()
+          totalPages = info.totalPages
+          airspaces.push(...info.items)
+          page++
+          delayMs = 10        
         } else {
-          delayMs *= 2;
-          console.error(`HTTP status ${response.status}`);
+          delayMs *= 2
+          console.error(`HTTP status ${response.status}`)
         }
       } catch (e) {
-        console.error(`Error`, e);
+        console.error(`Error`, e)
       }
     }
-    return airspaces;
+    return airspaces
 }
 
 function displayAip(totalGeoJson) {
@@ -1166,28 +1144,11 @@ function displayAip(totalGeoJson) {
     aipGroup.addLayer(airSpace)
   }  
   aipGroup.addTo(map)
-
-
-  // const geojsonLayer = L.geoJson(aipGeojson,{ style: aipOptions })
-  // aipGroup = new L.LayerGroup()
-  // aipGroup.addTo(map);
-  // aipGroup.addLayer(geojsonLayer);
-    // // airspaces GeoJson added to the map 
-    // for (let index = 0; index < checkResult.airGeoJson.length; index++) {
-    //   const element = checkResult.airGeoJson[index]
-    //   report += element.properties.Name+cr
-    //   airSpace = L.geoJson(element,{ style: styleAirsp, onEachFeature: airSpPopup })
-    //   airspGroup.addLayer(airSpace)
-    // }
-    //airspGroup.addTo(map)
-    // layerControl.addOverlay( airspGroup, i18n.gettext('Checking'))
-    // report += '<p><span style="background-color: #DA4453; color: white;"> &nbsp;&nbsp;&nbsp;'
-    // report += i18n.gettext('violation(s)')+' : '+nbBadPoints+' '+i18n.gettext('points')+'&nbsp;&nbsp;&nbsp;&nbsp;</span></p>'
-    // report += '<i>'+i18n.gettext('Click on an airspace to display the description')+'</i>'
 }
 
 
-// Openair section
+
+// ****************** Openair section **************************
 
 function checkAirspace() {
   const selectedFile = ipcRenderer.sendSync('open-file','')
@@ -1215,7 +1176,8 @@ function displayAirCheck(checkResult) {
   let cr = '<br>'
   let report = ''
   if (checkResult.insidePoints.length > 0 &&  checkResult.airGeoJson.length > 0) {
-    airspGroup = new L.LayerGroup()
+   // airspGroup = new L.LayerGroup()
+    airspGroup = new L.FeatureGroup()
     report += '<p><span style="background-color: #F6BB42; color: white;">&nbsp;&nbsp;&nbsp;'
     report += i18n.gettext('Airspaces involved')+'&nbsp;&nbsp;&nbsp;&nbsp;</span><br>'
     // airspaces GeoJson added to the map 
@@ -1265,6 +1227,7 @@ function displayAirCheck(checkResult) {
     airspGroup.addLayer(badLayerPoints)
     airspGroup.addTo(map)
     layerControl.addOverlay( airspGroup, i18n.gettext('Checking'))
+    map.fitBounds(airspGroup.getBounds())
     report += '<p><span style="background-color: #DA4453; color: white;"> &nbsp;&nbsp;&nbsp;'
     report += i18n.gettext('violation(s)')+' : '+nbBadPoints+' '+i18n.gettext('points')+'&nbsp;&nbsp;&nbsp;&nbsp;</span></p>'
     report += '<i>'+i18n.gettext('Click on an airspace to display the description')+'</i>'
@@ -1272,9 +1235,64 @@ function displayAirCheck(checkResult) {
     report += '<span style="font-size:16px;background-color: #009900; color: white;">&nbsp;&nbsp;&nbsp;'
     report += i18n.gettext('No violations in the selected airspace file')
     report += '&nbsp;&nbsp;&nbsp;</span>'
+
+    // test
+   // airspGroup = new L.LayerGroup()
+    airspGroup = new L.FeatureGroup()
+    // checked airspaces GeoJson added to the map 
+    for (let index = 0; index < checkResult.airGeoJson.length; index++) {
+      const element = checkResult.airGeoJson[index]
+      airSpace = L.geoJson(element,{ style: styleAirsp, onEachFeature: airSpPopup })
+      airspGroup.addLayer(airSpace)
+      airspGroup.addTo(map)
+      layerControl.addOverlay( airspGroup, i18n.gettext('Checking'))
+      map.fitBounds(airspGroup.getBounds())
+    }
+    // fin test
+
+
   }
   showAirspReport(report)
 }
+
+function dlBazile() {
+  $('#waiting-check').removeClass('d-none')
+    
+  const memBazile = store.get('urlairspace')
+  const defBazile = 'http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVers_ff-French-outT.txt'
+  let baziUrl    
+  if (memBazile != undefined && memBazile != 'undefined' && memBazile != '') {
+      baziUrl = memBazile
+  } else {
+      baziUrl = 'http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVers_ff-French-outT.txt'
+      store.set('urlairspace',baziUrl)
+  } 
+  const config = {
+      timeout: 5000, 
+      retries: 3,
+      domain: baziUrl
+  }
+  checkInternetConnected(config)
+      .then((result) => {
+          ipcRenderer.send('dl-file-progress', baziUrl)
+      })
+      .catch((ex) => {
+          alert(i18n.gettext('Server or url problem'))
+      })  
+}
+
+ipcRenderer.on("dl-complete", (event, fullPathFile) => {
+    if(fullPathFile != null) {     
+      let content = fs.readFileSync(fullPathFile, 'utf8')
+      let checkRequest = {
+        oaText : content, 
+        track : mainTrack,
+        ground : anaTrack.elevation
+      }
+      currOAFile = ''
+      const checking = ipcRenderer.send('check-open', checkRequest)      
+    }      
+})
 
 function showAirspReport(content) {
   // document.getElementById('mod-title').innerHTML = i18n.gettext('Checking')+' : '+currOAFile

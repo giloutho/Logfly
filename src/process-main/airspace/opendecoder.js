@@ -62,6 +62,7 @@ ipcMain.on('read-open', (event, openRequest) => {
       openPolygons.bbox.maxlat = maxLat 
       openPolygons.bbox.maxlon = maxLon
     }
+    if (openRequest.report) console.log(decodingReport)
     event.sender.send('open-airset', myPolygons)
 })
 
@@ -111,35 +112,41 @@ ipcMain.on('check-open', (event, checkRequest) => {
     let geoTrack = checkRequest.track.GeoJSON
     let turfNb = 0
     let nbInside = 0
+    let intersectSpaces = []
     for (let index = 0; index < myPolygons.airspaceSet.length; index++) {
       const element = myPolygons.airspaceSet[index].dbGeoJson
-      if (myPolygons.airspaceSet[index].ceiling < altMaxPoint) {
-        if (turfIntersect(element,geoTrack)) {
-          let pushGeoJson = false
-          let ptsWithin = turfWithin(multiPt, element)
-          for (let i = 0; i < ptsWithin.features.length; i++) {
-            const feature = ptsWithin.features[i]
-            for (let j = 0; j < feature.geometry.coordinates.length; j++) {
-              turfNb ++               
-              const vPoint = feature.geometry.coordinates[j]
-              idxPoint = trackPoints.findIndex(e => e === vPoint)
-              let floorLimit = element.properties.Floor
-              let ceilingLimit = element.properties.Ceiling             
-              if (element.properties.altLimitBottomAGL === true) floorLimit += checkRequest.ground[idxPoint]
-              if (element.properties.altLimitTopAGL ===  true) ceilingLimit += checkRequest.ground[idxPoint]
-              if (checkRequest.track.fixes[idxPoint].gpsAltitude > floorLimit && checkRequest.track.fixes[idxPoint].gpsAltitude < ceilingLimit) {
-                nbInside++
-                if (!pushGeoJson) {
-                  checkResult.airGeoJson.push(element)
-                  pushGeoJson = true
-                }          
-                checkResult.insidePoints.push(idxPoint)
-              }              
-            }
+      if (turfIntersect(element,geoTrack)) {
+        //console.log('intersect '+myPolygons.airspaceSet[index].dbGeoJson.properties.Name)
+        intersectSpaces.push(element)
+        let pushGeoJson = false
+        let ptsWithin = turfWithin(multiPt, element)
+        for (let i = 0; i < ptsWithin.features.length; i++) {
+          const feature = ptsWithin.features[i]
+          for (let j = 0; j < feature.geometry.coordinates.length; j++) {
+            turfNb ++               
+            const vPoint = feature.geometry.coordinates[j]
+            idxPoint = trackPoints.findIndex(e => e === vPoint)
+            let floorLimit = element.properties.Floor
+            let ceilingLimit = element.properties.Ceiling             
+            if (element.properties.altLimitBottomAGL === true) floorLimit += checkRequest.ground[idxPoint]
+            if (element.properties.altLimitTopAGL ===  true) ceilingLimit += checkRequest.ground[idxPoint]
+            if (checkRequest.track.fixes[idxPoint].gpsAltitude > floorLimit && checkRequest.track.fixes[idxPoint].gpsAltitude < ceilingLimit) {
+              nbInside++
+              if (!pushGeoJson) {
+                checkResult.airGeoJson.push(element)
+                pushGeoJson = true
+              }          
+              checkResult.insidePoints.push(idxPoint)
+            }              
           }
-        } 
+        }
       } 
-    }  
+    } 
+    if (checkResult.insidePoints.length == 0) {
+      for (let index = 0; index < intersectSpaces.length; index++) {        
+          checkResult.airGeoJson.push(intersectSpaces[index])   
+      }
+    }
   }
   event.sender.send('check-result', checkResult)
 })
@@ -346,7 +353,7 @@ function parseCommand(cmd) {
             oaGeojson.properties.altLimitBottomAGL = AltLimit_Bottom_AGL
             oaGeojson.properties.altLimitBottomRef = AltLimit_Bottom_Ref
             oaGeojson.properties.altLimitBottomUnit = AltLimit_Bottom_Unit
-            if (modeDebug) decodingReport +='[AL] '+cmd+' -> '+rest+" * "+iAlt+' * ref :'+strRef+' floor : '+AltLimit_Bottom+lineBreak
+            if (modeDebug) decodingReport +='[AL] '+cmd+' -> '+rest+" * "+iAlt+' * ref :'+strRef+' floor : '+AltLimit_Bottom+' AltlimitBottomAGL '+AltLimit_Bottom_AGL+lineBreak
             break
           case "AH":
             // Altitude High, expect a parameters like "35000ft" or "35000 ft"
@@ -382,7 +389,7 @@ function parseCommand(cmd) {
             oaGeojson.properties.altLimitTopAGL = AltLimit_Top_AGL
             oaGeojson.properties.altLimitTopRef = AltLimit_Top_Ref
             oaGeojson.properties.altLimitTopUnit = AltLimit_Top_Unit
-            if (modeDebug) decodingReport += '[AH] '+cmd+' -> '+rest+" * "+iAlt+' * ref :'+strRef+' ceiling : '+AltLimit_Top+lineBreak
+            if (modeDebug) decodingReport += '[AH] '+cmd+' -> '+rest+" * "+iAlt+' * ref :'+strRef+' ceiling : '+AltLimit_Top+' AltlimitTopAGL '+AltLimit_Top_AGL+lineBreak
             break
           case "DC":
             if (modeDebug) decodingReport +='[DC] '+cmd+' -> '+rest+lineBreak

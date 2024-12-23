@@ -65,6 +65,7 @@ function iniForm() {
     document.getElementById('lg-pilot').innerHTML = i18n.gettext('Pilot')
     document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
     btnSelect.innerHTML = i18n.gettext('Select a track')
+    btnFullmap.innerHTML = i18n.gettext('Full screen map')
     btnSelect.addEventListener('click', (event) => {callDisk()})
     $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
     Object.keys(typeScoring).forEach(function(key, index) {

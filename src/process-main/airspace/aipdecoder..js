@@ -1,4 +1,7 @@
 const {ipcMain} = require('electron')
+const turfHelper = require('@turf/helpers')
+const turfIntersect = require('@turf/boolean-intersects').default
+const turfWithin = require('@turf/points-within-polygon').default
 
 const METER_PER_FEET = 0.3048
 
@@ -155,7 +158,7 @@ function toType(key) {
             return ''
             break
     }
-  }
+ }
 
 function toMeter(limit) {
     switch (limit.unit) {
@@ -231,6 +234,65 @@ ipcMain.handle('openaip', async (event, openAipArray, filter) => {
     return result
 })
 
+ipcMain.handle('check-aip', async (event, checkRequest) => {
+    //  checkRequest = {
+    //     jsonaip : airspaces,   //json openaip 
+    //     track : mainTrack,
+    //     ground : anaTrack.elevation
+    //   }
+    let checkResult = {
+        airGeoJson : [],
+        insidePoints : []
+      }       
+    const aipGeojson = await processDecoding(checkRequest.jsonaip,true)
+    if (aipGeojson.length > 0) { 
+        // In order to use turfWithin below, the fixes array must be converted in a "turf multipoint object"
+        let trackPoints = checkRequest.track.fixes.map(point => [point.longitude,point.latitude] )
+        let altMaxPoint = checkRequest.track.stat.maxalt.gps
+        let multiPt = turfHelper.multiPoint(trackPoints)
+        let geoTrack = checkRequest.track.GeoJSON
+        let turfNb = 0
+        let nbInside = 0
+        for (let index = 0; index < aipGeojson.length; index++) {
+            const element = aipGeojson[index]            
+            if (turfIntersect(element,geoTrack)) {
+               // console.log('intersect in '+element.properties.Name+' Floor : '+ element.properties.Floor+' Ceiling : '+ element.properties.Ceiling+' altLimitTopAGL '+element.properties.AltLimit_Top_AGL)
+                let pushGeoJson = false
+                let ptsWithin = turfWithin(multiPt, element)                    
+                for (let i = 0; i < ptsWithin.features.length; i++) {
+                    const feature = ptsWithin.features[i]
+                    for (let j = 0; j < feature.geometry.coordinates.length; j++) {
+                        turfNb ++               
+                        const vPoint = feature.geometry.coordinates[j]
+                        idxPoint = trackPoints.findIndex(e => e === vPoint)
+                        let floorLimit = element.properties.Floor
+                        let ceilingLimit = element.properties.Ceiling             
+                        if (element.properties.AltLimit_Bottom_AGL === true) floorLimit += checkRequest.ground[idxPoint]
+                        if (element.properties.AltLimit_Top_AGL ===  true) ceilingLimit += checkRequest.ground[idxPoint]
+                       // console.log(element.properties.Name+' '+floorLimit+' - '+checkRequest.track.fixes[idxPoint].gpsAltitude+' - '+ceilingLimit)
+                        if (checkRequest.track.fixes[idxPoint].gpsAltitude > floorLimit && checkRequest.track.fixes[idxPoint].gpsAltitude < ceilingLimit) {
+                            nbInside++
+                            if (!pushGeoJson) {
+                            checkResult.airGeoJson.push(element)
+                            pushGeoJson = true
+                            }          
+                            checkResult.insidePoints.push(idxPoint)
+                        }              
+                    }
+                }
+            } 
+        } 
+        if (checkResult.insidePoints.length == 0) {
+            for (let index = 0; index < aipGeojson.length; index++) {
+                checkResult.airGeoJson.push(aipGeojson[index])   
+            }
+        }
+        return checkResult
+    } else {
+        return checkResult
+    }
+})
+
 async function processDecoding(openAipArray,filter) {
   const promiseArray = []
   for (const item of openAipArray) {
@@ -250,6 +312,17 @@ async function processDecoding(openAipArray,filter) {
       // je ne sais pas pourquoi mais si on fait simple tableau -> erreur
       let arrCoord = []
       arrCoord.push(el.polygon)
+      // Problème des parcs comme celui des Bauges
+      // le fait que ce soit une hauteur sol n'est pas clairement défini
+      // Floor -> 0m Ceiling 300m donc chaque point sera forcément valide
+      // Par déduction on a supposé que quand réferenceDatum était Gnd pour Floor et Ceiling
+      // il s'agissait d'une hauteur sol mais rien en permet de vraiment valider
+      let AltLimitTopAGL 
+      if (el.floorRefGnd == 'Gnd' && el.topRefGnd == 'Gnd') {        
+        AltLimitTopAGL = true
+      } else {
+        AltLimitTopAGL = false
+      }
       let aipGeojson = {
           type :"Feature",
           properties : {
@@ -261,7 +334,9 @@ async function processDecoding(openAipArray,filter) {
              Floor : el.floorM,
              FloorLabel : el.floorLabel+' '+el.floorRefGnd,
              Ceiling : el.topM,
-             CeilingLabel : el.topLabel+' '+el.topRefGnd,    
+             CeilingLabel : el.topLabel+' '+el.topRefGnd,   
+             AltLimit_Top_AGL :  AltLimitTopAGL,             
+             AltLimit_Bottom_AGL : false, 
              Color : getColor(el)       
           },
           geometry : {
