@@ -304,9 +304,13 @@ function exploreDrives(typeGPS,arrayDrives) {
                         validSpecial = true
                         break        
                       case 'flightscreens':
-                        // exists on Skytraxx 4
+                        // exists on Skytraxx 4 / 5
                         validSpecial = true
-                        break                            
+                        break    
+                      case 'vario_tones':
+                        // exists on Skytraxx 5
+                        validSpecial = true
+                        break                                                  
                       case 'waypoints':
                         resultUsb.pathWayp = path.join(usbPath, path.sep+'WAYPOINTS') 
                         validSpecial = true
