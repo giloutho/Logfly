@@ -26,11 +26,31 @@ async function showYesNo(dialogProp) {
     return res      
 }
 
+async function showYes(dialogProp) {
+  const options = {
+      type: 'info',
+      // some platforms will not display title
+      message: dialogProp.message,
+      // The buttons will be built from right to left
+   //   buttons: [dialogProp.ok]
+    }
+  const myChoice = dialog.showMessageBox(options).then((choice) => { return true })
+  
+  const res = await myChoice;
+
+  return res      
+}
+
 /**
  * as usual, the solution came from the official documentation
  * https://www.electronjs.org/docs/api/ipc-renderer#ipcrendererinvokechannel-args
  */
 ipcMain.handle('yes-no', async (event, dialogProp) => {
   const result = await showYesNo(dialogProp)
+  return result
+})
+
+ipcMain.handle('yes', async (event, dialogProp) => {
+  const result = await showYes(dialogProp)
   return result
 })

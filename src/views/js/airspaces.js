@@ -2,7 +2,7 @@ const {ipcRenderer, clipboard} = require('electron')
 
 const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
-const fs = require('fs')
+const fse = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const checkInternetConnected = require('check-internet-connected')
@@ -62,7 +62,7 @@ function iniForm() {
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+            let content = fse.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
             let langjson = JSON.parse(content)
             i18n.setMessages('messages', currLang, langjson)
             i18n.setLocale(currLang)
@@ -149,6 +149,7 @@ ipcRenderer.on('open-airset', (event, airPolygons) => {
 ipcRenderer.on("dl-complete", (event, fullPathFile) => {
     console.log('Téléchargement terminé : '+fullPathFile) // Full file path   
     if(fullPathFile != null) {    
+        let finalPathFile = moveBazileFile(fullPathFile)
         if (currPolygons != undefined && currPolygons.airspaceSet.length > 0 ) {
             // We remove all geoJson
             mapOA.eachLayer(function(layer){
@@ -158,11 +159,10 @@ ipcRenderer.on("dl-complete", (event, fullPathFile) => {
             }) 
             currPolygons = {} 
         } 
-      //  let fileName = fullPathFile.substring(fullPathFile.lastIndexOf('/')+1)
-     //   currFileName = selectedFile.fileName.replace(/\.[^/.]+$/, "")
         currFileName = 'Bazile'
-        currFilePath = fullPathFile
-        decodeOA(fullPathFile)    
+        currFilePath =  finalPathFile
+        console.log('currFilePath : '+currFilePath)
+        decodeOA(currFilePath)    
     }      
 })
 
@@ -202,7 +202,7 @@ function runFile(fullPath,fileName) {
 
 function decodeOA(filename) {
     let modeDebug = true
-    let content = fs.readFileSync(filename, 'utf8')
+    let content = fse.readFileSync(filename, 'utf8')
     let openRequest = {
         oaText : content, 
         report : false     // Mode debug with full decoding report 
@@ -705,6 +705,30 @@ function downloadBazile() {
         .catch((ex) => {
             alert(i18n.gettext('Server or url problem'))
         })
+}
+
+function moveBazileFile(dlPathFile) {
+    const pathW  = store.get('pathWork')
+    const pathBazile =  path.join(pathW,'Bazile') 
+    let finalPath = dlPathFile
+    let pathOk = false
+    if (fse.existsSync(pathBazile)) {
+        pathOk = true
+    } else {
+        try {
+            fse.mkdirSync(pathBazile)
+            pathOk = true
+        } catch (error) {
+            log.error('[airspace] unable to create '+pathBazile)
+        }            
+    }
+    if (pathOk) {
+        const newPath = path.join(pathBazile,path.basename(dlPathFile))
+        fse.moveSync(dlPathFile, newPath, { overwrite: true })
+        finalPath = newPath
+    }
+    console.log('return '+finalPath)
+    return finalPath
 }
 
 function displaySubNavbar() {

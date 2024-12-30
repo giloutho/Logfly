@@ -2,7 +2,7 @@ const {ipcRenderer} = require('electron')
 
 const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
-const fs = require('fs')
+const fse = require('fs-extra')
 const path = require('path');
 const log = require('electron-log');
 const Store = require('electron-store')
@@ -26,7 +26,7 @@ function iniForm() {
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
-            let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
+            let content = fse.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
             let langjson = JSON.parse(content);
             i18n.setMessages('messages', currLang, langjson)
             i18n.setLocale(currLang);
@@ -88,11 +88,13 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 function logbookCopy() {
-    $('#status').hide()
-    $('#div_text').removeClass('d-none')
-    document.getElementById('tx_1').innerHTML = 'test OpenAIP'
-    document.getElementById('tx_2').innerHTML = '...'
-    testOpenAIP()
+    clearStatus()
+    $('#div_text').addClass('d-none')
+    const msg1 = i18n.gettext('Copy the current notebook to the folder of your choice')
+    const mgs2 = i18n.gettext('Choose a folder')
+    let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="askFolderCopy()" id="btn-export">'
+    msg += mgs2+'</button>'
+    displayStatus(msg)  
 }
 
 function jsonExport() {
@@ -110,12 +112,50 @@ function csvChoose() {
     displayStatus(msg)     
 }
 
+function askFolderCopy() {
+    const selectedPath = ipcRenderer.sendSync('open-directory','')
+    if (selectedPath != null) {
+        clearStatus()
+        $('#div_text').addClass('d-none')
+        const msg1 = i18n.gettext('Copy the current notebook to ')+selectedPath
+        const mgs2 = i18n.gettext('Copy')
+        let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="copyLogbook(\'' +selectedPath+'\')" id="btn-export">'
+        msg += mgs2+'</button>'
+        displayStatus(msg)  
+    } 
+}
+
+function copyLogbook(selectedPath) {
+    try {
+        clearStatus()
+        const msg1 = '<strong>'+i18n.gettext('Do not interrupt the operation')+'</strong>'
+        displayStatus(msg1) 
+        const pathDb = store.get('pathdb')
+        const dbName = store.get('dbName')
+        const originPath = path.join(pathDb,dbName)
+        const finalPath = path.join(selectedPath,dbName)
+        fse.copySync(originPath, finalPath)     
+        const dialogLang = {
+            message: i18n.gettext('Successful operation'),
+            ok : i18n.gettext('Ok')
+        }   
+        ipcRenderer.invoke('yes',dialogLang).then((result) => {
+            if (result) {
+                clearStatus()
+            }
+        })
+    } catch (error) {
+        
+    }
+
+}
+
 function loadCsv() {
     const selectedFile = ipcRenderer.sendSync('open-file','')
     if(selectedFile.fullPath != null) {
         let selExt = selectedFile.fileExt.toUpperCase()
         if (selExt == 'CSV') {
-            let content = fs.readFileSync(selectedFile.fullPath, 'utf8')
+            let content = fse.readFileSync(selectedFile.fullPath, 'utf8')
             let arrData = CSVToArray(content,';')
             if (arrData.length > 0) {
                 const regexDuree = /^([0-1]?[0-9]|2[0-3])h([0-5]?[0-9])mn$/     
@@ -203,99 +243,6 @@ function listSerialPorts() {
         displayStatus(msg)
       })    
 }
-
-async function testOpenAIP() {
-    const airspaces = await downloadAirspaces()
-    const nbDownl = airspaces.length
-    const filejson = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
-    // console.log(filename)
-    fs.writeFileSync(filejson, JSON.stringify(airspaces))
-    if (Array.isArray(airspaces)) {
-        ipcRenderer.invoke('openaip',airspaces,true).then((aipGeojson) => {      
-            const nbAip = aipGeojson.features.length        
-            if (nbAip > 0) {
-                alert(`${nbAip} concernés / ${nbDownl} reçus  `)
-            } else {
-                alert(`Pas d'espaces concernés / ${nbDownl} reçus  `)
-            }
-            // debugging
-            const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json');
-            fs.writeFileSync(filename, JSON.stringify(aipGeojson))
-            console.log('Ecriture OK...')
-        })
-    } 
-
-
-    // const filename = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
-    // console.log(filename)
-    // fs.writeFileSync(filename, JSON.stringify(airspaces))
-    // ipcRenderer.invoke('openaip',airspaces).then((result) => {
-    //     console.log('Ouf...')
-    //   })
-
-
-/*     for (let i = 0; i < airspaces.length; i++) {
-        const element = airspaces[i];
-        console.log('type '+element.type)
-    } */
-   // let airspaceObj = JSON.parse(airspaces)
-   // console.log(airspaceObj.length)
-}
-
-async function downloadAirspaces() {
-  //  const OPENAIP_AIRSPACE_ENDPOINT = `https://api.core.openaip.net/api/airspaces?limit=1000&apiKey={key}&page={page}`;
-    const openAipKey = '11241005d00b083e0a4ed1e66fdf05d3'
-    // Semnoz
- //   const bbox = '6.0345,45.780233,6.102883,45.8245333'
-    // planfait veyrier
-   // const bbox = '6.17943333,45.83916,6.2298,45.8935'
-   // on teste avec une marge de 11 km soit 0.1 degrés
-   // mini -0.1   maxi +0.1
-   const bbox = '6.079433,45.73916,6.3298,45.9935'
-    //6.179433333333334,45.839166666666664,6.2298,45.8935
-    // Governador
-    //const bbox ='-41.985783,-18.993833,-41.903100,-18.869367'
-    const airspaces = [];
-    let delayMs = 10;
-    let page = 1;
-    let totalPages = 1;
-    const openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&bbox=${bbox}&apiKey=${openAipKey}`
-    console.log(openAip_Url)
-    while (page <= totalPages) {       
-    
-    // test Annecy
-    //const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&pos=45.863,6.1725&dist=35000&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
-    // test bbox planfait veyrier
-   //  const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.17943333,45.83916,6.2298,45.8935&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
-   // test Planfait veyrier avec une marge de 11km soit 0,1 degrés
-
-     // planfait + petit
-     //               https://api.core.openaip.net/api/airspaces?page=1limit=1000&bbox=6.0345,45.780233,6.102883,45.8245333&apiKey=1124100…
-   //   const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=1000&bbox=6.0345,45.780233,6.102883,45.8245333&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
-     // test gourdon
-   //  const url =  'https://api.core.openaip.net/api/airspaces?page=1&limit=100&bbox=6.941416666666667,43.700183333333335,7.019166666666667,43.7297&sortBy=name&sortDesc=true&apiKey=11241005d00b083e0a4ed1e66fdf05d3'
-      try {
-        console.log(`fetching page ${page}/${totalPages}`);
-        const response = await fetch(openAip_Url);
-        // Delay to avoid too many requests.
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-        if (response.ok) {
-          const info = await response.json();
-          totalPages = info.totalPages;
-          airspaces.push(...info.items);
-     //     console.dir(airspaces)
-          page++;
-          delayMs = 10;        
-        } else {
-          delayMs *= 2;
-          console.error(`HTTP status ${response.status}`);
-        }
-      } catch (e) {
-        console.error(`Error`, e);
-      }
-    }
-    return airspaces;
-  }
 
 function displayStatus(content) {
     statusContent.innerHTML = content
