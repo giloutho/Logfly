@@ -202,7 +202,6 @@ class IGCDecoder {
 	const maxY = (Math.round(bboxTrack[3] * 1000000) / 1000000).toFixed(6)
 	const bboxStr = minX+','+minY+','+maxX+','+maxY
 	this.GeoJSON.features[0]["properties"]["bbox"] = bboxStr
-	console.log('bboxStr : '+bboxStr)
     this.stat.duration = flTime // Flight time computed in seconds 
 	this.stat.interval = Math.round(this.stat.duration/this.fixes.length)
 		// console.log('flTime : '+flTime+' Calcul intervalle : '+this.stat.duration+' / '+this.fixes.length+'  interval : '+this.stat.interval)

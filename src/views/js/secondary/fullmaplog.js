@@ -765,7 +765,7 @@ function fillSidebarSummary() {
   htmlText += i18n.gettext('Extraction time')+'&nbsp;&nbsp;'+hExtractTime+'<br>'
   htmlText += i18n.gettext('Avg transition speed')+'&nbsp;&nbsp;'+avgTransSpeed+'&nbsp;km/h<br>'
   htmlText += i18n.gettext('Max speed')+'&nbsp;&nbsp;'+mainTrack.stat.maxspeed+' km/h<br>' 
-  htmlText += i18n.gettext('Alt max GPS')+'&nbsp;&nbsp;'+mainTrack.stat.maxalt.gps+'m&nbsp;&nbsp;&nbsp;'
+  htmlText += i18n.gettext('Max GPS alt')+'&nbsp;&nbsp;'+mainTrack.stat.maxalt.gps+'m&nbsp;&nbsp;&nbsp;'
   htmlText += '<span style="margin-left:10px">'+i18n.gettext('Min GPS Alt')+'&nbsp;&nbsp;'+mainTrack.stat.minialt.gps+'m&nbsp;&nbsp;&nbsp</span><br>'  
   htmlText += i18n.gettext('Max climb')+'&nbsp;&nbsp;'+mainTrack.stat.maxclimb+' m/s&nbsp;&nbsp;&nbsp;' 
   htmlText += '<span style="margin-left:10px">'+i18n.gettext('Max sink')+'&nbsp;&nbsp;'+mainTrack.stat.maxsink+' m/s&nbsp;&nbsp;&nbsp;<br>' 
