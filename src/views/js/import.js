@@ -36,7 +36,8 @@ const btnConnect = document.getElementById('imp-gps-conn')
 const btnSkydrop = document.getElementById('imp-gps-skydrop')
 const btnVarduino = document.getElementById('imp-gps-vardui')
 const btnFlynet = document.getElementById('imp-gps-flynet')
-const btnSensbox = document.getElementById('imp-gps-sens')    
+const btnSensbox = document.getElementById('imp-gps-sens')
+const btnListUsb  = document.getElementById('list-usb')   
 const btnManu = document.getElementById('imp-manu')
 
 let currStatusContent
@@ -100,6 +101,8 @@ function iniForm() {
     document.getElementById('imp-gps').innerHTML = i18n.gettext('GPS import')
     document.getElementById('imp-disk').innerHTML = i18n.gettext('Disk import')
     document.getElementById('imp-manu').innerHTML = i18n.gettext('Flight without GPS track')
+    btnListUsb.innerHTML = i18n.gettext('Usb list')
+    btnListUsb.addEventListener('click',(event) => {listUsb()})  
     btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
     btnFlymOld.addEventListener('click',(event) => {serialGpsCall('FlymasterOld')})
     btnFlytec20.addEventListener('click',(event) => {serialGpsCall('Flytec20')})
@@ -206,7 +209,32 @@ function callUsbGps(typeGPS) {
   })     
 }
 
-
+function listUsb() {
+  ipcRenderer.invoke('check-usb').then((usbResult) => {   
+    let msg = ''
+    if (usbResult.length > 0) {
+      msg = usbResult.length+' '+i18n.gettext('usb disk detected')+'<br>'
+      msg += '<table><tr><th>Path</th><th>Size</th></tr>'
+      for (let i = 0; i < usbResult.length; i++) {
+        const element = usbResult[i]
+        if (element.mountpoints.length > 0) {
+          const sizeMo = Math.round(element.size / 1000000)
+          let size
+          if (sizeMo > 1000) {
+            size = Math.round(sizeMo/1000)+' Go'
+          } else {
+            size = sizeMo+' Mo'
+          }
+         msg += ' <tr><td>'+element.mountpoints[0].path+'</td><td>'+size+'</td></tr>'         
+        }
+      }
+      msg += '</table>'
+    } else {
+      msg = i18n.gettext('No usb drive detected')
+    }
+    displayStatus(msg,false)   
+  })
+}
 
 /**
  *

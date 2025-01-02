@@ -24,6 +24,20 @@ ipcMain.handle('check-usb-gps', async (event, typeGps) => {
  
 })
 
+ipcMain.handle('check-usb', async (event) => {
+  const result = await listDrives()
+  let usbResult = []
+  if (result instanceof Array) {
+    for (let index = 0; index < result.length; index++) {        
+      const dr = result[index]
+      if (dr.isUSB) {
+        usbResult.push(dr)
+      }
+    }
+  }
+  return usbResult
+})
+
 function exploreDrives(typeGPS,arrayDrives) {
   let resultUsb = {
     pathFlights : null,
