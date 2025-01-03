@@ -9,9 +9,6 @@ const Store = require('electron-store')
 const store = new Store()
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
-const btnOption1 = document.getElementById('option1')
-const btnOption2 = document.getElementById('option2')
-const btnOption3 = document.getElementById('option3')
 const statusContent = document.getElementById("status")
 let currLang
 
@@ -36,12 +33,8 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    document.getElementById('tx_1').innerHTML = i18n.gettext('Photos')
+    document.getElementById('tx_1').innerHTML = i18n.gettext('Equipment')
     document.getElementById('tx_2').innerHTML = i18n.gettext('Coming soon')+'...'
-    btnOption1.innerHTML = 'Folder'
-    btnOption2.innerHTML = 'Track'
-    // btnOption1.addEventListener('click',(event) => {callDiskImport()})
-    // btnOption2.addEventListener('click',(event) => {clearStatus()})
 }
 
 $(document).ready(function () {

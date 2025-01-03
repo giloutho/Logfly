@@ -265,7 +265,7 @@ function openWindow(pageName) {
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))
     //  mainWindow.webContents.openDevTools()
       break              
-    case "photos":
+    case "equip":
       mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'))
    //   mainWindow.webContents.openDevTools()  
       break                

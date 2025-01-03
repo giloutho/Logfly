@@ -17,7 +17,7 @@ function fillMenuOptions(i18n) {
         sites : i18n.gettext('Sites'),
         wayp : i18n.gettext('Waypoints'),
         airspaces : i18n.gettext('Airspaces'),
-        photos : i18n.gettext('Photos'),
+        equipment : i18n.gettext('Equipment'),
         settings : i18n.gettext('Settings'),
         support : i18n.gettext('Support'),
         utils : i18n.gettext('Utilities'),
