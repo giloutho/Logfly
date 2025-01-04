@@ -532,6 +532,17 @@ function manageComment(siteId, currComment, rowIndex) {
         }
       };
       btDiv.appendChild(btnDelete)    
+      let btnHide = document.createElement("input")   // must be input not button
+      btnHide.type = "button"
+      btnHide.name = "hide"
+      btnHide.value=i18n.gettext("Hide")
+      btnHide.style.marginTop = "5px"  
+      btnHide.style.marginLeft = "10px"  
+      btnHide.className="btn btn-primary btn-sm"
+      btnHide.onclick = function () {
+        $('#inputcomment').hide() 
+      }  
+      btDiv.appendChild(btnHide)  
       $('#inputcomment').show(); 
     }
 }
