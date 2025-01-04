@@ -90,7 +90,7 @@ btnMenu.addEventListener('click', (event) => {
 function logbookCopy() {
     clearStatus()
     $('#div_text').addClass('d-none')
-    const msg1 = i18n.gettext('Copy the current notebook to the folder of your choice')
+    const msg1 = i18n.gettext('Copy the current logbook to the folder of your choice')
     const mgs2 = i18n.gettext('Choose a folder')
     let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="askFolderCopy()" id="btn-export">'
     msg += mgs2+'</button>'
@@ -117,7 +117,7 @@ function askFolderCopy() {
     if (selectedPath != null) {
         clearStatus()
         $('#div_text').addClass('d-none')
-        const msg1 = i18n.gettext('Copy the current notebook to ')+selectedPath
+        const msg1 = i18n.gettext('Copy the current logbook to ')+selectedPath
         const mgs2 = i18n.gettext('Copy')
         let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="copyLogbook(\'' +selectedPath+'\')" id="btn-export">'
         msg += mgs2+'</button>'
