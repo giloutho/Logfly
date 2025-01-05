@@ -51,6 +51,15 @@ function callPage(pageName) {
     ipcRenderer.send("changeWindow", pageName);    // main.js
 }
 
+$(document).ready(function () {
+    let selectedFixedMenu =  store.get('menufixed') 
+    if (selectedFixedMenu === 'yes') {
+      $("#sidebar").removeClass('active')
+      $('#toggleMenu').addClass('d-none')
+      document.getElementById("menucheck").checked = true;
+    }
+  })
+
 btnMenu.addEventListener('click', (event) => {
     if (btnMenu.innerHTML === "Menu On") {
         btnMenu.innerHTML = "Menu Off";
@@ -62,21 +71,26 @@ btnMenu.addEventListener('click', (event) => {
 
 ipcRenderer.on('read-infos', (event, result) => {
     releaseInfo = result
-    console.log({result})
-    const currVersion = store.get('version')
-    if (releaseInfo.version !== undefined) {
-        if (releaseInfo.version > currVersion) {
-            infoTitle.innerHTML = i18n.gettext('An update is available')        
-            infoTextFr.innerHTML = releaseInfo.date+'<br>      '+currVersion+'  ==>  '+releaseInfo.version
-            infoTextEn.innerHTML = releaseInfo.info
-            $('#div-downl').removeClass('d-none')
-            $('#div-downl').addClass('d-block')     
-        } else {
-            infoTitle.innerHTML = i18n.gettext('Your version is up to date')        
-            infoTextFr.innerHTML = i18n.gettext('Installed')+'  ==>  '+currVersion+'<br>'+i18n.gettext('Available')+'  ==>  '+releaseInfo.version
-        }   
-    } else if ((releaseInfo.message !== undefined)) {
-        infoTitle.innerHTML = i18n.gettext('Important message')
+        if (releaseInfo !== undefined && releaseInfo != null) {
+        const currVersion = store.get('version')
+        if (releaseInfo.version !== undefined) {
+            if (releaseInfo.version > currVersion) {
+                infoTitle.innerHTML = i18n.gettext('An update is available')        
+                infoTextFr.innerHTML = releaseInfo.date+'<br>      '+currVersion+'  ==>  '+releaseInfo.version
+                infoTextEn.innerHTML = releaseInfo.info
+                $('#div-downl').removeClass('d-none')
+                $('#div-downl').addClass('d-block')     
+            } else {
+                infoTitle.innerHTML = i18n.gettext('Your version is up to date')        
+                infoTextFr.innerHTML = i18n.gettext('Installed')+'  ==>  '+currVersion+'<br>'+i18n.gettext('Available')+'  ==>  '+releaseInfo.version
+            }   
+        } else if ((releaseInfo.message !== undefined)) {
+            infoTitle.innerHTML = i18n.gettext('Important message')
+        }
+    } else {
+        infoTitle.innerHTML = i18n.gettext('Server or url problem')        
+        infoTextFr.innerHTML = i18n.gettext('Please try again')
+        infoTextEn.innerHTML = ''
     }
 })
 

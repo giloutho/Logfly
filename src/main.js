@@ -12,6 +12,7 @@ const Splashscreen = require('@trodi/electron-splashscreen')
 
 let mainWindow = null
 let releaseInfo
+let start = performance.now()
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -49,7 +50,9 @@ const createWindow = () => {
     store.set('sitetablelines',12)
   }
 
-  /* Code with splahscreen
+  
+  
+  //  Code with splahscreen
 
   const windowOptions = {
     width: screenWidth,
@@ -73,9 +76,11 @@ const createWindow = () => {
     },
 })
 
-*/
+  // end of code with splahscreen
 
-  //Code without splashscreen
+
+  /*
+  // Code without splashscreen
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: screenWidth,
@@ -86,8 +91,8 @@ const createWindow = () => {
       contextIsolation: false,
     }      
   })
-
-
+    // End of code without splashscreen
+*/
 
 
   const macTemplate = [
@@ -155,37 +160,29 @@ const createWindow = () => {
   process.platform === "linux" && mainWindow.removeMenu()
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
-  if (startOk) {
-    checkInternetConnected()
-      .then((result) => {
-        // comment CheckInfo() for debug
-       // checkInfo()
-        // and open directly the wanted page
-        openWindow('logbook')
-      })
-      .catch((ex) => {
-        openWindow('logbook')
-      })      
+  if (startOk) { 
+    checkAndStart()
   } else {
     openWindow('problem')
   }
+  let timeTaken = performance.now()-start;
+  console.log(`Operation took ${timeTaken} milliseconds`)
 }
-
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  createWindow();
+app.whenReady().then(() => {  
+  createWindow()
 
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      createWindow()
     }
-  });
-});
+  })
+})
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -206,7 +203,8 @@ ipcMain.on('hide-waiting-gif', function(event, arg) {
 })
 
 ipcMain.on('ask-infos', function(event, arg) {
-  mainWindow.webContents.send('read-infos', releaseInfo)
+  releaseInfo = null
+  checkRequest()
 })
 
 ipcMain.on('back_waypform', (event, arg) => {  
@@ -239,7 +237,7 @@ function openWindow(pageName) {
       break      
     case "infos":
       mainWindow.loadFile(path.join(__dirname, './views/html/information.html'))
-      mainWindow.webContents.send('read-infos')
+  //    mainWindow.webContents.send('read-infos')
 //      mainWindow.webContents.openDevTools() 
       break            
     case "import":
@@ -292,39 +290,68 @@ function openWindow(pageName) {
   } 
 }
 
+async function checkAndStart() {
+  let checkLogfly = await checkInternetConnected()
+  if (checkLogfly) {
+    const infosOk = await checkInfos()
+    if (infosOk) {
+      console.log('infos OK '+releaseInfo.version)
+      const currVersion = app.getVersion() 
+      console.log('currVersion '+currVersion+' json.version '+releaseInfo.version)
+      if (releaseInfo.version > currVersion || releaseInfo.message !== undefined )  {
+          openWindow('infos')
+      } else {
+          openWindow('logbook')
+      }    
+    } else {
+      openWindow('logbook')
+    }    
+  } else {
+    openWindow('logbook')
+  }
+}
+
+async function checkRequest() { 
+  releaseInfo = null
+  let checkLogfly = await checkInternetConnected()
+  const infosOk = await checkInfos()
+  mainWindow.webContents.send('read-infos', releaseInfo)
+}
+
 /**
  * From https://www.geeksforgeeks.org/http-rest-api-calls-in-electronjs/
  * and json solution in https://stackoverflow.com/questions/71221278/in-an-electron-application-i-am-successfully-making-an-http-get-request-from-an
  */
-function checkInfo() {
-  const request = net.request({
-      method: 'GET',
-      url: 'https://logfly.org/download/logfly6/release.php'
+async function checkInfos() {
+    releaseInfo = null
+    const request = net.request({
+        method: 'GET',
+        url: 'https://logfly.org/download/logfly6/release.php'
     })
-    request.on('response', (response) => {
-      if (response.statusCode == 200) {
-        let buffers = []
-        response.on('data', (chunk) => {
-          buffers.push(chunk)
-        })
-        response.on('end', () => {
-          let responseBodyBuffer = Buffer.concat(buffers)
-          let json = JSON.parse(responseBodyBuffer.toString())
-          releaseInfo = json
-          const currVersion = app.getVersion() 
-          console.log('currVersion '+currVersion+' json.version '+releaseInfo.version)
-          if (json.version > currVersion || json.message !== undefined )  {
-            openWindow('infos')
-          } else {
-              openWindow('logbook')
-          }             
-        })
-      } else {
-        console.log('logfly.org is now unavailable')
-        openWindow('logbook')
-      }
+    const logflyResponse = new Promise((resolve, reject) => {
+      request.on('response', (response) => {
+        if (response.statusCode == 200) {
+          let buffers = []
+          response.on('data', (chunk) => {
+            buffers.push(chunk)
+          })
+          response.on('end', () => {
+            let responseBodyBuffer = Buffer.concat(buffers)
+            let json = JSON.parse(responseBodyBuffer.toString())
+            releaseInfo = json    
+            console.log('In checkInfos '+releaseInfo.version)  
+            resolve(true)
+          })
+        } else {
+          console.log('logfly.org is now unavailable')
+          resolve(false)
+        }
+      })
+      console.log('on envoie request.end')
+      request.end()    
     })
-  request.end()
+
+    return await logflyResponse
 }
 
 // Require each JS file in the main-process dir
