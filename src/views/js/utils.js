@@ -14,7 +14,6 @@ const btnMenu = document.getElementById('toggleMenu')
 const btnOption1 = document.getElementById('option1')
 const btnOption2 = document.getElementById('option2')
 const btnOption3 = document.getElementById('option3')
-const btnOption4 = document.getElementById('option4')
 const statusContent = document.getElementById("status")
 let currLang
 
@@ -45,11 +44,9 @@ function iniForm() {
     btnOption1.innerHTML = i18n.gettext('Logbook copy')
     btnOption2.innerHTML = i18n.gettext('Json export')
     btnOption3.innerHTML = i18n.gettext('Csv import')
-    btnOption4.innerHTML = i18n.gettext('Serial ports')
     btnOption1.addEventListener('click',(event) => {logbookCopy()})
     btnOption2.addEventListener('click',(event) => {jsonExport()})
     btnOption3.addEventListener('click',(event) => {csvChoose()})
-    btnOption4.addEventListener('click',(event) => {listSerialPorts()})
 }
 
 $(document).ready(function () {
@@ -210,38 +207,6 @@ function loadCsv() {
             alert(i18n.gettext('You must select a csv file'))
         }
     }
-}
-
-function listSerialPorts() {
-    clearStatus()
-    $('#div_text').addClass('d-none')
-    let msg =''
-    const regexProlif = /prolific/i
-    const regexFlym = /flymas/i
-    const regexFlymOld = /FTDI/i
-    ipcRenderer.invoke('ports-list').then((result) => {
-        if (result instanceof Array) { 
-            msg = result.length+' '+i18n.gettext('ports detected')+'<br>'
-            msg += '<table><tr><th>Serial Number</th><th>Path</th><th>Manufacturer</th></tr>'
-            for (let i = 0; i < result.length; i++) {
-                let manuF = ''
-                if (typeof result[i].manufacturer != 'undefined') {
-                    if (result[i].manufacturer.search(regexProlif) >= 0) {
-                        manuF = result[i].manufacturer+' (Flytec)'
-                    } else if (result[i].manufacturer.search(regexFlym) >= 0) {
-                        manuF = result[i].manufacturer+' (Flymaster)'
-                    } else if (result[i].manufacturer.search(regexFlymOld) >= 0) {
-                        manuF = result[i].manufacturer+' (Flymaster Old)'     
-                    }
-                }               
-                msg += ' <tr><td>'+result[i].serialNumber+'</td><td>'+result[i].path+'</td><td>'+manuF+'</td></tr>'                             
-            }         
-            msg += '</table>'
-        } else {
-          msg =(' No serial port found')
-        }
-        displayStatus(msg)
-      })    
 }
 
 function displayStatus(content) {

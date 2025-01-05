@@ -38,6 +38,7 @@ const btnVarduino = document.getElementById('imp-gps-vardui')
 const btnFlynet = document.getElementById('imp-gps-flynet')
 const btnSensbox = document.getElementById('imp-gps-sens')
 const btnListUsb  = document.getElementById('list-usb')   
+const btnListSerial  = document.getElementById('list-serial')   
 const btnManu = document.getElementById('imp-manu')
 
 let currStatusContent
@@ -103,6 +104,8 @@ function iniForm() {
     document.getElementById('imp-manu').innerHTML = i18n.gettext('Flight without GPS track')
     btnListUsb.innerHTML = i18n.gettext('Usb list')
     btnListUsb.addEventListener('click',(event) => {listUsb()})  
+    btnListSerial.innerHTML = i18n.gettext('Serial ports')
+    btnListSerial.addEventListener('click',(event) => {listSerialPorts()})
     btnFlymSD.addEventListener('click',(event) => {serialGpsCall('FlymasterSD')})      
     btnFlymOld.addEventListener('click',(event) => {serialGpsCall('FlymasterOld')})
     btnFlytec20.addEventListener('click',(event) => {serialGpsCall('Flytec20')})
@@ -207,6 +210,36 @@ function callUsbGps(typeGPS) {
           displayStatus(errorMsg,false)      
       }
   })     
+}
+
+function listSerialPorts() {
+    let msg =''
+    const regexProlif = /prolific/i
+    const regexFlym = /flymas/i
+    const regexFlymOld = /FTDI/i
+    ipcRenderer.invoke('ports-list').then((result) => {
+        if (result instanceof Array) { 
+            msg = result.length+' '+i18n.gettext('ports detected')+'<br>'
+            msg += '<table><tr><th>Serial Number</th><th>Path</th><th>Manufacturer</th></tr>'
+            for (let i = 0; i < result.length; i++) {
+                let manuF = ''
+                if (typeof result[i].manufacturer != 'undefined') {
+                    if (result[i].manufacturer.search(regexProlif) >= 0) {
+                        manuF = result[i].manufacturer+' (Flytec)'
+                    } else if (result[i].manufacturer.search(regexFlym) >= 0) {
+                        manuF = result[i].manufacturer+' (Flymaster)'
+                    } else if (result[i].manufacturer.search(regexFlymOld) >= 0) {
+                        manuF = result[i].manufacturer+' (Flymaster Old)'     
+                    }
+                }               
+                msg += ' <tr><td>'+result[i].serialNumber+'</td><td>'+result[i].path+'</td><td>'+manuF+'</td></tr>'                             
+            }         
+            msg += '</table>'
+        } else {
+          msg =(' No serial port found')
+        }
+        displayStatus(msg, false)
+      })    
 }
 
 function listUsb() {
