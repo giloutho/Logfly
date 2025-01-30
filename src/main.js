@@ -54,7 +54,7 @@ const createWindow = () => {
   
   //  Code with splahscreen
 
-  const windowOptions = {
+  /* const windowOptions = {
     width: screenWidth,
     height: screenHeight,
     show: false,
@@ -75,11 +75,11 @@ const createWindow = () => {
         transparent: true,
     },
 })
-
+*/
   // end of code with splahscreen
 
 
-  /*
+  
   // Code without splashscreen
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -92,7 +92,7 @@ const createWindow = () => {
     }      
   })
     // End of code without splashscreen
-*/
+
 
 
   const macTemplate = [
@@ -161,7 +161,8 @@ const createWindow = () => {
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
   if (startOk) { 
-    checkAndStart()
+    openWindow('equip')
+   // checkAndStart()
   } else {
     openWindow('problem')
   }
@@ -264,8 +265,8 @@ function openWindow(pageName) {
     //  mainWindow.webContents.openDevTools()
       break              
     case "equip":
-      mainWindow.loadFile(path.join(__dirname, './views/html/photos.html'))
-   //   mainWindow.webContents.openDevTools()  
+      mainWindow.loadFile(path.join(__dirname, './views/html/equip.html'))
+      mainWindow.webContents.openDevTools()  
       break                
     case "settings":
       mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'))
