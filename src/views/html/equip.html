@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../../../node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="../../../node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css">
     <link rel="stylesheet" href="../../assets/css/home.css">
+    <link rel="stylesheet" href="../../assets/css/font-awesome-450.min.css"> 
     <!-- if necessary some specifics css will be added like leaflet.css -->
 </head>
 
@@ -55,7 +56,7 @@
                     <div>
                         <!---- Duplicate code from logbook.html -->
                         <div class="alert alert-info collapse" role="alert" id="status"></div>           
-                        <div class="d-md-flex h-md-100 align-items-start top-buffer">
+                        <div class="row d-md-flex h-md-100 align-items-start top-buffer">
                             <div class="col-md-12 ">
                                 <div id="div_table" class="d-block">
                                 <table id="table_id" class="table table-striped table-bordered d-none" style="width:100%;;z-index: 5000 !important;overflow: visible !important;">
@@ -64,6 +65,74 @@
                                 </table>
                                 </div> 
                             </div>    
+                        </div>
+                        <div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <form>
+                                        <div class="row">
+                                            <div class="col-md-2 pr-1">
+                                                <label id="lb-manu-date">Date</label>
+                                            </div>
+                                            <div class="col-md-8 pr-1">
+                                                <label id="lg-pilotmail">Matériel</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-2 pr-1">                                   
+                                                <input type="date" id="tx-manu-date" required>
+                                            </div>   
+                                            <div class="col-sm-5 my-1">                                    
+                                                <input type="text" class="form-control" placeholder="Choisir une voile ci dessous ou saisir ici un texte libre" id="tx-pilotmail" value="">
+                                            </div>                                                                                          
+                                        </div>                                           
+                                        <div class="row">
+                                            <div class="col-sm-2 my-1"></div>
+                                            <div class="col-sm-4 my-1">                                    
+                                            <select class="custom-select">
+                                                <option>One</option>
+                                                <option>Two</option>
+                                                <option>Three</option>
+                                            </select>
+                                        </div>   
+                                        <div class="col-sm-1 my-1"><button type="button" class="btn btn-secondary" id="bt-pil-cancel">Selection</button></div>                                                                                      
+                                        </div>                                       
+                                        <div class="row top-buffer">
+                                        <div class="col-md-8 pr-1">
+                                            <label id="lg-login">Opération</label>
+                                        </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-5 my-1">                                    
+                                                <input type="text" class="form-control" placeholder="Achat, vente, révision, calage..." id="tx-login" value="">
+                                            </div>
+                                        </div>
+                                        <div class="row top-buffer">
+                                        <div class="col-md-8 pr-1">
+                                            <label id="lg-pass">Commentaire</label>
+                                        </div>
+                                        </div>         
+                                        <div class="row">
+                                        <div class="col-sm-7 my-1">                                    
+                                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>                                        
+                                        </div>                                             
+                                        </div>                                                                                                                                                                                                                                               
+                                        <div class="row top-buffer">
+                                            <div class="col-md-4 pr-1"></div>
+                                            <div class="col-auto my-1 align-self-center">
+                                                <button type="button" class="btn btn-info" id="bt-pil-cancel">Nouveau</button>
+                                            </div> 
+                                            <div class="col-auto my-1 align-self-center">
+                                                <button type="button" class="btn btn-danger" id="bt-pil-cancel">Annuler</button>
+                                            </div>                                                                                                      
+                                        <div class="col-auto my-1 align-self-center">
+                                            <button type="button" class="btn btn-success" id="bt-pil-ok">OK</button>
+                                        </div>
+                                        </div>                          
+                                        <div class="clearfix"></div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

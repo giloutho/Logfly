@@ -401,5 +401,11 @@ table{
     font-size: 1.2em;
     margin-left: 10px;
 }
-      
+
+td.editor-edit button,
+td.editor-delete button {
+    background: transparent;
+    border: none;
+    color: inherit;
+}
 
