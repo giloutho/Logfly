@@ -13,6 +13,13 @@ const statusContent = document.getElementById("status")
 const db = require('better-sqlite3')(store.get('dbFullPath'))
 const dbcheck = require('../../utils/db/db-check.js')
 
+const inputDate = document.getElementById('tx-date')
+const inputEngin = document.getElementById('tx-engin')
+const inputEvent = document.getElementById('tx-event')
+const inputComment = document.getElementById('tx-comment')
+const selectGlider = document.getElementById('select-glider')
+const btnGlider = document.getElementById('bt-glider')
+
 let currLang
 let tableLines = 8
 
@@ -37,6 +44,8 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
+    // Traduction à faire
+    inputEngin.placeholder ='Vas y Toto...'
     const equipTest = dbcheck.checkEquipTable()
     if (equipTest) {
         tableStandard()
@@ -86,7 +95,7 @@ function tableStandard() {
         $('#table_id').DataTable().clear().destroy()
     }
     if (db.open) {
-        let sqlReq = 'SELECT M_ID, strftime(\'%d-%m-%Y\',M_Date) AS Day, M_Engin, M_Event, M_Comment FROM Equip ORDER BY M_Date DESC'
+        let sqlReq = 'SELECT M_ID, strftime(\'%d-%m-%Y\',M_Date) AS Day, strftime(\'%Y-%m-%d\',M_Date) AS Calendar, M_Engin, M_Event, M_Comment FROM Equip ORDER BY M_Date DESC'
         const stmtEq = db.prepare(sqlReq).all()
         const dataTableOption = {
           data: stmtEq, 
@@ -110,7 +119,8 @@ function tableStandard() {
                 defaultContent: '<button><i class="fa fa-trash"></i></button>',
                 orderable: false
             }, 
-            { title : 'id', data: 'M_ID' }
+            { title : 'id', data: 'M_ID' },
+            { title : 'id', data: 'Calendar' }
           ],      
           columnDefs : [
               { "width": "15%", "targets": 0 },
@@ -119,7 +129,8 @@ function tableStandard() {
               { "width": "35%", "targets": 3 },
               { "width": "5%", "targets": 4 },
               { "width": "5%", "targets": 5 },
-              { "targets": 6, "visible": false, "searchable": false },     
+              { "targets": 6, "visible": false, "searchable": false },   
+              { "targets": 7, "visible": false, "searchable": false }   
           ],      
           bInfo : false,          // hide "Showing 1 to ...  row selected"
           lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -154,8 +165,8 @@ function tableStandard() {
             console.log(e.target.closest('tr'))
             const tr = e.target.closest('tr')
             const row = table.row( tr ).data();
-            console.log(row);
-            alert('Edit id : '+row.M_ID)
+          //  alert('Edit id : '+row.M_ID)
+          updateRec(row)
 
         })
         if (table.data().count() > 0) {
@@ -166,6 +177,31 @@ function tableStandard() {
         displayStatus(i18n.gettext('Database connection failed'))
     }
 }    // End of tableStandard
+
+function updateRec(row) {
+    const rowId = row.M_ID
+    inputDate.value = row.Calendar
+    inputEngin.value = row.M_Engin
+    inputEvent.value = row.M_Event
+    fillSelectGlider()
+    $('#input-equip').removeClass('d-none')
+}
+
+function fillSelectGlider() {
+    const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
+    let nbGliders = 0
+    for (const gl of GliderSet.iterate()) {
+      nbGliders++
+      let newOption = document.createElement("option")
+      newOption.value= nbGliders.toString()
+      newOption.innerHTML= (gl.V_Engin)
+      selectGlider.appendChild(newOption)
+    } 
+}
+
+btnGlider.addEventListener('click', (event) => {
+    inputEngin.value = selectGlider.options[selectGlider.selectedIndex].text
+})
 
 function displayStatus(content) {
     statusContent.innerHTML = content

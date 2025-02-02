@@ -66,8 +66,8 @@
                                 </div> 
                             </div>    
                         </div>
-                        <div>
-                            <div class="card">
+                        <div style="margin-top: 20px" class="d-none" id="input-equip">
+                            <div class="card"">
                                 <div class="card-body">
                                     <form>
                                         <div class="row">
@@ -75,46 +75,51 @@
                                                 <label id="lb-manu-date">Date</label>
                                             </div>
                                             <div class="col-md-8 pr-1">
-                                                <label id="lg-pilotmail">Matériel</label>
+                                                <label id="lg-engin">Matériel</label>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-2 pr-1">                                   
-                                                <input type="date" id="tx-manu-date" required>
+                                                <input type="date" id="tx-date">
                                             </div>   
                                             <div class="col-sm-5 my-1">                                    
-                                                <input type="text" class="form-control" placeholder="Choisir une voile ci dessous ou saisir ici un texte libre" id="tx-pilotmail" value="">
+                                                <input type="text" class="form-control" placeholder="Choisir une voile ci dessous ou saisir ici un texte libre" style="text-transform: uppercase" id="tx-engin" value="">
                                             </div>                                                                                          
                                         </div>                                           
                                         <div class="row">
                                             <div class="col-sm-2 my-1"></div>
-                                            <div class="col-sm-4 my-1">                                    
-                                            <select class="custom-select">
-                                                <option>One</option>
-                                                <option>Two</option>
-                                                <option>Three</option>
-                                            </select>
-                                        </div>   
-                                        <div class="col-sm-1 my-1"><button type="button" class="btn btn-secondary" id="bt-pil-cancel">Selection</button></div>                                                                                      
+                                            <div class="col-sm-3 my-1">                                    
+                                                <span></span><select class="form-control" style="width:100%" id="select-glider">
+                                                </select>                                                
+                                            </div>   
+                                            <div class="col-sm-2 my-1">
+                                                <button type="button" class="btn btn-secondary" id="bt-glider">Valider</button></span>
+                                            </div>                                                   
                                         </div>                                       
                                         <div class="row top-buffer">
-                                        <div class="col-md-8 pr-1">
-                                            <label id="lg-login">Opération</label>
+                                        <div class="col-md-2 pr-1">
+                                            <label id="lg-event">Opération</label>
+                                        </div>
+                                        <div class="col-md-2 pr-1">
+                                            <label id="lg-price">Price</label>
                                         </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-sm-5 my-1">                                    
-                                                <input type="text" class="form-control" placeholder="Achat, vente, révision, calage..." id="tx-login" value="">
+                                            <div class="col-sm-2 my-1">                                    
+                                                <input type="text" class="form-control" placeholder="Achat, vente, révision, calage..." style="text-transform: uppercase" id="tx-event" value="">
+                                            </div>
+                                            <div class="col-sm-2 my-1">                                    
+                                                <input type="text" class="form-control"  id="tx-price" value="">
                                             </div>
                                         </div>
                                         <div class="row top-buffer">
                                         <div class="col-md-8 pr-1">
-                                            <label id="lg-pass">Commentaire</label>
+                                            <label id="lg-comment">Commentaire</label>
                                         </div>
                                         </div>         
                                         <div class="row">
                                         <div class="col-sm-7 my-1">                                    
-                                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>                                        
+                                            <textarea class="form-control" id="tx-comment" rows="3"></textarea>                                        
                                         </div>                                             
                                         </div>                                                                                                                                                                                                                                               
                                         <div class="row top-buffer">
@@ -126,7 +131,7 @@
                                                 <button type="button" class="btn btn-danger" id="bt-pil-cancel">Annuler</button>
                                             </div>                                                                                                      
                                         <div class="col-auto my-1 align-self-center">
-                                            <button type="button" class="btn btn-success" id="bt-pil-ok">OK</button>
+                                            <button type="button" class="btn btn-success" id="bt-ok">OK</button>
                                         </div>
                                         </div>                          
                                         <div class="clearfix"></div>

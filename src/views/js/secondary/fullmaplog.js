@@ -206,6 +206,16 @@ function buildMap() {
     }
   })
 
+  const kk7layer = L.tileLayer('https://thermal.kk7.ch/tiles/skyways_all_all/{z}/{x}/{y}.png?src=' + window.location.hostname, {
+    attribution: 'thermal.kk7.ch <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC-BY-NC-SA>/a>',
+    maxNativeZoom: 13,
+    tms: true,
+    opacity: 0.5
+  })
+
+  const kk7Group = new L.LayerGroup()
+  kk7Group.addLayer(kk7layer)
+
 
   let mAisrpaces = i18n.gettext('openAIP')
   let mTrack = i18n.gettext('Track')
@@ -221,6 +231,8 @@ function buildMap() {
   }
 
   layerControl = new L.control.layers(baseMaps,Affichage).addTo(map)
+
+  layerControl.addOverlay(kk7Group, "Thermal.kk7.ch")
   
   const StartIcon = new L.Icon({
     iconUrl: '../../../leaflet/images/windsock22.png',
