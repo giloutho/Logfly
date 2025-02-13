@@ -1,12 +1,13 @@
-const Store = require('electron-store');
-const store = new Store();
-const db = require('better-sqlite3')(store.get('dbFullPath'))
+const Store = require('electron-store')
+const store = new Store()
+const Database = require('better-sqlite3')
+const db = new Database(store.get('dbFullPath'))
 const log = require('electron-log')
 
 function checkEquipTable() {    
     let equipTableOk = false
     if (db.open) {
-        const stmtEquip = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`);
+        const stmtEquip = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
         const resEquip = stmtEquip.get('Equip')  
         if (resEquip != undefined && resEquip != null) {
             if (resEquip['name'] == 'Equip') equipTableOk = true

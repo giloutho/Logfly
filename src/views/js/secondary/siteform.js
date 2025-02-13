@@ -4,6 +4,7 @@ const path = require('path')
 const log = require('electron-log')
 const Store = require('electron-store')
 const store = new Store();
+const Database = require('better-sqlite3')
 const inputMask = require('inputmask');
 const Position = require('../../../utils/geo/position.js')
 const SyncTileSet = require('srtm-elevation').SyncTileSet
@@ -458,7 +459,7 @@ function validFields() {
 }
 
 function dbUpdate() {
-    let db = require('better-sqlite3')(store.get('dbFullPath'))
+    const db = new Database(store.get('dbFullPath'))
     if (db.open) {
         try {
             if (editSite.id > 0) {

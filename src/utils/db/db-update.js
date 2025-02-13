@@ -1,6 +1,7 @@
 const Store = require('electron-store');
 const store = new Store();
-const db = require('better-sqlite3')(store.get('dbFullPath'))
+const Database = require('better-sqlite3')
+const db = new Database(store.get('dbFullPath'))
 const log = require('electron-log')
 
 function changeSiteName(oldName, newName) {    

@@ -12,6 +12,7 @@ const gpsDumpNames = gpsDumpFiles.getGpsdumpNames()
 const homedir = require('os').homedir()
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
+const Database = require('better-sqlite3')
 let logmainpath = null
 let logrendererpath = null
 let currDisplay = null
@@ -199,7 +200,7 @@ function fnSystemDisplay() {
   customReport.push(['Db size',`${dbSize}`])
   try {
       if (fs.existsSync(dbFullPath)) {
-          const db = require('better-sqlite3')(dbFullPath)   
+          const db = new Database(dbFullPath)   
           const stmtSites = db.prepare('SELECT COUNT(*) FROM Site')
           let countSites = stmtSites.get()
           customReport.push(['Number of items in the file Sites',`${countSites['COUNT(*)']}`])

@@ -1,11 +1,12 @@
 const log = require('electron-log')
 const fs = require('fs') 
+const Database = require('better-sqlite3')
 
 function testDb(dbFullPath) {
     let resDb
     try {
         if (fs.existsSync(dbFullPath)) {
-            const db = require('better-sqlite3')(dbFullPath)     
+            const db = new Database(dbFullPath)     
             // const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
             // let countTables = stmt.get()
             // console.log('countTables : '+countTables+' '+countTables['COUNT(*)'])
@@ -35,7 +36,7 @@ function testDb(dbFullPath) {
 }
 
 function createDb(dbFullPath) {
-    const db = require('better-sqlite3')(dbFullPath)   
+    const db = new Database(dbFullPath)   
     let creaResult = false
     try {
         let creationVol = 'CREATE TABLE Vol (V_ID integer NOT NULL PRIMARY KEY, V_Date TimeStamp, V_Duree integer,'
