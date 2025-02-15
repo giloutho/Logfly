@@ -1,5 +1,4 @@
 const {ipcRenderer} = require('electron')
-
 const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
 const fs = require('fs')
@@ -13,16 +12,21 @@ const statusContent = document.getElementById("status")
 const Database = require('better-sqlite3')
 const db = new Database(store.get('dbFullPath'))
 const dbcheck = require('../../utils/db/db-check.js')
+const moment = require('moment')
+const { event } = require('jquery')
 
 const inputDate = document.getElementById('tx-date')
 const inputEngin = document.getElementById('tx-engin')
 const inputEvent = document.getElementById('tx-event')
 const inputComment = document.getElementById('tx-comment')
+const inputPrice = document.getElementById('tx-price')
 const selectGlider = document.getElementById('select-glider')
-const btnGlider = document.getElementById('bt-glider')
+const btnOk = document.getElementById('bt-ok')
+const btnCancel = document.getElementById('bt-cancel')
 
 let currLang
-let tableLines = 8
+let tableLines = 7
+const currEquip = {}
 
 iniForm()
 
@@ -46,10 +50,11 @@ function iniForm() {
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     // Traduction à faire
-    inputEngin.placeholder ='Vas y Toto...'
+    inputEngin.placeholder = i18n.gettext('Free input or retrieve a name from the glider\'s list')
+    fillSelectGlider()
     const equipTest = dbcheck.checkEquipTable()
     if (equipTest) {
-        tableStandard()
+        selectDisplay()
     } else {
         alert(i18n.gettext('Unable to create Equip table'))
     }
@@ -90,13 +95,31 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active')
 })
 
+function selectDisplay() {
+    if (db.open) {
+        const stmt = db.prepare('SELECT COUNT(*) FROM Equip')
+        let countRec = stmt.get()
+        let contentStatus = '<p style="text-align:left;">'
+        contentStatus += '<span class="badge badge-dark">'+i18n.gettext('Equipment')+'</span>'
+        contentStatus += '<span style="margin-left: 10px;">'+i18n.gettext('You can record all operations concerning your equipment')+' : '
+        contentStatus += i18n.gettext('purchase')+', '
+        contentStatus += i18n.gettext('sale')+', '
+        contentStatus += i18n.gettext('overhaul')+', '
+        contentStatus += i18n.gettext('emergency folding')+', '
+        contentStatus += i18n.gettext('chocking')+', '
+        contentStatus += i18n.gettext('etc')+'...</span>'
+        contentStatus +='<span style="float:right;"><button type="button" class="btn btn-danger"  onclick="newRec()">'+i18n.gettext('Add')+'</button></span></p></div>'
+        displayStatus(contentStatus)
+        if (countRec['COUNT(*)'] > 0) tableStandard()
+    }
+}
 
 function tableStandard() {
     if ($.fn.DataTable.isDataTable('#table_id')) {
         $('#table_id').DataTable().clear().destroy()
     }
     if (db.open) {
-        let sqlReq = 'SELECT M_ID, strftime(\'%d-%m-%Y\',M_Date) AS Day, strftime(\'%Y-%m-%d\',M_Date) AS Calendar, M_Engin, M_Event, M_Comment FROM Equip ORDER BY M_Date DESC'
+        let sqlReq = 'SELECT M_ID, strftime(\'%d-%m-%Y\',M_Date) AS Day, strftime(\'%Y-%m-%d\',M_Date) AS Calendar, M_Engin, M_Event, M_Comment, M_Price FROM Equip ORDER BY M_Date DESC'
         const stmtEq = db.prepare(sqlReq).all()
         const dataTableOption = {
           data: stmtEq, 
@@ -121,7 +144,8 @@ function tableStandard() {
                 orderable: false
             }, 
             { title : 'id', data: 'M_ID' },
-            { title : 'id', data: 'Calendar' }
+            { title : 'Cal', data: 'Calendar' },
+            { title : 'Pr', data: 'M_Price' }
           ],      
           columnDefs : [
               { "width": "15%", "targets": 0 },
@@ -131,7 +155,8 @@ function tableStandard() {
               { "width": "5%", "targets": 4 },
               { "width": "5%", "targets": 5 },
               { "targets": 6, "visible": false, "searchable": false },   
-              { "targets": 7, "visible": false, "searchable": false }   
+              { "targets": 7, "visible": false, "searchable": false },   
+              { "targets": 8, "visible": false, "searchable": false }  
           ],      
           bInfo : false,          // hide "Showing 1 to ...  row selected"
           lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -160,15 +185,19 @@ function tableStandard() {
                 console.log(dt.row(indexes).data().M_ID+' '+dt.row(indexes).data().Day+' '+dt.row(indexes).data().M_Engin+' '+dt.row(indexes).data().M_Event)
             }        
         } )
+        // Update recor
         table.on('click', 'td.editor-edit button', function (e) {
             // From https://editor.datatables.net/examples/simple/inTableControls.html
-            console.log(table.row(this).data());
-            console.log(e.target.closest('tr'))
             const tr = e.target.closest('tr')
-            const row = table.row( tr ).data();
-          //  alert('Edit id : '+row.M_ID)
-          updateRec(row)
+            const row = table.row( tr ).data()
+            updateRec(row)
 
+        })
+        // Delete record
+        table.on('click', 'td.editor-delete button', function (e) {
+            const tr = e.target.closest('tr')
+            const row = table.row( tr ).data()
+            deleteRec(row)
         })
         if (table.data().count() > 0) {
           $('#table_id').removeClass('d-none')
@@ -179,29 +208,148 @@ function tableStandard() {
     }
 }    // End of tableStandard
 
-function updateRec(row) {
-    const rowId = row.M_ID
-    inputDate.value = row.Calendar
-    inputEngin.value = row.M_Engin
-    inputEvent.value = row.M_Event
-    fillSelectGlider()
+
+function newRec() {
+    currEquip.id = -1
+    currEquip.calendar = ''
+    inputDate.value = ''
+    currEquip.engin = ''
+    inputEngin.value = ''
+    currEquip.event = ''
+    inputEvent.value = ''
+    currEquip.price = ''
+    inputPrice.value = ''
+    currEquip.comment = ''
+    inputComment.value = ''
+    $('#table_id').addClass('table-disabled')
     $('#input-equip').removeClass('d-none')
 }
 
+function updateRec(row) {
+    currEquip.id = row.M_ID
+    currEquip.calendar = row.Calendar
+    inputDate.value = row.Calendar
+    currEquip.engin = row.M_Engin
+    inputEngin.value = row.M_Engin
+    currEquip.event = row.M_Event
+    inputEvent.value = row.M_Event
+    currEquip.price = row.M_Price
+    inputPrice.value = row.M_Price
+    currEquip.comment = row.M_Comment
+    inputComment.value = row.M_Comment
+    $('#table_id').addClass('table-disabled')
+    $('#input-equip').removeClass('d-none')
+}
+
+function dbUpdate() {
+    const sqlDate = inputDate.value +' 00:00:00'
+    currEquip.engin = inputEngin.value.toUpperCase()
+    currEquip.event = inputEvent.value.toUpperCase()
+    currEquip.price = inputPrice.value
+    currEquip.comment = inputComment.value
+    if (db.open) {
+        try {
+            if (currEquip.id > 0) {
+                const stmtUp =  db.prepare('UPDATE Equip SET M_Date=?, M_Engin=?, M_Event=?, M_Price=?, M_Comment=? WHERE M_ID =?')   
+                const updSite = stmtUp.run(sqlDate, currEquip.engin, currEquip.event, currEquip.price, currEquip.comment,currEquip.id)            
+            } else {
+                const stmtAdd = db.prepare('INSERT INTO Equip (M_Date, M_Engin, M_Event, M_Price, M_Comment) VALUES (?,?,?,?,?)')       
+                const addSite = stmtAdd.run(sqlDate, currEquip.engin, currEquip.event, currEquip.price, currEquip.comment)            
+            }     
+            tableStandard()     
+        } catch (error) {
+            alert(i18n.gettext('Problem while updating the logbook'))
+            log.error('[equip.js/dbUpadte] error : '+error)  
+        }        
+    } else {
+        alert(i18n.gettext('Problem while updating the logbook'))
+        log.error('[equip.js/dbUpadte] db not open')  
+    }   
+}
+
+function deleteRec(row) {
+  const dialogLang = {
+    title: i18n.gettext('Please confirm'),
+    message: i18n.gettext('Are you sure you want to continue')+' ?',
+    yes : i18n.gettext('Yes'),
+    no : i18n.gettext('No')
+  }
+  ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
+    if (result) {
+        let id = row.M_ID
+        if (db.open) {
+            let smt = 'DELETE FROM Equip WHERE M_ID = ?'            
+            const stmt = db.prepare(smt)
+            const delRec = stmt.run(id)  
+            tableStandard()  
+        }
+    }
+    })
+}
+
 function fillSelectGlider() {
+    // https://stackoverflow.com/questions/5805059/how-do-i-make-a-placeholder-for-a-select-box
+    let firstOption = document.createElement("option")
+    firstOption.value = ""
+    firstOption.disabled = true
+    firstOption.selected = true
+    firstOption.innerHTML = i18n.gettext('Glider from logbook')
+    selectGlider.appendChild(firstOption)
     const GliderSet = db.prepare(`SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC`)
     let nbGliders = 0
     for (const gl of GliderSet.iterate()) {
-      nbGliders++
-      let newOption = document.createElement("option")
-      newOption.value= nbGliders.toString()
-      newOption.innerHTML= (gl.V_Engin)
-      selectGlider.appendChild(newOption)
+        if (gl.V_Engin != null && gl.V_Engin != '') {
+            nbGliders++
+            let newOption = document.createElement("option")
+            newOption.value= nbGliders.toString()
+            newOption.innerHTML= (gl.V_Engin)
+            selectGlider.appendChild(newOption)
+        }
     } 
 }
 
-btnGlider.addEventListener('click', (event) => {
+//onChange event on SelectGlider
+function grabGlider() {
     inputEngin.value = selectGlider.options[selectGlider.selectedIndex].text
+}
+
+function validFields() {
+    // currEquip.id = row.M_ID
+    // currEquip.calendar = row.Calendar
+    // inputDate.value = row.Calendar
+    // currEquip.engin = row.M_Engin
+    // inputEngin.value = row.M_Engin
+    // currEquip.event = row.M_Event
+    // inputEvent.value = row.M_Event
+    // currEquip.price = row.M_Price
+    // inputPrice.value = row.M_Price
+    // currEquip.comment = row.M_Comment
+    // inputComment.value = row.M_Comment
+
+    // if (inputDate.value == '' || inputDate.value == null) {
+    //     alert(i18n.gettext('Name must not be null'))
+    // } 
+    if (inputDate.value == null || inputDate.value == "") {
+        $('#tx-date').val('').css( "border-color", "red" )
+    } else if (inputEngin.value == null || inputEngin.value == "") {
+        $('#tx-engin').val('').css( "border-color", "red" )
+    } else if (inputEvent.value == null || inputEvent.value == "") {
+        $('#tx-event').val('').css( "border-color", "red" )
+    } else {
+        dbUpdate()
+        $('#input-equip').addClass('d-none')
+        $('#table_id').removeClass('table-disabled')
+    }
+    
+}
+
+btnOk.addEventListener('click', (event) => {
+    validFields()
+})
+
+btnCancel.addEventListener('click', (event)=> {
+    $('#input-equip').addClass('d-none')
+    $('#table_id').removeClass('table-disabled')
 })
 
 function displayStatus(content) {
