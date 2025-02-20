@@ -414,3 +414,20 @@ td.editor-delete button {
     pointer-events: none;
 }
 
+.btn-tag {
+    height: 15px;
+    width: 10px;  
+    border-radius: 80%;
+    margin-right : 5px;
+    cursor: pointer;
+  }
+  
+.btn-tag0 {background-color: white;}
+.btn-tag1 {background-color: red;}
+.btn-tag2 {background-color: orange;}
+.btn-tag3 {background-color: gold;}
+.btn-tag4 {background-color: lime;}
+.btn-tag5 {background-color: dodgerblue;}
+
+.center{margin:auto;}
+

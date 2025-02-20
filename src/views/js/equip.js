@@ -54,7 +54,7 @@ function iniForm() {
     fillSelectGlider()
     const equipTest = dbcheck.checkEquipTable()
     if (equipTest) {
-        selectDisplay()
+        infoStatus()
     } else {
         alert(i18n.gettext('Unable to create Equip table'))
     }
@@ -95,11 +95,11 @@ btnMenu.addEventListener('click', (event) => {
     $('#sidebar').toggleClass('active')
 })
 
-function selectDisplay() {
+function infoStatus() {
     if (db.open) {
         const stmt = db.prepare('SELECT COUNT(*) FROM Equip')
         let countRec = stmt.get()
-        let contentStatus = '<p style="text-align:left;">'
+        let contentStatus = '<form class="form-inline">'
         contentStatus += '<span class="badge badge-dark">'+i18n.gettext('Equipment')+'</span>'
         contentStatus += '<span style="margin-left: 10px;">'+i18n.gettext('You can record all operations concerning your equipment')+' : '
         contentStatus += i18n.gettext('purchase')+', '
@@ -108,7 +108,9 @@ function selectDisplay() {
         contentStatus += i18n.gettext('emergency folding')+', '
         contentStatus += i18n.gettext('chocking')+', '
         contentStatus += i18n.gettext('etc')+'...</span>'
-        contentStatus +='<span style="float:right;"><button type="button" class="btn btn-danger"  onclick="newRec()">'+i18n.gettext('Add')+'</button></span></p></div>'
+        contentStatus +='<span style="margin-left: 15px;"><button type="button" class="btn btn-danger"  onclick="newRec()">'+i18n.gettext('Add')+'</button></span>'
+        contentStatus +='<span style="margin-left: 15px;"><input type="search" id="tx-search" style="text-transform: uppercase" '
+        contentStatus += 'aria-label="Search" placeholder="'+i18n.gettext('Search')+'...'+'"></form></span>'
         displayStatus(contentStatus)
         if (countRec['COUNT(*)'] > 0) tableStandard()
     }
@@ -180,12 +182,7 @@ function tableStandard() {
         $('#tx-search').on( 'keyup', function () {
           table.search( this.value ).draw()
         })
-        table.on( 'select', function ( e, dt, type, indexes ) {
-            if ( type === 'row' ) {
-                console.log(dt.row(indexes).data().M_ID+' '+dt.row(indexes).data().Day+' '+dt.row(indexes).data().M_Engin+' '+dt.row(indexes).data().M_Event)
-            }        
-        } )
-        // Update recor
+        // Update record
         table.on('click', 'td.editor-edit button', function (e) {
             // From https://editor.datatables.net/examples/simple/inTableControls.html
             const tr = e.target.closest('tr')

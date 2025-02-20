@@ -123,6 +123,9 @@ function iniForm() {
                 let rowIndex = table.row( this ).index()  
                 photoManager(currIdFlight, rowIndex,flPhoto)
                 break
+              case "Tag" :
+                openTagList(table.row( this ).index())
+                break
               case "Delete" : 
                 deleteFlights()
                 break
@@ -150,6 +153,7 @@ function iniForm() {
             "Glider": {name: i18n.gettext("Glider flight time")},
             "Mutlicount": {name: i18n.gettext("Totals for the selection")},
             "Day": {name: i18n.gettext("Photo of the day")},
+            "Tag" : {name: i18n.gettext("Tag the selected flight")},
             "Delete": {name: i18n.gettext("Delete")},
             "Igc": {name: i18n.gettext("IGC export")},
             "Gpx": {name: i18n.gettext("GPX export")},
@@ -339,7 +343,7 @@ function tableStandard() {
                 data: 'Photo',
                 render: function(data, type, row) {
                   if (data == 'Yes') {
-                    return '<img src="../../assets/img/Camera.png" alt=""></img>'
+                    return '<img src="../../assets/img/Camera.png" alt=""><span></img><img src="../../assets/img/tag_red3.png" alt=""></img></span>'
                   } 
                   return data
                 },          
@@ -355,7 +359,7 @@ function tableStandard() {
               { title : 'Seconds', data: 'V_Duree' }  
           ],      
           columnDefs : [
-              { "width": "3%", "targets": 0, "bSortable": false },
+              { "width": "5%", "targets": 0, "bSortable": false },
               // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
               // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
               // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
@@ -366,7 +370,7 @@ function tableStandard() {
               { "width": "6%", "targets": 2 },
               { "width": "10%", "targets": 3 },
               { "width": "30%", className: "text-nowrap", "targets": 4 },
-              { "width": "26%", "targets": 5 },
+              { "width": "24%", "targets": 5 },
               { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
               { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
               { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
@@ -1138,6 +1142,21 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
     btDiv.appendChild(btnHide)  
     $('#inputcomment').show() 
   }
+}
+
+function pushTag(idTag) {
+
+}
+
+function openTagList(rowIndex) {
+  let currFlight = {
+    date : table.cell(rowIndex,1).data(),
+    hour : table.cell(rowIndex,2).data(),
+    duration : table.cell(rowIndex,3).data(),
+    site : table.cell(rowIndex,4).data(),  
+    rowNumber : rowIndex
+  }
+  const callTagHtml = ipcRenderer.send('display-tag-list', currFlight)   // process-main/modal-win/taglist-display.js  
 }
 
 function exportGpx() {

@@ -161,7 +161,7 @@ const createWindow = () => {
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
   if (startOk) { 
-    openWindow('equip')
+    openWindow('logbook')
    // checkAndStart()
   } else {
     openWindow('problem')
@@ -266,7 +266,7 @@ function openWindow(pageName) {
       break              
     case "equip":
       mainWindow.loadFile(path.join(__dirname, './views/html/equip.html'))
-      mainWindow.webContents.openDevTools()  
+      //mainWindow.webContents.openDevTools()  
       break                
     case "settings":
       mainWindow.loadFile(path.join(__dirname, './views/html/settings.html'))
