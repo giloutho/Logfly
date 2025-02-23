@@ -24,6 +24,23 @@ function testDb(dbFullPath) {
             } else {
                 resDb = ''
             }
+            const stmtTag = db.prepare(`SELECT * FROM sqlite_master where sql like ?`)
+            const resTag = stmtTag.get('%V_Tag%')  
+            if (resTag ==  undefined || resTag == null) {
+                //console.log('tag pas trouvé '+JSON.stringify(resTag))
+                try {
+                    let creaTag = 'ALTER TABLE Vol ADD V_Tag integer'
+                    const stmtCreaTag= db.prepare(creaTag)
+                    const infoTag = stmtCreaTag.run()
+                    if (infoTag.changes != 0) {
+                        resDb = null
+                    }   
+                } catch (error) {
+                     log.error('Error occured during creation of V_Tag in table Vol '+' : '+error)
+                }                
+            }
+            // Query result will show all the tables where there is a column name equal to fieldname.
+            // console.log('stmtTag '+resTag['name'])             
         } else {
             log.error('db file not exist : '+dbFullPath)  
             resDb = null

@@ -224,6 +224,9 @@ ipcMain.on('back_flightform', (event, arg) => {
   mainWindow.webContents.send('back_flightform',arg)
 })
 
+ipcMain.on('back_taglist', (event, arg) => {  
+  mainWindow.webContents.send('back_taglist',arg)
+})
 
 function openWindow(pageName) {
   switch (pageName) {

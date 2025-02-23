@@ -124,7 +124,7 @@ function iniForm() {
                 photoManager(currIdFlight, rowIndex,flPhoto)
                 break
               case "Tag" :
-                openTagList(table.row( this ).index())
+                tagManager(currIdFlight,table.row( this ).index())
                 break
               case "Delete" : 
                 deleteFlights()
@@ -162,6 +162,8 @@ function iniForm() {
         }
     })
   })
+
+  tableStandard()
 }
 
 function workAfterResizeIsDone() {
@@ -192,6 +194,40 @@ ipcRenderer.on('back_flightform', (_, updateFlight) => {
   tableSelection(updateFlight.id)
 })
 
+ipcRenderer.on('back_taglist',(_,selectedFlight) => {
+  const currTag = selectedFlight.selTag
+  if (currTag > 0) {
+    let tagImg
+    switch (currTag) {
+      case 1 :
+        tagImg = '<img src="../../assets/img/tag_red.png" alt="" width="8px" height="8px"></img>'
+        break;
+      case 2 :
+        tagImg = '<img src="../../assets/img/tag_orange.png" alt="" width="8px" height="8px"></img>'
+        break;      
+      case 3 :
+        tagImg = '<img src="../../assets/img/tag_gold.png" alt="" width="8px" height="8px"></img>'
+        break;
+      case 4 :
+        tagImg = '<img src="../../assets/img/tag_lime.png" alt="" width="8px" height="8px"></img>'
+        break;      
+      case 5 :
+        tagImg = '<img src="../../assets/img/tag_blue.png" alt="" width="8px" height="8px"></img>'
+        break;  
+    }
+    if (db.open) {
+      try {
+        const stmt = db.prepare('UPDATE Vol SET V_Tag = ? WHERE V_ID = ?')
+        const setTag = stmt.run(selectedFlight.selTag,selectedFlight.flightId)       
+        table.cell({row:selectedFlight.rowNumber, column:1}).data(tagImg)                       
+      } catch (error) {
+        log.error('Error during flight update '+error)
+        displayStatus('Error during flight update')
+      }
+    }
+  }
+})
+
 ipcRenderer.on('xc-score-result', (_, result) => {
   track.xcscore = result    
   $('#waiting-spin').addClass('d-none')
@@ -199,7 +235,7 @@ ipcRenderer.on('xc-score-result', (_, result) => {
   displayFullMap()   
 })
 
-tableStandard()
+//tableStandard()
 
 
 $(document).ready(function () {
@@ -330,7 +366,7 @@ function tableStandard() {
         // on récupére la valeur avec counFlights['COUNT(*)']
         msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`)
         //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
-        let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Duree,'
+        let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, replace(V_sDuree,\'mn\',\'\') AS Duree, V_Site, V_Engin, V_Commentaire, V_Duree, V_Tag,'
         reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
         reqSQL += 'FROM Vol ORDER BY V_Date DESC'
         const flstmt = db.prepare(reqSQL).all()    
@@ -343,15 +379,41 @@ function tableStandard() {
                 data: 'Photo',
                 render: function(data, type, row) {
                   if (data == 'Yes') {
-                    return '<img src="../../assets/img/Camera.png" alt=""><span></img><img src="../../assets/img/tag_red3.png" alt=""></img></span>'
+                    return '<img src="../../assets/img/Camera.png" alt="" width="12px" height="12px">&nbsp;<span></img>'
                   } 
                   return data
                 },          
                 className: "dt-body-center text-center"
-              },       
+              },  
+              {
+                title : '',
+                data: 'V_Tag',
+                render: function(data, type, row) {
+                  switch (data) {
+                    case 1 :
+                      return '<img src="../../assets/img/tag_red.png" alt="" width="8px" height="8px"></img>'
+                      break;
+                    case 2 :
+                      return '<img src="../../assets/img/tag_orange.png" alt="" width="8px" height="8px"></img>'
+                      break;      
+                    case 3 :
+                      return '<img src="../../assets/img/tag_gold.png" alt="" width="8px" height="8px"></img>'
+                      break;
+                    case 4 :
+                      return '<img src="../../assets/img/tag_lime.png" alt="" width="8px" height="8px"></img>'
+                      break;      
+                    case 5 :
+                      return '<img src="../../assets/img/tag_blue.png" alt="" width="8px" height="8px"></img>'
+                      break;                                                             
+                  }
+                  return data
+                },          
+                className: "dt-body-center text-center"
+              },                     
               { title : i18n.gettext('Date'), data: 'Day' },
-              { title : i18n.gettext('Time'), data: 'Hour' },
-              { title : 'Duration', data: 'V_sDuree' },
+            // { title : i18n.gettext('Time').substring(0,3), data: 'Hour' },
+              { title : '', data: 'Hour' },
+              { title : i18n.gettext('Duration').substring(0,3), data: 'Duree' },
               { title : 'Site', data: 'V_Site' },
               { title : i18n.gettext('Glider'), data: 'V_Engin' },     
               { title : 'Comment', data: 'V_Commentaire' },  
@@ -359,21 +421,22 @@ function tableStandard() {
               { title : 'Seconds', data: 'V_Duree' }  
           ],      
           columnDefs : [
-              { "width": "5%", "targets": 0, "bSortable": false },
+              { "width": "4%", "targets": 0, "bSortable": false },
+              { "width": "2%", "targets": 1, "bSortable": false },
               // { "width": "14%", "targets": 1, "orderData": [ [ 1, 'asc' ], [ 2, 'desc' ] ] },
               // { "width": "6%", "targets": 2, "orderData": [[ 1, 'asc' ],[ 2, 'desc' ] ] },
               // { "width": "14%", "targets": 1, "orderData": [ 1, 2 ] },
               // { "width": "6%", "targets": 2, "orderData": 1 },
               // { "width": "14%", "targets": 1, "bSortable": false},
               // { "width": "6%", "targets": 2, "bSortable": false },
-              { "width": "14%", "targets": 1 },
-              { "width": "6%", "targets": 2 },
-              { "width": "10%", "targets": 3 },
-              { "width": "30%", className: "text-nowrap", "targets": 4 },
-              { "width": "24%", "targets": 5 },
-              { "targets": 6, "visible": false, "searchable": false },     // On cache la colonne commentaire
-              { "targets": 7, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
-              { "targets": 8, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
+              { "width": "17%", "targets": 2},
+              { "width": "7%", "targets": 3 },
+              { "width": "8%", "targets": 4 },    // Duree
+              { "width": "30%", className: "text-nowrap", "targets": 5 },
+              { "width": "24%", "targets": 6 },
+              { "targets": 7, "visible": false, "searchable": false },     // On cache la colonne commentaire
+              { "targets": 8, "visible": false, "searchable": false },     // On cache la première colonne, celle de l'ID
+              { "targets": 9, "visible": false, "searchable": false },     // On cache la colonne de la durée en secondes
           ],      
           bInfo : false,          // hide "Showing 1 to ...  row selected"
           lengthChange : false,   // hide "show x lines"  end user's ability to change the paging display length 
@@ -1144,20 +1207,45 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
   }
 }
 
-function pushTag(idTag) {
-
+function pushTag(tagId) {
+  alert(tagId)
+  const rowIndex = 6
+  const tagImg = '<img src="../../assets/img/tag_orange.png" alt="" width="8px" height="8px"></img>'
+  table.cell({row:rowIndex, column:1}).data(tagImg) 
 }
 
-function openTagList(rowIndex) {
-  let currFlight = {
-    date : table.cell(rowIndex,1).data(),
-    hour : table.cell(rowIndex,2).data(),
-    duration : table.cell(rowIndex,3).data(),
-    site : table.cell(rowIndex,4).data(),  
-    rowNumber : rowIndex
+function tagManager(idFlight, rowIndex) {
+  const currTag = table.cell(rowIndex,1).data()
+  if (currTag != undefined && currTag != null) {
+    // Tag will be removed
+    if (db.open) {
+      try {
+        let emptyTag = null
+        const stmt = db.prepare('UPDATE Vol SET V_Tag = ? WHERE V_ID = ?')
+        const updateTag = stmt.run(emptyTag,idFlight)    
+        table.cell({row:rowIndex, column:1}).data('')        
+      } catch (error) {
+        log.error('Error during flight update '+error)
+        displayStatus('Error during flight update')
+      }
+    }
+  } else {
+    // a tag will be pushed
+    let currFlight = {
+      tag : table.cell(rowIndex,1).data(),
+      date : table.cell(rowIndex,2).data(),
+      hour : table.cell(rowIndex,3).data(),
+      duration : table.cell(rowIndex,4).data(),
+      site : table.cell(rowIndex,5).data(), 
+      flightId : idFlight,
+      rowNumber : rowIndex,
+      selTag : 0
+    }
+    const callTagHtml = ipcRenderer.send('display-tag-list', currFlight)   // process-main/modal-win/taglist-display.js  
   }
-  const callTagHtml = ipcRenderer.send('display-tag-list', currFlight)   // process-main/modal-win/taglist-display.js  
 }
+
+
 
 function exportGpx() {
   const togpx = require('togpx')
