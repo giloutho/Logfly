@@ -23,6 +23,7 @@ const inputPrice = document.getElementById('tx-price')
 const selectGlider = document.getElementById('select-glider')
 const btnOk = document.getElementById('bt-ok')
 const btnCancel = document.getElementById('bt-cancel')
+const btnGlider = document.getElementById('bt-glider')
 
 let currLang
 let tableLines = 7
@@ -50,7 +51,8 @@ function iniForm() {
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     // Traduction à faire
-    inputEngin.placeholder = i18n.gettext('Free input or retrieve a name from the glider\'s list')
+ //   inputEngin.placeholder = i18n.gettext('Free input or retrieve a name from the glider\'s list')
+    btnGlider.textContent = i18n.gettext('Glider')
     fillSelectGlider()
     const equipTest = dbcheck.checkEquipTable()
     if (equipTest) {
@@ -101,14 +103,14 @@ function infoStatus() {
         let countRec = stmt.get()
         let contentStatus = '<form class="form-inline">'
         contentStatus += '<span class="badge badge-dark">'+i18n.gettext('Equipment')+'</span>'
-        contentStatus += '<span style="margin-left: 10px;">'+i18n.gettext('You can record all operations concerning your equipment')+' : '
+        contentStatus += '<span style="margin-left: 10px;">'+i18n.gettext('You can record all operations ')+' : '
         contentStatus += i18n.gettext('purchase')+', '
         contentStatus += i18n.gettext('sale')+', '
         contentStatus += i18n.gettext('overhaul')+', '
         contentStatus += i18n.gettext('emergency folding')+', '
         contentStatus += i18n.gettext('chocking')+', '
         contentStatus += i18n.gettext('etc')+'...</span>'
-        contentStatus +='<span style="margin-left: 15px;"><button type="button" class="btn btn-danger"  onclick="newRec()">'+i18n.gettext('Add')+'</button></span>'
+        contentStatus +='<span style="margin-left: 15px;"><button type="button" class="btn btn-info"  onclick="newRec()">'+i18n.gettext('Add')+'</button></span>'
         contentStatus +='<span style="margin-left: 15px;"><input type="search" id="tx-search" style="text-transform: uppercase" '
         contentStatus += 'aria-label="Search" placeholder="'+i18n.gettext('Search')+'...'+'"></form></span>'
         displayStatus(contentStatus)
@@ -192,9 +194,11 @@ function tableStandard() {
         })
         // Delete record
         table.on('click', 'td.editor-delete button', function (e) {
-            const tr = e.target.closest('tr')
+            const tableTr = $(this).parents('tr')
             const row = table.row( tr ).data()
-            deleteRec(row)
+            deleteRec(row,tableTr)
+        //https://datatables.net/reference/api/row().remove()
+       // table.row($(this).parents('tr')).remove().draw()
         })
         if (table.data().count() > 0) {
           $('#table_id').removeClass('d-none')
@@ -264,23 +268,25 @@ function dbUpdate() {
     }   
 }
 
-function deleteRec(row) {
-  const dialogLang = {
-    title: i18n.gettext('Please confirm'),
-    message: i18n.gettext('Are you sure you want to continue')+' ?',
-    yes : i18n.gettext('Yes'),
-    no : i18n.gettext('No')
-  }
-  ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
-    if (result) {
-        let id = row.M_ID
-        if (db.open) {
-            let smt = 'DELETE FROM Equip WHERE M_ID = ?'            
-            const stmt = db.prepare(smt)
-            const delRec = stmt.run(id)  
-            tableStandard()  
-        }
+function deleteRec(row, tableTr) {
+    const dialogLang = {
+        title: i18n.gettext('Please confirm'),
+        message: i18n.gettext('Are you sure you want to continue')+' ?',
+        yes : i18n.gettext('Yes'),
+        no : i18n.gettext('No')
     }
+
+    ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
+        if (result) {
+            let id = row.M_ID
+            if (db.open) {
+                let smt = 'DELETE FROM Equip WHERE M_ID = ?'            
+                const stmt = db.prepare(smt)
+                const delRec = stmt.run(id)  
+                //https://datatables.net/reference/api/row().remove()
+                table.row(tableTr).remove().draw() 
+            }
+        }
     })
 }
 
@@ -303,6 +309,10 @@ function fillSelectGlider() {
             selectGlider.appendChild(newOption)
         }
     } 
+}
+
+function gliderChoice() {
+    $('#select-glider').removeClass('d-none')
 }
 
 //onChange event on SelectGlider
@@ -334,7 +344,9 @@ function validFields() {
         $('#tx-event').val('').css( "border-color", "red" )
     } else {
         dbUpdate()
+        inputEvent.value = ''        
         $('#input-equip').addClass('d-none')
+        $('#select-glider').addClass('d-none')
         $('#table_id').removeClass('table-disabled')
     }
     

@@ -29,18 +29,19 @@
         <div id="target-sidebar"></div>
         <div id="content">
             <!-- Horizontal navbar with menu button and different options -->
-            <nav class="navbar navbar-expand-lg  navbar-custom">                
+            <nav class="navbar">                
                 <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
                 <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
                 <span class="navbar-text mx-3" id="db-state"></span>
+                <div class="alert alert-info collapse" role="alert" id="status"></div> 
             </nav>  
             <!-- End of horizontal nabar  -->
             <!-- Main page content -->
             <div>
                 <div class="container-fluid">
                     <div>
-                        <!---- Duplicate code from logbook.html -->
-                        <div class="alert alert-info collapse" role="alert" id="status"></div>       
+                        <!---- Duplicate code from logbook.html 
+                        <div class="alert alert-info collapse" role="alert" id="status"></div>       -->
                         <div class="row d-md-flex h-md-100 align-items-start top-buffer">
                             <div class="col-md-12 ">
                                 <div id="div_table" class="d-block">
@@ -67,17 +68,24 @@
                                             <div class="col-md-2 pr-1">                                   
                                                 <input type="date" id="tx-date">
                                             </div>   
-                                            <div class="col-sm-5 my-1">                                    
-                                                <input type="text" class="form-control" placeholder="Choisir une voile ci dessous ou saisir ici un texte libre" style="text-transform: uppercase" id="tx-engin" value="">
-                                            </div>                                                                                          
+                                            <div class="col-sm-4 my-1">                                    
+                                                <input type="text" class="form-control" style="text-transform: uppercase" id="tx-engin" value="">
+                                            </div> 
+                                            <div class="col-sm-1 my-1 ">
+                                                <button type="button" class="btn btn-primary" onclick="gliderChoice()" id="bt-glider">Glide</button>
+                                            </div>   
+                                            <div class="col-sm-3 my-1">                                    
+                                                <span></span><select class="form-control d-none" style="width:100%" onChange="grabGlider()" id="select-glider">
+                                                </select>                                                
+                                            </div>                                                                                        
                                         </div>                                           
-                                        <div class="row">
+                                     <!--   <div class="row">
                                             <div class="col-sm-2 my-1"></div>
                                             <div class="col-sm-3 my-1">                                    
                                                 <span></span><select class="form-control" style="width:100%" onChange="grabGlider()" id="select-glider">
                                                 </select>                                                
                                             </div>                                                   
-                                        </div>                                       
+                                        </div>       -->                                
                                         <div class="row top-buffer">
                                         <div class="col-md-2 pr-1">
                                             <label id="lg-event">Opération</label>
@@ -85,27 +93,23 @@
                                         <div class="col-md-2 pr-1">
                                             <label id="lg-price">Price</label>
                                         </div>
+                                        <div class="col-md-8 pr-1">
+                                            <label id="lg-comment">Commentaire</label>
+                                        </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-sm-2 my-1">                                    
-                                                <input type="text" class="form-control" placeholder="Achat, vente, révision, calage..." style="text-transform: uppercase" id="tx-event" value="">
+                                                <input type="text" class="form-control" style="text-transform: uppercase" id="tx-event" value="">
                                             </div>
                                             <div class="col-sm-2 my-1">                                    
                                                 <input type="text" class="form-control"  id="tx-price" value="">
                                             </div>
-                                        </div>
+                                            <div class="col-sm-7 my-1">                                    
+                                                <textarea class="form-control" id="tx-comment" rows="2"></textarea>                                        
+                                            </div>  
+                                        </div>                                                                                                                                                                                                                                                  
                                         <div class="row top-buffer">
-                                        <div class="col-md-8 pr-1">
-                                            <label id="lg-comment">Commentaire</label>
-                                        </div>
-                                        </div>         
-                                        <div class="row">
-                                        <div class="col-sm-7 my-1">                                    
-                                            <textarea class="form-control" id="tx-comment" rows="3"></textarea>                                        
-                                        </div>                                             
-                                        </div>                                                                                                                                                                                                                                               
-                                        <div class="row top-buffer">
-                                            <div class="col-md-5 pr-1"></div>
+                                            <div class="col-md-2 pr-1"></div>
                                             <div class="col-auto my-1 align-self-center">
                                                 <button type="button" class="btn btn-danger" id="bt-cancel">Annuler</button>
                                             </div>                                                                                                      

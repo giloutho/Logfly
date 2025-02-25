@@ -93,10 +93,10 @@ function iniForm() {
         callback: function(key, options) {            
             switch (key) {
               case "Comment" : 
-                const comment = table.cell(this, 6).data()
+                const comment = table.cell(this, 7).data()
                 if (comment == null || comment == '') {
-                  let flDate = table.cell(this, 1).data()
-                  let flTime = table.cell(this, 2).data()
+                  let flDate = table.cell(this, 2).data()
+                  let flTime = table.cell(this, 3).data()
                   let rowIndex = table.row( this ).index()           
                   updateComment(currIdFlight, '',flDate, flTime,rowIndex)                    
                 }
@@ -108,11 +108,11 @@ function iniForm() {
                 break
               case "Site": 
                 // const siteLabel = '<strong>['+i18n.gettext('Flight')+' '+table.cell(this, 1).data()+' '+table.cell(this, 2).data()+' '+table.cell(this, 4).data()+']</strong>'
-                const siteLabel = '<strong>['+table.cell(this, 4).data()+']</strong>'
-                changeSite(table.cell(this, 7).data(),table.row( this ).index(),siteLabel,table.cell(this, 4).data())
+                const siteLabel = '<strong>['+table.cell(this, 5).data()+']</strong>'
+                changeSite(table.cell(this, 8).data(),table.row( this ).index(),siteLabel,table.cell(this, 5).data())
                 break              
               case "Glider" :
-                let flGlider = table.cell(this, 5).data()
+                let flGlider = table.cell(this, 6).data()
                 gliderHours(flGlider )
                 break
               case "Mutlicount" :
@@ -153,7 +153,7 @@ function iniForm() {
             "Glider": {name: i18n.gettext("Glider flight time")},
             "Mutlicount": {name: i18n.gettext("Totals for the selection")},
             "Day": {name: i18n.gettext("Photo of the day")},
-            "Tag" : {name: i18n.gettext("Tag the selected flight")},
+            "Tag" : {name: i18n.gettext("Tag/Untag the flight")},
             "Delete": {name: i18n.gettext("Delete")},
             "Igc": {name: i18n.gettext("IGC export")},
             "Gpx": {name: i18n.gettext("GPX export")},
@@ -185,12 +185,12 @@ function workAfterResizeIsDone() {
 }
 
 ipcRenderer.on('back_flightform', (_, updateFlight) => { 
-  table.cell({row:updateFlight.row, column:1}).data(updateFlight.date)
-  table.cell({row:updateFlight.row, column:2}).data(updateFlight.time)  
-  table.cell({row:updateFlight.row, column:3}).data(updateFlight.strduree)
-  table.cell({row:updateFlight.row, column:4}).data(updateFlight.nom)
-  table.cell({row:updateFlight.row, column:5}).data(updateFlight.glider)
-  table.cell({row:updateFlight.row, column:6}).data(updateFlight.comment)
+  table.cell({row:updateFlight.row, column:3}).data(updateFlight.date)
+  table.cell({row:updateFlight.row, column:3}).data(updateFlight.time)  
+  table.cell({row:updateFlight.row, column:4}).data(updateFlight.strduree)
+  table.cell({row:updateFlight.row, column:5}).data(updateFlight.nom)
+  table.cell({row:updateFlight.row, column:6}).data(updateFlight.glider)
+  table.cell({row:updateFlight.row, column:7}).data(updateFlight.comment)
   tableSelection(updateFlight.id)
 })
 
@@ -671,7 +671,7 @@ function deleteFlights() {
       let rows = table.rows('.selected')
       if(rows.data().length > 0 && db.open) {
         table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
-          let flightId = table.cell(this, 7).data()
+          let flightId = table.cell(this, 8).data()
           let smt = 'DELETE FROM Vol WHERE V_ID = ?'            
           const stmt = db.prepare(smt)
           const delFlight = stmt.run(flightId)    
@@ -689,7 +689,7 @@ function multiCount() {
     let totSeconds = 0
     let nbFlights = 0
     table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
-      let flightId = table.cell(this, 7).data()
+      let flightId = table.cell(this, 8).data()
       let req ='SELECT V_Duree FROM Vol WHERE V_ID = ?'
       try {
         const stmt = db.prepare(req)
@@ -722,7 +722,7 @@ function updateFlight() {
   let rows = table.rows('.selected')
   if(rows.data().length > 0 && db.open) {
     table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
-      let flightId = table.cell(this, 7).data()      
+      let flightId = table.cell(this, 8).data()      
       const stmt = db.prepare('SELECT * FROM Vol WHERE V_ID = ?')
       const selFlight = stmt.get(flightId)     
       let duration = moment.duration(selFlight.V_Duree, 'seconds')
@@ -775,6 +775,7 @@ function gliderHours(flGlider) {
       let msgResult = '<strong>'+i18n.gettext("Glider flight time")+' '+flGlider+'</strong>'
       const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
       const result = stmt.get(flGlider)
+      console.log('resukt '+flGlider+' '+JSON.stringify(result))
       if (result.seconds != null && result.seconds > 0) {         
         const nbHours = Math.floor(result.seconds/3600)
         const nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
@@ -868,7 +869,7 @@ function changeGlider(flightId, rowNum, flightDef) {
       try {
         const stmt = db.prepare('UPDATE Vol SET V_Engin= ? WHERE V_ID = ?')
         const updateGlider = stmt.run(selectedName,flightId)
-        table.cell({row:rowNum, column:5}).data(selectedName)
+        table.cell({row:rowNum, column:6}).data(selectedName)
       //  tableSelection(flightId)              
       } catch (error) {
         log.error('Error during flight update '+error)
@@ -946,10 +947,10 @@ function changeGliderNew() {
       }
       table.rows('.selected').every(function(rowIdx, tableLoop, rowLoop){
         try {
-          let flightId = table.cell(this, 7).data()
+          let flightId = table.cell(this, 8).data()
           const stmt = db.prepare('UPDATE Vol SET V_Engin= ? WHERE V_ID = ?')
           const updateGlider = stmt.run(selectedName,flightId)
-          table.cell({row:rowIdx, column:5}).data(selectedName)
+          table.cell({row:rowIdx, column:6}).data(selectedName)
         } catch (error) {
           log.error('Error during flight update '+error)
           displayStatus('Error during flight update')
@@ -1039,7 +1040,7 @@ function changeSite(flightId, rowNum, siteLabel, siteName) {
       let idSite = $('#sites [value="' + inputSites.value + '"]').data('value')
       if (idSite != undefined && idSite != 0) {
         dbupdate.switchSite(flightId,idSite)
-        table.cell({row:rowNum, column:4}).data(inputSites.value)
+        table.cell({row:rowNum, column:5}).data(inputSites.value)
         $('#inputdata').hide()      
       } else {
         alert(i18n.gettext('No site selected'))
@@ -1063,7 +1064,7 @@ function changeSite(flightId, rowNum, siteLabel, siteName) {
     let allData  = table.rows().data()
     for (let i = 0; i < allData.length; i++) {
       if (allData[i].V_Site == oldName) {
-        table.cell(i,4).data(newName)   
+        table.cell(i,5).data(newName)   
       }        
     }
     table.search( newName ).draw()
@@ -1104,7 +1105,7 @@ function updateComment(flightId, currComment,flDate, flTime,rowIndex){
       try {
         const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
         const updateComment = stmt.run(newComment,flightId)     
-        table.cell(rowIndex,6).data(newComment)        
+        table.cell(rowIndex,7).data(newComment)        
         table.$('tr.selected').addClass('tableredline')
         $('#inputdata').hide()      
         manageComment(flightId, newComment, flDate, flTime, rowIndex)
@@ -1181,7 +1182,7 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
           let newComment = ''
           const stmt = db.prepare('UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?')
           const updateComment = stmt.run(newComment,flightId)
-          table.cell(rowIndex,6).data(newComment)
+          table.cell(rowIndex,7).data(newComment)
           table.$('tr.selected').removeClass('tableredline')
           $('#inputdata').hide()     
           $('#inputcomment').hide()           

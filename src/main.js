@@ -51,10 +51,10 @@ const createWindow = () => {
   }
 
   
-  
+  /*
   //  Code with splahscreen
 
-  /* const windowOptions = {
+ const windowOptions = {
     width: screenWidth,
     height: screenHeight,
     show: false,
@@ -75,11 +75,11 @@ const createWindow = () => {
         transparent: true,
     },
 })
-*/
+
   // end of code with splahscreen
+*/
 
-
-  
+ 
   // Code without splashscreen
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -161,8 +161,12 @@ const createWindow = () => {
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
   if (startOk) { 
-    openWindow('logbook')
-   // checkAndStart()
+    // inversion des 
+    checkAndStart()
+    // Redondant la page est lancée par checkAndStart
+  //  openWindow('logbook')
+   // openWindow('equip')
+  
   } else {
     openWindow('problem')
   }
@@ -305,7 +309,7 @@ async function checkAndStart() {
       if (releaseInfo.version > currVersion || releaseInfo.message !== undefined )  {
           openWindow('infos')
       } else {
-          openWindow('logbook')
+          openWindow('equip')
       }    
     } else {
       openWindow('logbook')
