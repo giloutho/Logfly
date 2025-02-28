@@ -444,3 +444,7 @@ td.editor-delete button {
     font-style: italic; 
  }
 
+
+.popover {
+background-color: LemonChiffon;
+}

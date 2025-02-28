@@ -17,6 +17,7 @@ const { event } = require('jquery')
 
 const inputDate = document.getElementById('tx-date')
 const inputEngin = document.getElementById('tx-engin')
+const inputOther = document.getElementById('tx-other')
 const inputEvent = document.getElementById('tx-event')
 const inputComment = document.getElementById('tx-comment')
 const inputPrice = document.getElementById('tx-price')
@@ -27,6 +28,9 @@ const btnGlider = document.getElementById('bt-glider')
 
 let currLang
 let tableLines = 7
+let popGlider
+let popOther
+let popOperation
 const currEquip = {}
 
 iniForm()
@@ -51,7 +55,12 @@ function iniForm() {
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     // Traduction à faire
- //   inputEngin.placeholder = i18n.gettext('Free input or retrieve a name from the glider\'s list')
+    inputEngin.placeholder = i18n.gettext('Choose Glider or Other')
+    popGlider = i18n.gettext('Select a glider from the logbook')
+    popOther = i18n.gettext('Enter a different piece of equipment')
+    popOperation = i18n.gettext('Enter an operation like')+':'+i18n.gettext('purchase')+', '
+    popOperation += i18n.gettext('sale')+', '+i18n.gettext('overhaul')+', '
+    popOperation += i18n.gettext('emergency folding')+'...'
     btnGlider.textContent = i18n.gettext('Glider')
     fillSelectGlider()
     const equipTest = dbcheck.checkEquipTable()
@@ -60,6 +69,30 @@ function iniForm() {
     } else {
         alert(i18n.gettext('Unable to create Equip table'))
     }
+
+    $('#bt-glider').popover({
+        html : true,
+        trigger : 'hover',
+        content : function() {
+            return '<div class="box"><strong>'+popGlider+'</strong></div>'
+        }
+    })
+
+    $('#bt-other').popover({
+        html : true,
+        trigger : 'hover',
+        content : function() {
+            return '<div class="box"><strong>'+popOther+'</strong></div>'
+        }
+    })
+    
+    $('#tx-event').popover({
+        html : true,
+        trigger : 'hover',
+        content : function() {
+            return '<div class="box"><strong>'+popOperation+'</strong></div>'
+        }
+    })
 }
 
 $(document).ready(function () {
@@ -222,6 +255,7 @@ function newRec() {
     inputPrice.value = ''
     currEquip.comment = ''
     inputComment.value = ''
+    inputOther.value = ''
     $('#table_id').addClass('table-disabled')
     $('#input-equip').removeClass('d-none')
 }
@@ -238,6 +272,7 @@ function updateRec(row) {
     inputPrice.value = row.M_Price
     currEquip.comment = row.M_Comment
     inputComment.value = row.M_Comment
+    clearChoice()
     $('#table_id').addClass('table-disabled')
     $('#input-equip').removeClass('d-none')
 }
@@ -312,12 +347,49 @@ function fillSelectGlider() {
 }
 
 function gliderChoice() {
-    $('#select-glider').removeClass('d-none')
+    document.getElementById('div-glider').style.display = 'none' 
+    document.getElementById('div-other').style.display = 'none' 
+    document.getElementById('div-select').style.display = 'block'
+    document.getElementById('div-clear').style.display = 'block'
+    $('#lg-glider').removeClass('d-none')
+}
+
+function otherChoice() {
+    document.getElementById('div-glider').style.display = 'none' 
+    document.getElementById('div-other').style.display = 'none' 
+    document.getElementById('div-input').style.display = 'block' 
+    document.getElementById('div-clear').style.display = 'block' 
+    inputOther.value = currEquip.engin
+    $('#lg-other').removeClass('d-none')
+    inputOther.focus()
+}
+
+function clearChoice() {
+    document.getElementById('div-glider').style.display = 'block' 
+    document.getElementById('div-other').style.display = 'block' 
+    document.getElementById('div-select').style.display = 'none'
+    document.getElementById('div-input').style.display = 'none' 
+    document.getElementById('div-clear').style.display = 'none' 
+    $('#lg-glider').addClass('d-none')
+    $('#lg-other').addClass('d-none')
+    inputEngin.value = currEquip.engin
+    selectGlider.selectedIndex = 0
+}
+
+function updateEngin() {
+    inputEngin.value = inputOther.value
 }
 
 //onChange event on SelectGlider
 function grabGlider() {
-    inputEngin.value = selectGlider.options[selectGlider.selectedIndex].text
+    currEquip.engin = selectGlider.options[selectGlider.selectedIndex].text
+    clearChoice()
+
+}
+
+function endOther() {
+    currEquip.engin = inputOther.value
+    clearChoice()    
 }
 
 function validFields() {
@@ -345,8 +417,7 @@ function validFields() {
     } else {
         dbUpdate()
         inputEvent.value = ''        
-        $('#input-equip').addClass('d-none')
-        $('#select-glider').addClass('d-none')
+        $('#input-equip').addClass('d-none')       
         $('#table_id').removeClass('table-disabled')
     }
     
@@ -359,6 +430,7 @@ btnOk.addEventListener('click', (event) => {
 btnCancel.addEventListener('click', (event)=> {
     $('#input-equip').addClass('d-none')
     $('#table_id').removeClass('table-disabled')
+    clearChoice()
 })
 
 function displayStatus(content) {
