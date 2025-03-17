@@ -1,46 +1,54 @@
 const log = require('electron-log')
 const fs = require('fs') 
 const Database = require('better-sqlite3')
+const Store = require('electron-store')
+const store = new Store()
 
 function testDb(dbFullPath) {
     let resDb
     try {
         if (fs.existsSync(dbFullPath)) {
-            const db = new Database(dbFullPath)     
-            // const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
-            // let countTables = stmt.get()
-            // console.log('countTables : '+countTables+' '+countTables['COUNT(*)'])
-            // // countTables is an object, the value is recovered with a notation between brackets 
-            // let result = countTables['COUNT(*)'] >= 2 ? true : false    
-            // return result
-            // const stmtFlights = db.prepare('SELECT COUNT(*) FROM Vol')
-            // let countFlights = stmtFlights.get()
-            const stmtFlights = db.prepare('SELECT MAX(V_date) FROM Vol')
-            const resFlights = stmtFlights.get()  
-            // console.log(`Connected on ${dbFullPath} with ${resFlights['MAX(V_date)']}`)
-            const lastFlights = resFlights['MAX(V_date)']
-            if (lastFlights != null) {      
-                resDb = lastFlights.substring(2, 4)
+            const db = new Database(dbFullPath)   
+            if (db.open) {  
+                // const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
+                // let countTables = stmt.get()
+                // console.log('countTables : '+countTables+' '+countTables['COUNT(*)'])
+                // // countTables is an object, the value is recovered with a notation between brackets 
+                // let result = countTables['COUNT(*)'] >= 2 ? true : false    
+                // return result
+                // const stmtFlights = db.prepare('SELECT COUNT(*) FROM Vol')
+                // let countFlights = stmtFlights.get()
+                const stmtFlights = db.prepare('SELECT MAX(V_date) FROM Vol')
+                const resFlights = stmtFlights.get()  
+                // console.log(`Connected on ${dbFullPath} with ${resFlights['MAX(V_date)']}`)
+                const lastFlights = resFlights['MAX(V_date)']
+                if (lastFlights != null) {      
+                    resDb = lastFlights.substring(2, 4)
+                } else {
+                    resDb = ''
+                }
+                const stmtTag = db.prepare(`SELECT * FROM sqlite_master where sql like ?`)
+                const resTag = stmtTag.get('%V_Tag%')  
+                if (resTag ==  undefined || resTag == null) {
+                    try {
+                        let creaTag = 'ALTER TABLE Vol ADD V_Tag integer'
+                        const stmtCreaTag= db.prepare(creaTag)
+                        const infoTag = stmtCreaTag.run()
+                        if (infoTag.changes != 0) {
+                            resDb = null
+                        }   
+                        store.set('tag1','Tag 1')
+                        store.set('tag2','Tag 2')
+                        store.set('tag3','Tag 3')
+                        store.set('tag4','Tag 4')
+                        store.set('tag5','Tag 5')
+                    } catch (error) {
+                        log.error('Error occured during creation of V_Tag in table Vol '+' : '+error)
+                    }                
+                }
             } else {
-                resDb = ''
-            }
-            const stmtTag = db.prepare(`SELECT * FROM sqlite_master where sql like ?`)
-            const resTag = stmtTag.get('%V_Tag%')  
-            if (resTag ==  undefined || resTag == null) {
-                //console.log('tag pas trouvé '+JSON.stringify(resTag))
-                try {
-                    let creaTag = 'ALTER TABLE Vol ADD V_Tag integer'
-                    const stmtCreaTag= db.prepare(creaTag)
-                    const infoTag = stmtCreaTag.run()
-                    if (infoTag.changes != 0) {
-                        resDb = null
-                    }   
-                } catch (error) {
-                     log.error('Error occured during creation of V_Tag in table Vol '+' : '+error)
-                }                
-            }
-            // Query result will show all the tables where there is a column name equal to fieldname.
-            // console.log('stmtTag '+resTag['name'])             
+                log.error('Error when opening the database '+dbFullPath+' : '+error)
+            }         
         } else {
             log.error('db file not exist : '+dbFullPath)  
             resDb = null

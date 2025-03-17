@@ -39,37 +39,69 @@ function iniForm() {
             i18n.setLocale(currLang);            
            // translateLabels()
         }
-        btnCancel.addEventListener('click',(event)=>{window.close()}) 
-        btnOk.addEventListener('click', (event) => {saveTag()} )
     } catch (error) {
         log.error('[downsites.js] Error while loading the language file')
     }  
+    document.getElementById("tag-help").innerHTML = i18n.gettext('Click a coloured button')
+    btnCancel.innerHTML = i18n.gettext('Cancel')
+    btnCancel.addEventListener('click',(event)=>{window.close()}) 
+    btnOk.addEventListener('click', (event) => {saveTag()} )    
+    const defTag1 = store.get('tag1')
+    if ( defTag1 == null || defTag1 == undefined) {
+        txTag1.value = 'Tag 1'
+    } else {
+        txTag1.value = defTag1
+    }
+    const defTag2 = store.get('tag2')
+    if ( defTag2 == null || defTag2 == undefined) {
+        txTag2.value = 'Tag 2'
+    } else {
+        txTag2.value = defTag2
+    }
+    const defTag3 = store.get('tag3')
+    if ( defTag3 == null || defTag3 == undefined) {
+        txTag3.value = 'Tag 3'
+    } else {
+        txTag3.value = defTag3
+    }    
+    const defTag4 = store.get('tag4')
+    if ( defTag4 == null || defTag4 == undefined) {
+        txTag4.value = 'Tag 4'
+    } else {
+        txTag4.value = defTag4
+    }       
+    const defTag5 = store.get('tag5')
+    if ( defTag5 == null || defTag5 == undefined) {
+        txTag5.value = 'Tag 5'
+    } else {
+        txTag5.value = defTag5
+    }
 }
 
 function pushTag(id) {
     switch (id) {
         case 1 :
-            document.getElementById("selected-tag-text").innerHTML = txTag1.value
+            document.getElementById("selected-tag-text").innerHTML = '<b>'+txTag1.value+'</b>'
             document.getElementById("selected-tag-img").src="../../../assets/img/tag_red.png"
             selectedTag = 1
             break;
         case 2 :
-            document.getElementById("selected-tag-text").innerHTML = txTag2.value
+            document.getElementById("selected-tag-text").innerHTML = '<b>'+txTag2.value+'</b>'
             document.getElementById("selected-tag-img").src="../../../assets/img/tag_orange.png"
             selectedTag = 2
             break;
         case 3 :
-            document.getElementById("selected-tag-text").innerHTML = txTag3.value
+            document.getElementById("selected-tag-text").innerHTML = '<b>'+txTag3.value+'</b>'
             document.getElementById("selected-tag-img").src="../../../assets/img/tag_gold.png"
             selectedTag = 3
             break;   
         case 4 :
-            document.getElementById("selected-tag-text").innerHTML = txTag4.value
+            document.getElementById("selected-tag-text").innerHTML = '<b>'+txTag4.value+'</b>'
             document.getElementById("selected-tag-img").src="../../../assets/img/tag_lime.png"
             selectedTag = 4
             break;             
         case 5 :
-            document.getElementById("selected-tag-text").innerHTML = txTag5.value
+            document.getElementById("selected-tag-text").innerHTML = '<b>'+txTag5.value+'</b>'
             document.getElementById("selected-tag-img").src="../../../assets/img/tag_blue.png"
             selectedTag = 5
             break;   

@@ -32,13 +32,11 @@
                     <div class="col-1"></div>
                     <div class="col-11" style="text-align: center;"  id="lb-fl-site">PLANFAIT</div>                    
                 </div>
-                <div class="row">
-                    <div class="col-1"></div>
-                    <div class="col-1"><img id="selected-tag-img" width="16" height="16" src="../../../assets/img/tag_background.png"></img></div>
-                    <div class="col-9" id="selected-tag-text"><b>Click on a tag</b></div>
+                <div class="row">                  
+                    <div class="col-12"  style="text-align: center;" id="tag-help"><b>Click</b></div>
                 </div>
                 <div class="row" style="margin-top: 10px;">
-                        <div class="card-block mx-auto">
+                      <!--   <div class="card-block mx-auto">  -->
                             <div class="card-text">
                                 <table class="table table-striped table-sm">
                                     <thead>
@@ -50,29 +48,37 @@
                                     <tbody>
                                     <tr>
                                         <td id="tb-F1"><button class="btn-tag btn-tag1" onclick="pushTag(1)"></button></td>
-                                        <td><input type="text" id="tag1" value="Tag 1"></td>
+                                        <td><input type="text" id="tag1"></td>
                                     </tr>
                                     <tr>
                                         <td id="tb-F2"><button class="btn-tag btn-tag2" onclick="pushTag(2)"></button></td>
-                                        <td><input type="text" id="tag2" value="Tag 2"></td>
+                                        <td><input type="text" id="tag2"></td>
                                     </tr>
                                     <tr>
                                         <td id="tb-F3"><button class="btn-tag btn-tag3" onclick="pushTag(3)"></button></td>
-                                        <td><input type="text" id="tag3" value="Tag 3"></td>
+                                        <td><input type="text" id="tag3"></td>
                                     </tr>
                                     <tr>
                                         <td id="tb-F4"><button class="btn-tag btn-tag4" onclick="pushTag(4)"></button></td>
-                                        <td><input type="text" id="tag4" value="Tag 4"></td>
+                                        <td><input type="text" id="tag4"></td>
                                     </tr>
                                     <tr>
                                         <td id="tb-F5"><button class="btn-tag btn-tag5" onclick="pushTag(5)"></button></td>
-                                        <td><input type="text" id="tag5" value="Tag 5"></td>
-                                    </tr>                                                                                                
+                                        <td><input type="text" id="tag5"></td>
+                                    </tr>  
+                                   <!--  <tr>
+                                        <td><img id="selected-tag-img" width="16" height="16" src="../../../assets/img/tag_background.png"></img></td>
+                                        <td  style="text-align: center;" id="selected-tag-text"><b>No tag selected</b></td>
+                                    </tr>     -->                                                                                         
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                       <!--  </div>   -->
 
+                </div>
+                <div class="row">
+                    <div class="col-2"><img id="selected-tag-img" width="14" height="14" src="../../../assets/img/tag_background.png"></img></div>
+                    <div class="col-10" style="text-align: left;" id="selected-tag-text"><b>No tag selected</b></div>
                 </div>
                 <div class="row top-buffer">
                     <div class="center">

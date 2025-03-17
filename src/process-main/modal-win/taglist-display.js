@@ -11,7 +11,7 @@ function openWindow(event, currFlight) {
     const taglistHtmlPath = path.join('file://', __dirname, '../../views/html/secondary/taglist.html')
     let win = new BrowserWindow({ 
         width: 250,   
-        height: 350,
+        height: 400,
         frame : true,
         parent: BrowserWindow.getFocusedWindow(),
         modal: true,

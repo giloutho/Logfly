@@ -309,7 +309,7 @@ async function checkAndStart() {
       if (releaseInfo.version > currVersion || releaseInfo.message !== undefined )  {
           openWindow('infos')
       } else {
-          openWindow('equip')
+          openWindow('logbook')
       }    
     } else {
       openWindow('logbook')

@@ -166,6 +166,33 @@ function checkFlightList(flightList) {
     return selectedSite;
 }
 
+function gliderTotHours(flGlider) {
+  let gliderHours = {
+    name : flGlider,
+    flights : 0,
+    hours : 0,
+    min : 0
+  }         
+  if (db.open) {
+    try {
+      const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
+      const result = stmt.get(flGlider)
+      if (result.seconds != null && result.seconds > 0) {         
+        const nbHours = Math.floor(result.seconds/3600)
+        const nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
+        const minutes = String(nbMin).padStart(2, '0')
+        gliderHours.flights = result.flights
+        gliderHours.hours = nbHours
+        gliderHours.min = minutes                  
+      } 
+    } catch (error) {
+      log.error('[gliderHours] '+error)
+    }
+  }
+  return gliderHours
+}
+
 module.exports.flightByTakeOff = flightByTakeOff
 module.exports.checkFlightList = checkFlightList
 module.exports.searchSiteInDb = searchSiteInDb
+module.exports.gliderTotHours = gliderTotHours

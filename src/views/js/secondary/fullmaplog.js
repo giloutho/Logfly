@@ -40,7 +40,6 @@ let sidebarState
 let currLeague
 let map
 let layerControl
-let scoreGroup
 let airspGroup
 let aipGroup
 let geoScore
@@ -49,6 +48,8 @@ let currOAFile
 iniForm()
 
 let locMeasure = new myMeasure()
+const scoreGroup = new L.LayerGroup()
+let scoreDisplayed = false
 
 ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
   mainTrack = track
@@ -909,23 +910,6 @@ function fillSidebarPathway() {
   return htmlText
 }
 
-function changeScoring() {
-  map.removeLayer(geoScore)
-  const currColor = getColor()
-  geoScore =  L.geoJson(mainTrack.xcscore,{ 
-    style: function(feature) {
-      return {
-        stroke: true,
-        color: currColor,
-        weight: 4
-      }
-    },
-    onEachFeature: onEachFeature
-  })
-  scoreGroup.addLayer(geoScore)
-  displayScoring()
-}
-
 function displayScoring() {
 
   // first we make if(map.hasLayer(scoreGroup)){
@@ -979,10 +963,16 @@ function displayScoring() {
       },
       onEachFeature: onEachFeature
   })
-  scoreGroup = new L.LayerGroup()
-  scoreGroup.addTo(map)
-  scoreGroup.addLayer(geoScore)
-  layerControl.addOverlay(scoreGroup, i18n.gettext('Score'))
+  if (!scoreDisplayed) {
+      scoreGroup.addTo(map)
+      scoreGroup.addLayer(geoScore)
+      layerControl.addOverlay(scoreGroup, i18n.gettext('Score'))
+      scoreDisplayed = true
+  } else {
+      scoreGroup.addLayer(geoScore)
+      $('.leaflet-control-layers-selector')[12].click()
+      scoreDisplayed = true
+  }
   sidebar.open('score')
 }
 
@@ -1039,8 +1029,8 @@ function getColor() {
 
 // Display Thermals
 function openPathway() {
-  $('.leaflet-control-layers-selector')[8].click()
   $('.leaflet-control-layers-selector')[9].click()
+  $('.leaflet-control-layers-selector')[10].click()
   sidebar.open('pathway')
 }
 

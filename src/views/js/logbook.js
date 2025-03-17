@@ -11,7 +11,7 @@ const moment = require('moment')
 const momentDurationFormatSetup = require('moment-duration-format')
 const elemMap = require('../../utils/leaflet/littlemap-build.js')
 const dbupdate = require('../../utils/db/db-update.js')
-let store = new Store()
+const store = new Store()
 const typeScoring = scoringRules
 const Database = require('better-sqlite3')
 const db = new Database(store.get('dbFullPath'))
@@ -36,6 +36,7 @@ let btnFlyxc = document.getElementById('flyxc')
 let currLang
 let noGpsFlight = false
 let timeOutFunctionId
+let tagFiltered = 0
 
 iniForm()
 
@@ -86,6 +87,43 @@ function iniForm() {
     $('button[data-toggle="dropdown"]').text(selLeague)    
     runXcScore(selLeague)
   })
+
+  $('#bt-tag1').popover({
+    html : true,
+    trigger : 'hover',
+    content : function() {
+        return '<div class="box"><strong>'+store.get('tag1')+'</strong></div>'
+    }
+  })
+  $('#bt-tag2').popover({
+    html : true,
+    trigger : 'hover',
+    content : function() {
+        return '<div class="box"><strong>'+store.get('tag2')+'</strong></div>'
+    }
+  })
+  $('#bt-tag3').popover({
+    html : true,
+    trigger : 'hover',
+    content : function() {
+        return '<div class="box"><strong>'+store.get('tag3')+'</strong></div>'
+    }
+  })
+  $('#bt-tag4').popover({
+    html : true,
+    trigger : 'hover',
+    content : function() {
+        return '<div class="box"><strong>'+store.get('tag4')+'</strong></div>'
+    }
+  })
+  $('#bt-tag5').popover({
+    html : true,
+    trigger : 'hover',
+    content : function() {
+        return '<div class="box"><strong>'+store.get('tag5')+'</strong></div>'
+    }
+  })
+
 
   $(function(){
     $('#table_id').contextMenu({
@@ -200,19 +238,19 @@ ipcRenderer.on('back_taglist',(_,selectedFlight) => {
     let tagImg
     switch (currTag) {
       case 1 :
-        tagImg = '<img src="../../assets/img/tag_red.png" alt="" width="8px" height="8px"></img>'
+        tagImg = '<img src="../../assets/img/tag_red.png" alt="" width="10px" height="10px"></img>'
         break;
       case 2 :
-        tagImg = '<img src="../../assets/img/tag_orange.png" alt="" width="8px" height="8px"></img>'
+        tagImg = '<img src="../../assets/img/tag_orange.png" alt="" width="10px" height="10px"></img>'
         break;      
       case 3 :
-        tagImg = '<img src="../../assets/img/tag_gold.png" alt="" width="8px" height="8px"></img>'
+        tagImg = '<img src="../../assets/img/tag_gold.png" alt="" width="10px" height="10px"></img>'
         break;
       case 4 :
-        tagImg = '<img src="../../assets/img/tag_lime.png" alt="" width="8px" height="8px"></img>'
+        tagImg = '<img src="../../assets/img/tag_lime.png" alt="" width="10px" height="10px"></img>'
         break;      
       case 5 :
-        tagImg = '<img src="../../assets/img/tag_blue.png" alt="" width="8px" height="8px"></img>'
+        tagImg = '<img src="../../assets/img/tag_blue.png" alt="" width="10px" height="10px"></img>'
         break;  
     }
     if (db.open) {
@@ -353,6 +391,41 @@ function afficheFlyxc() {
   let disp_flyxc = ipcRenderer.send('display-flyxc', debugUrl)   // process-main/maps/flyxc-display.js
 }
 
+function tableTagFiltered(tagVal) {
+  if (tagVal == tagFiltered) {
+    tableStandard()
+  } else {
+    let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, replace(V_sDuree,\'mn\',\'\') AS Duree, V_Site, V_Engin, V_Commentaire, V_Duree, V_Tag,'
+    reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
+    reqSQL += 'FROM Vol WHERE V_Tag = ? ORDER BY V_Date DESC'
+    const stmt = db.prepare(reqSQL)
+    const tagSet = stmt.all(tagVal)
+    if (tagSet.length > 0) {
+      table.clear().draw()
+      table.rows.add(tagSet).draw()
+      tagFiltered = tagVal
+      // Count flights
+      const stmtFlights = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Tag = ?')
+      const result = stmtFlights.get(tagVal)
+      if (result.seconds != null && result.seconds > 0) {         
+        const nbHours = Math.floor(result.seconds/3600)
+        const nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
+        const minutes = String(nbMin).padStart(2, '0')
+        // tagVal is just a number : 1,2, etc...
+        const tagLabel = 'tag'+tagVal
+        let msgResult = '<strong>'+store.get(tagLabel)+' : </strong>'
+        msgResult += '<span class="badge badge-primary even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flights')+' : '+result.flights+'</span>'
+        msgResult += '<span class="badge badge-warning even-larger-badge" style="margin-left:30px" >'+i18n.gettext('Flight hours')+' : '+nbHours+'h'+minutes+'mn'+'</span>'
+        document.getElementById('inputcomment').innerHTML = msgResult
+        $('#inputcomment').show() 
+      }
+    } else {
+      const tagId = 'tag'+tagVal
+      const msg = i18n.gettext('No flights tagged with ')+'"'+store.get(tagId)+'"'
+      alert(msg)
+    }
+  }
+}
 
 function tableStandard() {
   let msgdbstate  
@@ -361,15 +434,17 @@ function tableStandard() {
   }
   try {    
     if (db.open) {
-        const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
-        let countFlights = stmt.get()
-        // on récupére la valeur avec counFlights['COUNT(*)']
-        msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`)
-        //const flstmt = db.prepare('SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, V_sDuree, V_Site, V_Engin, V_Commentaire, V_Photos FROM Vol ORDER BY V_Date DESC').all()    
+        // I can't remember the reason for this count
+        // const stmt = db.prepare('SELECT COUNT(*) FROM Vol')
+        // let countFlights = stmt.get()
+        // // on récupére la valeur avec counFlights['COUNT(*)']
+        // msgdbstate = (`Connected : ${countFlights['COUNT(*)']} flights`)
+
         let reqSQL = 'SELECT V_ID, strftime(\'%d-%m-%Y\',V_date) AS Day, strftime(\'%H:%M\',V_date) AS Hour, replace(V_sDuree,\'mn\',\'\') AS Duree, V_Site, V_Engin, V_Commentaire, V_Duree, V_Tag,'
         reqSQL += 'CASE WHEN (V_Photos IS NOT NULL AND V_Photos !=\'\') THEN \'Yes\' END Photo '  
         reqSQL += 'FROM Vol ORDER BY V_Date DESC'
         const flstmt = db.prepare(reqSQL).all()    
+        tagFiltered = 0
         const dataTableOption = {
           data: flstmt, 
           autoWidth : false,
@@ -391,19 +466,19 @@ function tableStandard() {
                 render: function(data, type, row) {
                   switch (data) {
                     case 1 :
-                      return '<img src="../../assets/img/tag_red.png" alt="" width="8px" height="8px"></img>'
+                      return '<img src="../../assets/img/tag_red.png" alt="" width="10px" height="10px"></img>'
                       break;
                     case 2 :
-                      return '<img src="../../assets/img/tag_orange.png" alt="" width="8px" height="8px"></img>'
+                      return '<img src="../../assets/img/tag_orange.png" alt="" width="10px" height="10px"></img>'
                       break;      
                     case 3 :
-                      return '<img src="../../assets/img/tag_gold.png" alt="" width="8px" height="8px"></img>'
+                      return '<img src="../../assets/img/tag_gold.png" alt="" width="10px" height="10px"></img>'
                       break;
                     case 4 :
-                      return '<img src="../../assets/img/tag_lime.png" alt="" width="8px" height="8px"></img>'
+                      return '<img src="../../assets/img/tag_lime.png" alt="" width="10px" height="10px"></img>'
                       break;      
                     case 5 :
-                      return '<img src="../../assets/img/tag_blue.png" alt="" width="8px" height="8px"></img>'
+                      return '<img src="../../assets/img/tag_blue.png" alt="" width="10px" height="10px"></img>'
                       break;                                                             
                   }
                   return data
@@ -775,7 +850,6 @@ function gliderHours(flGlider) {
       let msgResult = '<strong>'+i18n.gettext("Glider flight time")+' '+flGlider+'</strong>'
       const stmt = db.prepare('SELECT Sum(V_Duree) AS seconds, Count(V_ID) as flights FROM Vol WHERE V_Engin = ?')
       const result = stmt.get(flGlider)
-      console.log('resukt '+flGlider+' '+JSON.stringify(result))
       if (result.seconds != null && result.seconds > 0) {         
         const nbHours = Math.floor(result.seconds/3600)
         const nbMin = Math.floor((result.seconds - (nbHours*3600))/60)
@@ -1209,10 +1283,7 @@ function manageComment(flightId, currComment, flDate, flTime, rowIndex) {
 }
 
 function pushTag(tagId) {
-  alert(tagId)
-  const rowIndex = 6
-  const tagImg = '<img src="../../assets/img/tag_orange.png" alt="" width="8px" height="8px"></img>'
-  table.cell({row:rowIndex, column:1}).data(tagImg) 
+  tableTagFiltered(tagId)
 }
 
 function tagManager(idFlight, rowIndex) {
@@ -1224,7 +1295,7 @@ function tagManager(idFlight, rowIndex) {
         let emptyTag = null
         const stmt = db.prepare('UPDATE Vol SET V_Tag = ? WHERE V_ID = ?')
         const updateTag = stmt.run(emptyTag,idFlight)    
-        table.cell({row:rowIndex, column:1}).data('')        
+        table.cell({row:rowIndex, column:1}).data(null)        
       } catch (error) {
         log.error('Error during flight update '+error)
         displayStatus('Error during flight update')

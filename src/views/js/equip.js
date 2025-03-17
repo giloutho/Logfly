@@ -12,6 +12,7 @@ const statusContent = document.getElementById("status")
 const Database = require('better-sqlite3')
 const db = new Database(store.get('dbFullPath'))
 const dbcheck = require('../../utils/db/db-check.js')
+const dblog = require('../../utils/db/db-search.js')
 const moment = require('moment')
 const { event } = require('jquery')
 
@@ -27,6 +28,7 @@ const btnCancel = document.getElementById('bt-cancel')
 const btnGlider = document.getElementById('bt-glider')
 
 let currLang
+let table
 let tableLines = 7
 let popGlider
 let popOther
@@ -37,6 +39,7 @@ iniForm()
 
 function iniForm() {
     try {    
+        document.title = 'Logfly '+store.get('version')+' ['+store.get('dbName')+']'   
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
@@ -223,15 +226,15 @@ function tableStandard() {
             const tr = e.target.closest('tr')
             const row = table.row( tr ).data()
             updateRec(row)
-
         })
         // Delete record
         table.on('click', 'td.editor-delete button', function (e) {
-            const tableTr = $(this).parents('tr')
+            const tr = e.target.closest('tr')
             const row = table.row( tr ).data()
-            deleteRec(row,tableTr)
-        //https://datatables.net/reference/api/row().remove()
-       // table.row($(this).parents('tr')).remove().draw()
+            const tableTr = table.row($(this).parents('tr'))
+            deleteRec(row, tableTr)
+            //https://datatables.net/reference/api/row().remove()
+       //     table.row($(this).parents('tr')).remove().draw()
         })
         if (table.data().count() > 0) {
           $('#table_id').removeClass('d-none')
@@ -311,15 +314,24 @@ function deleteRec(row, tableTr) {
         no : i18n.gettext('No')
     }
 
+    let delResult = false
     ipcRenderer.invoke('yes-no',dialogLang).then((result) => {
         if (result) {
             let id = row.M_ID
-            if (db.open) {
-                let smt = 'DELETE FROM Equip WHERE M_ID = ?'            
-                const stmt = db.prepare(smt)
-                const delRec = stmt.run(id)  
-                //https://datatables.net/reference/api/row().remove()
-                table.row(tableTr).remove().draw() 
+            try {
+                if (db.open) {
+                    let smt = 'DELETE FROM Equip WHERE M_ID = ?'            
+                    const stmt = db.prepare(smt)
+                    const delRec = stmt.run(id)  
+                    tableTr.remove().draw()
+                    if (!table.rows().count()) {
+                        $('#table_id').addClass('d-none')
+                    } else {
+                        table.row(':eq(0)').select()    // select first row
+                    }
+                }                
+            } catch (error) {
+                log.error('Error during equip delete '+error)
             }
         }
     })
@@ -383,6 +395,11 @@ function updateEngin() {
 //onChange event on SelectGlider
 function grabGlider() {
     currEquip.engin = selectGlider.options[selectGlider.selectedIndex].text
+    console.log('*'+currEquip.engin+'*')
+    gliderHours = dblog.gliderTotHours(currEquip.engin)
+    let msg = gliderHours.name+' -> '+gliderHours.flights+' '+i18n.gettext('flights')+' '+i18n.gettext('registered')
+    msg += ' '+i18n.gettext('for')+' '+gliderHours.hours+'h'+gliderHours.min+'mn'
+    inputComment.value = inputComment.value+' '+msg
     clearChoice()
 
 }

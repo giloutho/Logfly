@@ -110,8 +110,7 @@ class IGCDecoder {
 				this.info.parsingError = error
 			}
 		} catch (error) {
-			console.log(error)
-			//console.log()
+			this.info.parsingError = error
 		}
   	}
 
