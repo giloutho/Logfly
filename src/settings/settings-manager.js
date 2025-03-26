@@ -17,7 +17,7 @@ function checkSettings (appPath, progVersion) {
             // return dbbasic.testDb(store.get('dbFullPath'))
             const resDb = dbbasic.testDb(store.get('dbFullPath'))
             if (resDb != null) {
-                store.set('lastyear',resDb)
+                store.set('lastyear',resDb)   // Last year recorded in the logbook for summary title with this last year
                 return true
             } else {
                 store.set('lastyear','')

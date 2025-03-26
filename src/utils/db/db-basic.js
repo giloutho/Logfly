@@ -7,7 +7,13 @@ const store = new Store()
 function testDb(dbFullPath) {
     let resDb
     try {
-        if (fs.existsSync(dbFullPath)) {
+        // Nombreux problèmes apparemment liés à cette vérification d'existence du fichier
+        // Dans logbook.js ou sites.js on ne fait pas de vérifications
+        // donc on essaye sans..
+
+        // let dbFileExists = fs.existsSync(dbFullPath)
+        // au cas où il faudrait revenir à cette vérification consulter https://byby.dev/node-check-if-file-exists
+        // if (dbFileExists) {
             const db = new Database(dbFullPath)   
             if (db.open) {  
                 // const stmt = db.prepare('SELECT COUNT(*) FROM sqlite_master')
@@ -49,10 +55,10 @@ function testDb(dbFullPath) {
             } else {
                 log.error('Error when opening the database '+dbFullPath+' : '+error)
             }         
-        } else {
-            log.error('db file not exist : '+dbFullPath)  
-            resDb = null
-        }        
+        // } else {
+        //     log.error('db file not exist : '+dbFullPath)  
+        //     resDb = null
+        // }        
     } catch (error) {
         log.error('Error occured during checking of '+dbFullPath+' : '+error)
         resDb = null

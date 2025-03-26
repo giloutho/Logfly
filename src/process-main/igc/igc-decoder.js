@@ -95,7 +95,10 @@ class IGCDecoder {
 			this.info.loggerManufacturer = result.loggerManufacturer
 			this.info.loggerType = result.loggerType
 			this.info.security = result.security   
-			this.fixes = result.fixes  
+			// Invalid points eliminated
+			const validFixes = result.fixes.filter(fix => fix.valid == true)
+			//this.fixes = result.fixes  
+			this.fixes = validFixes
 			if (this.fixes.length > 2) {
 				// original code commented
 				this.info.offsetUTC = offset.computeOffsetUTC(this.fixes[0].latitude, this.fixes[0].longitude, this.fixes[1].timestamp)
