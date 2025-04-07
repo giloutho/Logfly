@@ -17,7 +17,7 @@ ipcMain.on('read-wayp-gpx', (event, gpxString) => {
                     desc : parsedWaypoints[index].desc,
                     lat : parsedWaypoints[index].lat,
                     long : parsedWaypoints[index].lon,
-                    index : idxPoint
+                    index : index
                 }
                 arrGpx.push(currWayp)                          
             }            
