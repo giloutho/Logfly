@@ -93,9 +93,36 @@
                         </div>                
                          <!-- logfly.org contact form -->
                         <div id="div_mail" style="display:none">
-                            <div class="embed-responsive embed-responsive-flyxc" style="margin-top: 30px">
-                                <iframe class="embed-responsive-item" id="webframe" src=""></iframe>
-                            </div>  
+                            <div class="col-md-6 offset-md-3">
+                                <span class="anchor" id="formContact"></span>
+                                <hr class="my-5">
+                                <div class="card card-outline-secondary">
+                                    <div class="card-header">
+                                        <h3 class="mb-0" id="c-lb-header">Contact!</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <label for="name2" class="mb-0 lead" id ="c-lb-name">Name!</label>
+                                        <div class="row mb-1">
+                                            <div class="col-lg-12">
+                                                <input type="text" name="name2" id="c-name" class="form-control">
+                                            </div>
+                                        </div>
+                                        <label for="email2" class="mb-0 lead" id="c-lb-mail"->Email!</label>
+                                        <div class="row mb-1">
+                                            <div class="col-lg-12">
+                                                <input type="text" name="email2" id="c-email" class="form-control" onchange="checkEmail()">
+                                            </div>
+                                        </div>
+                                        <label for="message2" class="mb-0 lead" id="c-lb-message">Message!</label>
+                                        <div class="row mb-1">
+                                            <div class="col-lg-12">
+                                                <textarea rows="10" name="message2" id="c-message" class="form-control"></textarea>
+                                            </div>
+                                        </div>                                        
+                                        <button class="btn btn-info btn-lg float-right" id="c-btn-send" onclick="sendMail()">Send Message</button>                                       
+                                    </div>
+                                </div>
+                            </div>
                         </div>                
                         <div id="div_logbook" style="display:none">
                           <h1>Send logbook</h1>    
