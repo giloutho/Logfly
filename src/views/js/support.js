@@ -4,6 +4,7 @@ const path = require('path');
 const log = require('electron-log');
 const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
+const nodemailer = require("nodemailer")
 const Store = require('electron-store')
 const store = new Store()
 const currOS = store.get('currOS')
@@ -13,6 +14,8 @@ const homedir = require('os').homedir()
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
 const Database = require('better-sqlite3')
+const configkey  = require ('../../../config/config.js')
+const listkey = configkey.access
 let logmainpath = null
 let logrendererpath = null
 let currDisplay = null
@@ -85,6 +88,7 @@ function iniForm() {
     const btnMail = document.getElementById('email')
     btnMail.addEventListener('click',(event) => {
       fnMailDisplay()
+     // useMailerSend()
     })             
 }
 
@@ -257,35 +261,79 @@ function fnSystemDisplay() {
 
 // Display contact form of logfly.org
 function fnMailDisplay() {
+  document.getElementById('c-lb-header').innerHTML = i18n.gettext('Send an e-mail')
+  document.getElementById('c-lb-name').innerHTML = i18n.gettext('Name')
+  document.getElementById('c-lb-mail').innerHTML = i18n.gettext('Email')
+  document.getElementById('c-lb-message').innerHTML = i18n.gettext('Message')
+  document.getElementById('c-btn-send').innerHTML = i18n.gettext('Send')
+  document.getElementById('c-email').value = store.get('pilotmail')
   $('#div_tablelog').hide()
   $('#div_system').hide()   
   $('#div_mail').show()
   $('#div_logbook').hide()
-  let urlForm
-  const currLang = store.get('lang')
-  if (currLang != undefined && currLang != '') { 
-    switch (currLang) {
-        case 'de' :
-            urlForm = 'https://www.logfly.org/contact/support_de.html'
-            break
-        case 'en' :
-            urlForm = 'https://www.logfly.org/contact/support_en.html'
-            break        
-        case 'fr' :
-            urlForm = 'https://www.logfly.org/contact/support_fr.html'
-            break
-        case 'it' :
-          urlForm = 'https://www.logfly.org/contact/support_it.html'
-            break  
-        default :
-          urlForm = 'https://www.logfly.org/contact/support_en.html' 
-          break
-    }  
-  }  
-  // The following code did not allow to send a second message
-  //document.getElementById('webframe').src = urlForm 
-  // https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javascript
-  document.getElementById('webframe').contentWindow.location.replace(urlForm)
+}
+
+function checkEmail() {
+  const mailEmail = document.getElementById('c-email').value
+  {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mailEmail))
+      {
+        return (true)
+      }
+      $('#c-email').val('').css( "border-color", "red" )
+      alert(i18n.gettext('Invalid email address!')) 
+      return (false)
+   }
+}
+ 
+function sendMail() { 
+  const mailName = document.getElementById('c-name').value
+  const mailEmail = document.getElementById('c-email').value
+  const mailMessage = document.getElementById('c-message').value
+  if (mailName == null || mailName == "") {
+    $('#c-name').val('').css( "border-color", "red" )
+  } else if (mailEmail == null || mailEmail == "") {
+    $('#c-email').val('').css( "border-color", "red" )
+  } else if (mailMessage == null || mailMessage == "") {
+    $('#c-message').val('').css( "border-color", "red" )
+  } else {
+    $('#div_tablelog').hide()
+    $('#div_system').hide()   
+    $('#div_mail').hide()
+    $('#div_logbook').hide()
+    sendByGmail(mailName, mailEmail, mailMessage)
+  }
+}
+
+function sendByGmail(mailName, mailEmail, mailMessage) {
+  const mailSubject = 'Support Logfly '+store.get('version')+' '+store.get('currOS')+' '+store.get('osVersion')
+
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: listkey.mailuser,
+      pass: listkey.mailpass,
+    },
+  });
+
+  const mailOptions = {
+    from: listkey.mailuser,
+    to: listkey.mailuser,
+    replyTo : mailEmail,
+    subject: mailSubject,
+    text: mailMessage
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      alert("Error sending email: ", error)
+    } else {
+      alert('We will get back to you as soon as possible')
+    }
+  })
 }
 
 function fnClearLog() {
