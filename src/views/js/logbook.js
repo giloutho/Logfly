@@ -78,6 +78,7 @@ function iniForm() {
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
   document.getElementById('fullmap').innerHTML = i18n.gettext('Full screen map')
   document.getElementById('tx-search').placeholder = i18n.gettext('Search')+'...'
+  document.getElementById('lb-filter').innerHTML = i18n.gettext('Filter')
   $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   
   Object.keys(typeScoring).forEach(function(key, index) {
     $('#mnu-scoring').append(`<a class="dropdown-item" href="#">${key}</a>`)
