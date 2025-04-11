@@ -34,6 +34,7 @@ const tiles = require('../../leaflet/tiles.js')
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
 const easyButton = require('leaflet-easybutton')
+const myMeasure = require('../../leaflet/measure.js')
 const turfHelper = require('@turf/helpers')
 const turfbbox = require('@turf/bbox').default
 const waypread = require('../../utils/geo/wayp-read.js')
@@ -47,8 +48,12 @@ let arrMarker = []
 let wpFilePath = ''
 let selectSavingFormat
 let selectedGPS = ''
+let currentMap
+let enableAddWpt = false
 
 iniForm()
+
+let locMeasure = new myMeasure()
 
 $(document).ready(function () {
   let selectedFixedMenu =  store.get('menufixed') 
@@ -151,7 +156,7 @@ function iniForm() {
     document.getElementById('lb-prefix').innerHTML = i18n.gettext('Turnpoint prefix')
     txPrefix.value = 'WAYPOINT'
     btnNewWayp.innerHTML = i18n.gettext('New')
-    btnNewWayp.addEventListener('click', (event) => {addNewWaypoint()})
+    btnNewWayp.addEventListener('click', (event) => {clickNewWaypoint()})
     $(function(){
       $('#table_id').contextMenu({
           selector: 'tr', 
@@ -650,32 +655,48 @@ function callWaypSend(gpsCom) {
 }
 
 ipcRenderer.on('back_waypform', (_, updateWayp) => { 
-  if (updateWayp.new) {
-    arrWayp.push(updateWayp)
-    updateWayp.arrayIdx = arrWayp.length - 1
-    addRow(updateWayp)
-    displayWpSatus()
-  } else {
-    const rowIndex = updateWayp.rowNumber
-    const arrayIndex = updateWayp.arrayIdx
-    table.cell(rowIndex,2).data(updateWayp.longName)
-    table.cell(rowIndex,0).data(updateWayp.shortName)
-    table.cell(rowIndex,1).data(updateWayp.alti)
-    table.cell(rowIndex,3).data(updateWayp.lat)
-    table.cell(rowIndex,4).data(updateWayp.long)
-    console.log('arrayIdx '+updateWayp.arrayIdx)
-    // Original marker is removed
-    mapwp.removeLayer(arrMarker[updateWayp.arrayIdx])
-    // il faudra le sélectionner comme dans sites si liste longue
+  // reset default values for New button and cursor 
+  enableAddWpt = false
+  document.getElementById('mapid').style.cursor = ''
+  btnNewWayp.innerHTML = i18n.gettext('New')
+
+  if (updateWayp != null) {
+    if (updateWayp.new) {
+      arrWayp.push(updateWayp)
+      updateWayp.arrayIdx = arrWayp.length - 1
+      addRow(updateWayp)
+      displayWpSatus()
+    } else {
+      const rowIndex = updateWayp.rowNumber
+      const arrayIndex = updateWayp.arrayIdx
+      table.cell(rowIndex,2).data(updateWayp.longName)
+      table.cell(rowIndex,0).data(updateWayp.shortName)
+      table.cell(rowIndex,1).data(updateWayp.alti)
+      table.cell(rowIndex,3).data(updateWayp.lat)
+      table.cell(rowIndex,4).data(updateWayp.long)
+      console.log('arrayIdx '+updateWayp.arrayIdx)
+      // Original marker is removed
+      mapwp.removeLayer(arrMarker[updateWayp.arrayIdx])
+      // il faudra le sélectionner comme dans sites si liste longue
+    }
+    let contentPop = updateWayp.longName+'<BR>'
+    contentPop += i18n.gettext('Altitude')+' : '+updateWayp.alti+' m<BR>'
+    contentPop += i18n.gettext('Latitude')+' : '+updateWayp.lat+'<BR>'
+    contentPop += i18n.gettext('Longitude')+' : '+updateWayp.long+'<BR>'
+    const newWp = L.marker([updateWayp.lat,updateWayp.long]).bindPopup(contentPop)
+    arrMarker[updateWayp.arrayIdx] = newWp
+    mapwp.addLayer(arrMarker[updateWayp.arrayIdx])
+    let newZoom
+    if (updateWayp.zoom >= 1 && updateWayp.zoom <= 17) {
+      newZoom = updateWayp.zoom
+    } else {
+      newZoom = 12
+    }
+    if (updateWayp.currMap != null) {
+      setCurrentMap(updateWayp.currMap)    
+    }
+    mapwp.setView([updateWayp.lat, updateWayp.long], newZoom)
   }
-  let contentPop = updateWayp.longName+'<BR>'
-  contentPop += i18n.gettext('Altitude')+' : '+updateWayp.alti+' m<BR>'
-  contentPop += i18n.gettext('Latitude')+' : '+updateWayp.lat+'<BR>'
-  contentPop += i18n.gettext('Longitude')+' : '+updateWayp.long+'<BR>'
-  const newWp = L.marker([updateWayp.lat,updateWayp.long]).bindPopup(contentPop)
-  arrMarker[updateWayp.arrayIdx] = newWp
-  mapwp.addLayer(arrMarker[updateWayp.arrayIdx])
-  mapwp.setView([updateWayp.lat, updateWayp.long], 12)
 })
 
 function defaultMap() {
@@ -691,33 +712,61 @@ function defaultMap() {
 
     L.control.layers(baseMaps).addTo(mapwp)
     const defaultMap = store.get('map')
-    switch (defaultMap) {
-      case 'open':
-        baseMaps.OpenTopo.addTo(mapwp)  
-        break
-      case 'ign':
-        baseMaps.IGN.addTo(mapwp)  
-        break      
-      case 'osm':
-        baseMaps.OSM.addTo(mapwp) 
-        break
-      case 'mtk':
-        baseMaps.MTK.addTo(mapwp)  
-        break  
-      case '4u':
-        baseMaps.UMaps.addTo(mapwp)
-        break     
-      case 'out':
-        baseMaps.Outdoor.addTo(mapwp)           
-        break           
-      default:
-        baseMaps.OSM.addTo(mapwp)        
-        break     
-    }
+    setCurrentMap(defaultMap)
+    locMeasure.addTo(mapwp)
+    let measureButton = L.easyButton( 'fa fa-share-alt', function(control){
+      locMeasure._toggleMeasure()
+    }, i18n.gettext('Measure'))
+    measureButton.addTo(mapwp)
     let bboxButton = L.easyButton( 'fa-plus-square-o', function(control){
       displayAll()
     }, i18n.gettext('Display all waypoints'))
     bboxButton.addTo(mapwp)
+    mapwp.on('baselayerchange', function (e) {
+      //setCurrentMap(e.layer._url)
+      currentMap = tiles.currentMap(e.layer._url)
+    })
+    mapwp.on('mousedown', function(e)
+    {
+      if (enableAddWpt)
+      {
+        enableAddWpt = false
+        addNewWaypoint(e.latlng.lat, e.latlng.lng)
+      }
+    });
+}
+
+function setCurrentMap(defaultMap) {
+  switch (defaultMap) {
+    case 'open':
+      baseMaps.OpenTopo.addTo(mapwp)  
+      currentMap = 'open'
+      break
+    case 'ign':
+      baseMaps.IGN.addTo(mapwp)  
+      currentMap = 'ign'
+      break      
+    case 'osm':
+      baseMaps.OSM.addTo(mapwp) 
+      currentMap = 'osm'
+      break
+    case 'mtk':
+      baseMaps.MTK.addTo(mapwp)  
+      currentMap = 'mtk'
+      break  
+    case '4u':
+      baseMaps.UMaps.addTo(mapwp)
+      currentMap = '4u'
+      break     
+    case 'out':
+      baseMaps.Outdoor.addTo(mapwp)   
+      currentMap = 'out'        
+      break           
+    default:
+      baseMaps.OSM.addTo(mapwp)  
+      currentMap = 'osm'  
+      break     
+  }
 }
 
 function tableStandard() {
@@ -781,6 +830,7 @@ function addRow(newWayp) {
 }
 
 function updateWaypoint(rowIndex) { 
+  const mapZoom = mapwp.getZoom()
   let currWayp = {
     new : false,
     typeWayp : '',
@@ -790,13 +840,28 @@ function updateWaypoint(rowIndex) {
     lat : table.cell(rowIndex,3).data(),  
     long : table.cell(rowIndex,4).data(),
     arrayIdx : table.cell(rowIndex,5).data(),
-    rowNumber : rowIndex
+    rowNumber : rowIndex,
+    currMap : currentMap,
+    zoom : mapZoom
   }
   const callForm = ipcRenderer.send('display-wayp-form', currWayp)   // process-main/modal-win/waypform-display.js  
 }
 
-function addNewWaypoint() {
-  const centerMap = mapwp.getCenter()  
+function clickNewWaypoint() {
+  if (enableAddWpt === false) {
+    enableAddWpt = true
+    document.getElementById('mapid').style.cursor = 'crosshair'
+    btnNewWayp.innerHTML = i18n.gettext('Cancel')
+  } else {
+    enableAddWpt = false
+    document.getElementById('mapid').style.cursor = ''
+    btnNewWayp.innerHTML = i18n.gettext('New')
+  }
+}
+
+function addNewWaypoint(lat, lng) {
+ // const centerMap = mapwp.getCenter()  
+  const mapZoom = mapwp.getZoom()
   const numPoint = arrWayp.length+1
   let prefix = txPrefix.value
   let subPrefix
@@ -815,10 +880,12 @@ function addNewWaypoint() {
     longName : prefix+' '+numPoint.toString().padStart(3, '0'),
     shortName : subPrefix+numPoint.toString().padStart(3, '0'),
     alti : 0,
-    lat : centerMap.lat,  
-    long : centerMap.lng,
+    lat : lat,  
+    long : lng,
     rowNumber : 0,
-    arrayIdx : 0
+    arrayIdx : 0,
+    currMap : currentMap,
+    zoom : mapZoom
   }
   const callForm = ipcRenderer.send('display-wayp-form', currWayp)   // process-main/modal-win/waypform-display.js
 }

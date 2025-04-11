@@ -3,8 +3,8 @@ const fs = require('fs')
 const path = require('path')
 const log = require('electron-log')
 const Store = require('electron-store')
-const store = new Store();
-const inputMask = require('inputmask');
+const store = new Store()
+const inputMask = require('inputmask')
 const Position = require('../../../utils/geo/position.js')
 const SyncTileSet = require('srtm-elevation').SyncTileSet
 
@@ -17,6 +17,8 @@ const baseMaps = tiles.baseMaps
 let mapPm
 let marker
 let editWayp
+let currentMap
+let defaultZoom
 let srtmPath = null
 
 const btnCancel = document.getElementById('bt-cancel')
@@ -45,6 +47,8 @@ ipcRenderer.on('current-wayp', (event, currWayp) => {
         rdTakeoff.checked = true
         txAlt.value = editWayp.alti
     }   
+    currentMap = editWayp.currMap
+    defaultZoom = editWayp.zoom
     txLongName.value = editWayp.longName
     txShortName.value = editWayp.shortName
     currPosition.setLatitudeDd(editWayp.lat)
@@ -60,9 +64,9 @@ function iniForm() {
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
             let content = fs.readFileSync(path.join(__dirname, '../../../lang/',currLangFile))
-            let langjson = JSON.parse(content);
+            let langjson = JSON.parse(content)
             i18n.setMessages('messages', currLang, langjson)
-            i18n.setLocale(currLang);            
+            i18n.setLocale(currLang)            
             translateLabels()
         }
         // Srtm path test
@@ -258,34 +262,34 @@ function iniForm() {
 
 function displayMap() {
     if (mapPm != null) {
-        mapPm.off();
-        mapPm.remove();
+        mapPm.off()
+        mapPm.remove()
       }
-      mapPm = L.map('mapid').setView([currPosition.latitude,currPosition.longitude], 13)
+      mapPm = L.map('mapid').setView([currPosition.latitude,currPosition.longitude], defaultZoom)
       L.control.layers(baseMaps).addTo(mapPm)
-      const defaultMap = store.get('map')
+      const defaultMap = currentMap
       switch (defaultMap) {
         case 'open':
           baseMaps.OpenTopo.addTo(mapPm)  
-          break;
+          break
         case 'ign':
           baseMaps.IGN.addTo(mapPm)  
-          break;      
+          break      
         case 'osm':
           baseMaps.OSM.addTo(mapPm) 
-          break;
+          break
         case 'mtk':
           baseMaps.MTK.addTo(mapPm)  
-          break;  
+          break  
         case '4u':
           baseMaps.UMaps.addTo(mapPm)
-          break;     
+          break     
         case 'out':
           baseMaps.Outdoor.addTo(mapPm)           
-          break;           
+          break           
         default:
           baseMaps.OSM.addTo(mapPm)        
-          break;         
+          break         
       }    
 
     let violetIcon = new L.Icon({
@@ -295,7 +299,7 @@ function displayMap() {
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
     shadowSize: [41, 41]
-    });
+    })
 
     marker = L.marker([currPosition.latitude,currPosition.longitude],{icon: violetIcon, draggable: true}).addTo(mapPm)
     marker.bindPopup(i18n.gettext('Wait for the digital elevation file to download'))
@@ -311,6 +315,10 @@ function displayMap() {
         // test elevation 
         getElevation()
     }
+
+    mapPm.on('baselayerchange', function (e) {
+        currentMap = tiles.currentMap(e.layer._url)
+    })
 }
 
 function getElevation() {
@@ -341,7 +349,7 @@ function getElevation() {
         // password: null        
         username: 'logfly_user',
         password: 'Logfly22'
-    });    
+    })
 }
 
 function updateCoords(updateMap) {
@@ -404,6 +412,8 @@ function validFields() {
                 } else {
                     editWayp.alti= txAlt.value
                 } 
+                editWayp.currMap = currentMap
+                editWayp.zoom = mapPm.getZoom()
                 ipcRenderer.sendTo(1,"back_waypform", editWayp)
                 window.close()                           
             }
