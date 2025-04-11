@@ -52,5 +52,27 @@ const baseMaps = {
   "Outdoor" : outdoorlayer,
 }
 
+const currentMap = (mapUrl) => {
+  let mapType = ''
+  if (mapUrl.includes('{ignLayer}')) {
+    mapType = 'ign'
+  } else if (mapUrl.includes('ORTHOIMAGERY.ORTHO')) {
+    mapType = 'ignsat'
+  } else if (mapUrl.includes('tile.openstreet')) {
+    mapType = 'osm'
+  } else if (mapUrl.includes('tile.thunder')) {
+    mapType = 'out'
+  } else if (mapUrl.includes('4umaps.eu')) {
+    mapType = '4u'
+  } else if (mapUrl.includes('opentopo')) {
+    mapType = 'open'
+  } else if (mapUrl.includes('maptoolkit')) {
+    mapType = 'mtk'
+  } else {
+    mapType = 'osm'
+  }
+  return mapType
+}
 
-module.exports = {leaf,baseMaps}
+
+module.exports = {leaf,baseMaps, currentMap}
