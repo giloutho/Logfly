@@ -48,7 +48,12 @@ function getLanguages(i18n) {
 function getLeagues() {
     let leagueList = [
         { key: 'FR', val: 'FFVL' },
-        { key: 'XC', val: 'XContest' }
+        { key: 'XC', val: 'XContest' },
+        { key: 'FAI', val: 'FAI' },
+        { key: 'FAIC', val: 'FAI-Cylinders' },
+        { key: 'FAIO', val: 'FAI-OAR' },
+        { key: 'FAIOA', val: 'FAI-OAR2' },
+        { key: 'XL', val: 'XCLeague' }
     ]
 
     return leagueList
