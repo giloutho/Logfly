@@ -449,3 +449,59 @@ td.editor-delete button {
 .popover {
 background-color: LemonChiffon;
 }
+
+.subbarInput {
+    width: 30px;
+    height: 35px;
+    text-align: center;
+}
+
+.subbarFat {
+    font-weight: bold;
+    justify-content: center;
+    margin-left: 5px;
+}
+
+.subbarcontainer {
+    display: flex;
+    font-size: 1em;
+    align-items: center;
+    height: 30px;
+}
+  
+.btn-group-vertical > button{
+margin-bottom:10px;
+border-radius:10px !important;
+}
+
+.leaflet-vertex-icon {
+    max-width: 30px;
+    max-height: 30px;
+    margin-left: -5px !important;
+    margin-top: -5px !important;
+}
+
+.badge.even-larger-badge {
+    font-size: 1em;
+}
+
+.savelabel {
+    font-size: 1.2em;
+    margin-left: 5px;
+}
+
+#tooltip {
+    display: none;
+    position: absolute;
+    background: #666;
+    color: white;
+    opacity: 0.6;
+    padding: 2px;
+    border: 1px dashed #999;
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    height: 28px;
+    line-height: 28px;
+    z-index: 1000;
+}
