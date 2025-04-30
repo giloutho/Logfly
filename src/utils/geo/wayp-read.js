@@ -1,7 +1,6 @@
 const fs = require('fs')
 const log = require('electron-log')
-const tj = require('@tmcw/togeojson')
-const DOMParser = require("xmldom").DOMParser
+const waypcom = require('./wayp-common.js')
 
 let originalType
 
@@ -28,7 +27,7 @@ function readFile(pathWayp) {
             } else if (content.indexOf("Rwdir") > -1) {    // Vérifier si cela fonctionne sans les majuscules
                 fileType = "CUP" 
                 originalType = "6"
-            } else if (testCompeGPS(content)) {
+            } else if (waypcom.testCompeGPS(content)) {
                 fileType = "COM" 
                 originalType = "2"
             }
@@ -41,10 +40,9 @@ function readFile(pathWayp) {
                 switch (fileType) {
                     case 'OZI':
                         arrWayp = readOzi(lines)
-                        console.log('retour readOzi '+arrWayp.length)
                         break;       
                     case 'CUP' :
-                        arrWayp = readCup(lines)     
+                        arrWayp = waypcom.readCup(lines)     
                         break;
                     case 'COM' :
                         arrWayp = readCompe(lines)     
@@ -53,7 +51,7 @@ function readFile(pathWayp) {
                         arrWayp = readGpx(content)     
                         break     
                     case 'KML' :
-                        arrWayp = readKml(content)     
+                        arrWayp = waypcom.readKml(content)     
                         break                                                              
                     default:
                         break;
@@ -65,29 +63,6 @@ function readFile(pathWayp) {
         log.error('[wayp-read.js] Error while decoding '+pathWayp)
     }
     return arrWayp
-}
-
-function testCompeGPS(content) {
-    let res
-    try {
-        let lines = content.split('\n')       
-        if (lines.length > 2) {
-            // first line is like "G  WGS 84"     [ Headboard : Line G: It identifies the datum of the map ]  
-            // Normally 2 spaces between G and WGS 84 but sometimes only one
-            let line1 = lines[0].replace(/\s/g, '')                        
-            if (line1.indexOf('GWGS84') > -1) {
-                // second line is like "U  1"   [ Headboard : Line U: It identifies the system of coordinate -> 0 UTM 1 Lat/Lon]
-                // Normally 2 spaces between U and 1 but sometimes only one
-                let line2 = lines[1].replace(/\s/g, '')   
-                if (line2.indexOf('U1') > -1) {      
-                    res = true
-                }                 
-            }
-        }
-    } catch (error) {
-        res = false
-    }
-    return res
 }
 
 function readOzi(lines) {
@@ -157,109 +132,6 @@ function readOzi(lines) {
         log.error('[wayp-read.js] Error whith readOzi function '+error)
     }
     return arrOzi
-}
-
-function readCup(lines) {
-    // https://github.com/naviter/seeyou_file_formats/blob/main/CUP_file_format.md
-    /* We want to extract
-        - name : designed as "code" in header
-        - alt  : designed as "elev" in header
-        - desc : designed as "name" in header
-        - lat  : designed as "lat" in header
-        - long : designed as "lon" in header
-    Usually a header contained at line number 1 is like this : 
-        name,code,country,lat,lon,elev,style,rwdir,rwlen,rwwidth,freq,desc,userdata,pics 
-    but the order of the columns is arbitrary, a valid header line can be :
-        lat,lon,elev,name,code,country,style,rwdir,rwlen,rwwidth,freq,desc   
-    
-    */
-
-    let arrCup = []
-    let idxName = -1
-    let idxAlt = -1
-    let idxDesc = -1
-    let idxLat = -1
-    let idxLon = -1
-    let goodHeader = false
-
-    try {
-
-        // Parse header line
-        const headerLine = lines[0]
-        let partHeader = headerLine.split(",")
-        for (let j = 0; j < partHeader.length; j++) {
-            switch (partHeader[j]) {
-                case 'code':
-                    idxName = j
-                    break
-                case 'elev':
-                    idxAlt = j
-                    break
-                case 'name' :
-                    idxDesc = j
-                    break
-                case 'lat' :
-                    idxLat = j
-                case 'lon' :
-                    idxLon = j
-                    break
-            }
-            
-        }
-        if (idxName > -1 && idxAlt > -1 && idxDesc > -1 && idxLat > -1 && idxLon > -1) {
-            goodHeader = true
-        } else {
-            alert('Invalid header line:')
-        }
-
-        if (goodHeader) {
-            let idxPoint = 0
-            for (let i = 1; i < lines.length; i++) {
-                // the file can have a task part. Normally the first line of this part is '-----Related Tasks-----'
-                // but sometimes we read a simple 'task'
-                if (lines[i].indexOf("task") > -1 || lines[i].indexOf("Task") > -1 ) {
-                    break }
-                else {    
-                    const element = lines[i]
-                    if (element != '') {
-                        let partPoint = element.split(",")
-                        let wName = partPoint[idxName].replaceAll("\"", "")
-                        let wDesc = partPoint[idxDesc].replaceAll("\"", "")
-                        // elevation decoding
-                        let iAlt
-                        const altParsed = Number.parseInt(partPoint[idxAlt])
-                        if (Number.isNaN(altParsed)) {
-                        iAlt = 0
-                        }
-                        if (partPoint[idxAlt].indexOf("ft") > - 1) {
-                            iAlt = altParsed * 0.3048
-                        } else if (partPoint[idxAlt].indexOf("m") > - 1) {
-                            iAlt = altParsed
-                        }
-                        let wAlt = iAlt
-                        let wLat = decodeCupLat(partPoint[idxLat])
-                        let wLong = decodeCupLon(partPoint[idxLon])
-                        if(wLat != 'isNaN' && wLong != 'isNaN') {
-                            let currWayp = {
-                                name : wName,
-                                alt : wAlt,
-                                desc : wDesc,
-                                lat : wLat,
-                                long : wLong,
-                                index : idxPoint
-                            }
-                            arrCup.push(currWayp)
-                        }
-                        idxPoint++
-                    }
-                }
-            }
-            console.log(arrCup.length+' waypoints decoded')
-        }
-    } catch (error) {
-        log.error('[wayp-read.js] Error whith readCup function '+error)
-    }
-    return arrCup
 }
 
 function readCompe(lines) {
@@ -337,104 +209,14 @@ function readCompe(lines) {
 }
 
 function readGpx(gpxString) {
-    let arrGpx =  ipcRenderer.sendSync('read-wayp-gpx', gpxString)  // process-main/gpx/gpx-wayp-read.js
-    if (Array.isArray(arrGpx)) {
-        console.log(arrGpx.length+' waypoints');
-      } else {
-        console.log("arrGpx is not an array");
-      }
-    return arrGpx
-}
-
-function readKml(content) {
-    let arrKml = []
-    try {
-        const kml = new DOMParser().parseFromString(content);
-        const converted = tj.kml(kml)
-        const data = JSON.parse(JSON.stringify(converted))
-        const arrData   = Object.values(data)
-        let idxPoint = 0
-        if (arrData.length > 1) {
-            for (let i = 0; i < arrData[1].length; i++) {
-                const element = arrData[1][i]
-                const elemType = element.geometry.type
-                if (elemType == 'Point') {
-                    if (element.geometry.coordinates.length > 2) {
-                        let wAlt = parseInt(element.geometry.coordinates[2])
-                        let wLat = parseFloat(element.geometry.coordinates[1]).toFixed(5)
-                        let wLong = parseFloat(element.geometry.coordinates[0]).toFixed(5)
-                        let wName = element.properties.name
-                        let currWayp = {
-                            name : wName,
-                            alt : wAlt,
-                            desc : wName,
-                            lat : wLat,
-                            long : wLong,
-                            index : idxPoint
-                        }                
-                        arrKml.push(currWayp)
-                    }
-                }      
-            }
-        }
-    } catch (error) {
-        console.log(error)
+    let resParsing =  ipcRenderer.sendSync('gpx-parsing', gpxString)  // process-main/gpx/gpx-parsing.js
+    if (Array.isArray(resParsing.wayp)) {
+        return resParsing.wayp
+    } else {
+        console.log("arrGpx is not an array")
+        let arrGpx = []
+        return arrGpx
     }
-    return arrKml
-}
-
-function decodeCupLat(sLat) {
-    let res = ""
-    let sDeg;
-    let sMn;
-    let sHem;  
-                   
-    try {
-        // Latitude is a decimal number (eg 4553.445N )where 1-2 characters are degrees, 3-4 characters are minutes,
-        // 5  decimal point, 6-8 characters are decimal minutes. The ellipsoid used is WGS-1984
-        sDeg = sLat.substring(0,2)
-        sMn = sLat.substring(2,8)
-        sHem = sLat.substring(8)
-
-        const degParsed = Number.parseInt(sDeg)
-        const minParsed = Number.parseFloat(sMn)
-        if (!Number.isNaN(degParsed) && !Number.isNaN(minParsed)) {
-            let calcLatitude = degParsed+((minParsed*60)/3600)
-            if (sHem == 'S') calcLatitude = calcLatitude * - 1
-            res = calcLatitude.toFixed(5)
-        }
-    } catch (error) {
-        res = "isNaN"
-    }            
-    
-    return res
-}
-
-function decodeCupLon(sLong) {
-    let res = ""
-    let sDeg;
-    let sMn;
-    let sHem;  
-                   
-    try {
-        // Longitude is a decimal number (eg 00627.076E) where 1-3 characters are degrees, 4-5 characters are minutes,
-        // 6 decimal point, 7-9 characters are decimal minutes. The ellipsoid used is WGS-1984
-        sDeg = sLong.substring(0,3)
-        sMn = sLong.substring(3,9)
-        sMer = sLong.substring(9)
-
-        const degParsed = Number.parseInt(sDeg)
-        const minParsed = Number.parseFloat(sMn)
-        if (!Number.isNaN(degParsed) && !Number.isNaN(minParsed)) {
-            let calcLongitude = degParsed+((minParsed*60)/3600)
-            if (sMer == 'W') calcLongitude = calcLongitude * - 1
-            res = calcLongitude.toFixed(5);
-        }
-    } catch (error) {
-        res = "isNaN"
-    }            
-    
-    return res;
 }
 
 module.exports.readFile = readFile
