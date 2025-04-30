@@ -1,10 +1,9 @@
 const {ipcRenderer, net} = require('electron')
 const fs = require('fs')
-const path = require('path');
-const log = require('electron-log');
+const path = require('path')
+const log = require('electron-log')
 const i18n = require('../../lang/gettext.js')()
 const Mustache = require('mustache')
-const nodemailer = require("nodemailer")
 const Store = require('electron-store')
 const store = new Store()
 const currOS = store.get('currOS')
@@ -14,8 +13,7 @@ const homedir = require('os').homedir()
 const menuFill = require('../../views/tpl/sidebar.js')
 const btnMenu = document.getElementById('toggleMenu')
 const Database = require('better-sqlite3')
-const configkey  = require ('../../../config/config.js')
-const listkey = configkey.access
+const mailing = require('../../utils/sendmail.js')
 let logmainpath = null
 let logrendererpath = null
 let currDisplay = null
@@ -33,18 +31,18 @@ function iniForm() {
     currLang = store.get('lang')
     if (currLang != undefined && currLang != 'en') {
         currLangFile = currLang+'.json'
-        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile));
-        let langjson = JSON.parse(content);
+        let content = fs.readFileSync(path.join(__dirname, '../../lang/',currLangFile))
+        let langjson = JSON.parse(content)
         i18n.setMessages('messages', currLang, langjson)
-        i18n.setLocale(currLang);
+        i18n.setLocale(currLang)
     }
   } catch (error) {
       log.error('[problem.js] Error while loading the language file')
   }   
-    loadLangTime = performance.now()-start;
+    loadLangTime = performance.now()-start
     let menuOptions = menuFill.fillMenuOptions(i18n)
     $.get('../../views/tpl/sidebar.html', function(templates) { 
-        var template = $(templates).filter('#temp-menu').html();  
+        var template = $(templates).filter('#temp-menu').html()  
         var rendered = Mustache.render(template, menuOptions)
       //  console.log(template)
         document.getElementById('target-sidebar').innerHTML = rendered
@@ -58,10 +56,10 @@ function iniForm() {
         systemreport : i18n.gettext('System report'),
         infos : i18n.gettext('Infos'),
         sendmail : i18n.gettext('Send an e-mail'),
-      };    
-    let templateNav = document.getElementById('navtemplate').innerHTML;
+      }    
+    let templateNav = document.getElementById('navtemplate').innerHTML
     let navRendered = Mustache.render(templateNav, navOptions)
-    document.getElementById('navbarSupportedContent').innerHTML = navRendered;
+    document.getElementById('navbarSupportedContent').innerHTML = navRendered
     const btnMainDisplay = document.getElementById('main-display')
     btnMainDisplay.addEventListener('click',(event) => {
       fnMainDisplay()
@@ -97,7 +95,7 @@ $(document).ready(function () {
   if (selectedFixedMenu === 'yes') {
     $("#sidebar").removeClass('active')
     $('#toggleMenu').addClass('d-none')
-    document.getElementById("menucheck").checked = true;
+    document.getElementById("menucheck").checked = true
   }
 })
 
@@ -115,16 +113,16 @@ function changeMenuState(cbmenu) {
 
 // Calls up the relevant page 
 function callPage(pageName) {
-    ipcRenderer.send("changeWindow", pageName);    // main.js
+    ipcRenderer.send("changeWindow", pageName)    // main.js
 }
 
 btnMenu.addEventListener('click', (event) => {
     if (btnMenu.innerHTML === "Menu On") {
-        btnMenu.innerHTML = "Menu Off";
+        btnMenu.innerHTML = "Menu Off"
     } else {
-        btnMenu.innerHTML = "Menu On";
+        btnMenu.innerHTML = "Menu On"
     }
-    $('#sidebar').toggleClass('active');
+    $('#sidebar').toggleClass('active')
 })
 
 /**
@@ -182,7 +180,7 @@ function fnSystemDisplay() {
   console.log('currlang '+currLang)
   if (currLang != undefined && currLang != 'en') {
     customReport.push(['Language used',store.get('lang')])
-    let loadLang = (Math.round(loadLangTime * 100) / 100).toFixed(2);
+    let loadLang = (Math.round(loadLangTime * 100) / 100).toFixed(2)
     customReport.push(['Language file loading time',`${loadLang} milliseconds`])
   } else {
     customReport.push(['Language used','default (en)'])
@@ -223,9 +221,9 @@ function fnSystemDisplay() {
   customReport.push(['<b>Config file</b>',store.path])
 
   let rawconfig = fs.readFileSync(store.path)
-  let jsonconfig = JSON.parse(rawconfig);
+  let jsonconfig = JSON.parse(rawconfig)
   // JSON.parse not enought. Must be transformed in array of array
-  const arrConfig = Object.keys(jsonconfig).map((key) => [key, jsonconfig[key]]);
+  const arrConfig = Object.keys(jsonconfig).map((key) => [key, jsonconfig[key]])
   let finalReport = customReport.concat(arrConfig)
   var dataTableConfig = {
     data: finalReport,
@@ -286,7 +284,7 @@ function checkEmail() {
    }
 }
  
-function sendMail() { 
+async function sendMail() { 
   const mailName = document.getElementById('c-name').value
   const mailEmail = document.getElementById('c-email').value
   const mailMessage = document.getElementById('c-message').value
@@ -301,39 +299,19 @@ function sendMail() {
     $('#div_system').hide()   
     $('#div_mail').hide()
     $('#div_logbook').hide()
-    sendByGmail(mailName, mailEmail, mailMessage)
-  }
-}
-
-function sendByGmail(mailName, mailEmail, mailMessage) {
-  const mailSubject = 'Support Logfly '+store.get('version')+' '+store.get('currOS')+' '+store.get('osVersion')
-
-  const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: listkey.mailuser,
-      pass: listkey.mailpass,
-    },
-  });
-
-  const mailOptions = {
-    from: listkey.mailuser,
-    to: listkey.mailuser,
-    replyTo : mailEmail,
-    subject: mailSubject,
-    text: mailMessage
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      alert("Error sending email: ", error)
-    } else {
-      alert('We will get back to you as soon as possible')
+    try {
+      const resMail = await mailing.sendByGmail(mailName, mailEmail, mailMessage,'Support')    
+      // Vérification du résultat
+      if (resMail && resMail.messageId) {
+          alert(i18n.gettext('Email sent successfully!'))
+      } else {
+          alert(i18n.gettext('Failed to send email'))
+      }
+    } catch (error) {
+      log.error('Error while sending email : ', error)
+      alert(i18n.gettext('Error sending mail')+' : ' + error.message)
     }
-  })
+  }
 }
 
 function fnClearLog() {
@@ -350,12 +328,12 @@ function fnClearLog() {
           fs.writeFileSync(logmainpath, '')
           log.warn('The main log file has been erased')
           ipcRenderer.send('read-log-main',logmainpath)        
-          break;
+          break
         case renderDisplay:        
           fs.writeFileSync(logrendererpath, '')
           log.warn('The renderer log file has been erased')
           ipcRenderer.send('read-log-render',logrendererpath)           
-          break;
+          break
       }
     } 
   })
@@ -370,10 +348,10 @@ function displayLogLines(logLines) {
   switch (currDisplay) {
     case mainDisplay:
       tabletitle = 'Main log : '+nbLines+' '+'lines'
-      break;
+      break
     case renderDisplay:
       tabletitle = 'Renderer log : '+nbLines+' '+'lines'
-      break;
+      break
   }
   var dataTableOption = {
     data: logLines,
@@ -383,9 +361,9 @@ function displayLogLines(logLines) {
     // change color according cell value -> http://live.datatables.net/tohehohe/1/edit
     'createdRow': function( row, data, dataIndex ) {
       if ( data['class'] === 'warning') {        
-        $(row).addClass('importred');
+        $(row).addClass('importred')
       } else if ( data['class'] === 'error') {        
-        $(row).addClass('logerror');
+        $(row).addClass('logerror')
       }
     },      
     destroy: true,
@@ -406,7 +384,7 @@ function displayLogLines(logLines) {
   }
   table = $('#tablelog').DataTable(dataTableOption )
   $('#wholetable').removeClass('d-none') 
-  $('#status').hide();
+  $('#status').hide()
 }
 
 ipcRenderer.on('log-lines-array', (event, logLines) => {
@@ -416,7 +394,7 @@ ipcRenderer.on('log-lines-array', (event, logLines) => {
   } else {
     $('#wholetable').addClass('d-none') 
     statusContent.innerHTML = i18n.gettext('The file is empty or non-existent')
-    $('#status').show();    
+    $('#status').show()    
   }
 })
 
@@ -427,12 +405,12 @@ ipcRenderer.on('confirmation-dialog', (event, response) => {
         fs.writeFileSync(logmainpath, '')
         log.warn('The main log file has been erased')
         ipcRenderer.send('read-log-main',logmainpath)        
-        break;
+        break
       case renderDisplay:        
         fs.writeFileSync(logrendererpath, '')
         log.warn('The renderer log file has been erased')
         ipcRenderer.send('read-log-render',logrendererpath)           
-        break;
+        break
     }
   }
   else {
@@ -449,10 +427,10 @@ function nFormatter(num, digits) {
     { value: 1e12, symbol: "T" },
     { value: 1e15, symbol: "P" },
     { value: 1e18, symbol: "E" }
-  ];
-  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  ]
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
   var item = lookup.slice().reverse().find(function(item) {
-    return num >= item.value;
-  });
-  return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
+    return num >= item.value
+  })
+  return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0"
 }
