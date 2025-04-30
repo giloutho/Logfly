@@ -86,6 +86,7 @@
     "jquery-contextmenu": "^2.9.2",
     "leaflet": "^1.7.1",
     "leaflet-easybutton": "^2.4.0",
+    "leaflet-polylineoffset": "^1.1.1",
     "leaflet.control.layers.tree": "^1.1.0",
     "moment": "^2.29.4",
     "moment-duration-format": "^2.3.2",
