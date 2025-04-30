@@ -38,7 +38,7 @@ const myMeasure = require('../../leaflet/measure.js')
 const turfHelper = require('@turf/helpers')
 const turfbbox = require('@turf/bbox').default
 const waypread = require('../../utils/geo/wayp-read.js')
-const waypwrite = require('../../utils/geo/wayp-write.js');
+const waypwrite = require('../../utils/geo/wayp-write.js')
 const { event } = require('jquery');
 
 let mapwp
@@ -267,7 +267,6 @@ function iniForm() {
   contentStatus += i18n.gettext('Import from a GPS')+', '
   contentStatus += i18n.gettext('Create a new set')+'</span></p></div>'
   displayStatus(contentStatus)
-//  callDebugFile()
 }
 
 function callDebugFile() {
@@ -394,65 +393,6 @@ function sendUsbGps(typeGPS,resultUsb) {
       break   
   }
 }
-
-
-/* function callUsbGps(typeGPS) {
-  let gpsStatus
-  switch (typeGPS) {
-    case 'reverlog':
-      gpsStatus = '<strong>Reversale '+i18n.gettext('waypoints folder')+' : </strong>'
-      break;  
-    case 'connect':
-      gpsStatus = '<strong>GPS Connect '+i18n.gettext('waypoints folder')+' : </strong>'   
-      break;  
-    case 'element' :
-      gpsStatus = '<strong>GPS Element '+i18n.gettext('waypoints folder')+' : </strong>'     
-      break;                     
-    case 'sky2' :
-      gpsStatus = '<strong>GPS Skytraax 2 '+i18n.gettext('waypoints folder')+' : </strong>'
-      break;
-    case 'sky3' :
-      gpsStatus = '<strong>GPS Skytraax 3/4 '+i18n.gettext('waypoints folder')+' : </strong>'
-      break;     
-    case 'cpilot' : 
-      gpsStatus = '<strong>GPS C-Pilot '+i18n.gettext('waypoints folder')+' : </strong>'
-      break; 
-    case 'oudie':
-      gpsStatus = '<strong>GPS Oudie '+i18n.gettext('waypoints folder')+' : </strong>'
-      break;   
-    case 'skydrop' :
-      gpsStatus = '<strong>GPS Skydrop '+i18n.gettext('waypoints folder')+' : </strong>'
-      break;
-    case 'syrideusb':
-      gpsStatus = '<strong>GPS Syride via Usb '+i18n.gettext('waypoints folder')+' : </strong>'
-      break;          
-  }
-  simpleWaiting()
-  ipcRenderer.invoke('check-usb-gps',typeGPS).then((resultUsb) => {   
-    if (resultUsb.pathWayp != null) {    
-        simpleHideWating()  
-        const selectedFile = ipcRenderer.sendSync('open-file',resultUsb.pathWayp)
-        if(selectedFile.fullPath != null) {
-          displayWpDisk(selectedFile.fullPath) 
-        }  
-      } else {
-          // let errorMsg
-          simpleHideWating()
-          let btnCancel = document.createElement("input")   // must be input not button
-          btnCancel.type = "button"
-          btnCancel.name = "cancel" 
-          btnCancel.style.marginLeft = "50px"  
-          btnCancel.value=i18n.gettext("OK")
-          btnCancel.className="btn btn-secondary btn-sm"
-          btnCancel.onclick = function () {
-            displayWpSatus()   
-          }
-          let msg = '<span class="badge badge-danger even-larger-badge" style="margin-left:300px" >'+gpsStatus+' '+i18n.gettext('Not found')+'</span>'
-          displayStatus(msg)
-          statusBar.appendChild(btnCancel)   
-      }
-  })     
-} */
 
 function displayWpDisk(currFilePath) {
   let readWayp = waypread.readFile(currFilePath)
