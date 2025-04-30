@@ -168,7 +168,6 @@ ipcMain.on('save-gpx', (event, openData) => {
   )
   .then(result => {
       filename = result.filePath
-      console.log('filename ; '+filename)
       if (filename === undefined || filename === '') {
         event.returnValue = 'Error : the user clicked the btn but didn\'t created a file'        
       }
@@ -215,7 +214,17 @@ ipcMain.on('save-wpt', (event, wptString, wptLabel, defPath) => {
       dlgTitle = 'Kml'
       dlgName = 'Kml format'
       dlgExt = 'kml'
+      break;       
+    case 'xctsk':
+      dlgTitle = 'Xctsk'
+      dlgName = 'XCTrack format'
+      dlgExt = 'xctsk'
       break;                      
+    case 'dump':
+      dlgTitle = 'GpsDump'
+      dlgName = 'GPSDump format'
+      dlgExt = 'wpt'
+      break;          
   }
   dialog.showSaveDialog(
     { title: dlgTitle,
