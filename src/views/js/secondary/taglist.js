@@ -32,7 +32,6 @@ function iniForm() {
         currLang = store.get('lang')
         if (currLang != undefined && currLang != 'en') {
             currLangFile = currLang+'.json'
-            console.log(path.join(__dirname, '../../../lang/',currLangFile))
             let content = fs.readFileSync(path.join(__dirname, '../../../lang/',currLangFile));
             let langjson = JSON.parse(content);
             i18n.setMessages('messages', currLang, langjson)
