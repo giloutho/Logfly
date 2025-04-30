@@ -5,7 +5,7 @@ const osmlayer = leaf.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.
 })
 
 const OpenTopoMap = leaf.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    maxZoom: 16,
+    maxZoom: 17,
     attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 })
 const ignlayer = leaf.tileLayer('https://data.geopf.fr/wmts?'+
@@ -36,7 +36,9 @@ const ignSat = leaf.tileLayer("https://data.geopf.fr/wmts?" +
             tileSize : 256 // les tuiles du Géooportail font 256x256px
 })
 const mtklayer = leaf.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png')
-const fouryoulayer = leaf.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png')
+const Esri_WorldTopoMap = leaf.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+})
 const outdoorlayer = leaf.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
   maxZoom: 18,
   attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -48,7 +50,7 @@ const baseMaps = {
   "IGN" : ignlayer,
   "IGN Sat" : ignSat,
   "MTK" : mtklayer,
-  "UMaps" : fouryoulayer,
+  "Esri Topo" : Esri_WorldTopoMap,
   "Outdoor" : outdoorlayer,
 }
 
@@ -74,5 +76,25 @@ const currentMap = (mapUrl) => {
   return mapType
 }
 
+const mapIcons = {
+  'scstart': new leaf.Icon({
+              iconUrl: '../../leaflet/images/flag-yellow.png',
+              iconSize: [28, 28],
+              iconAnchor: [0, 18],
+              popupAnchor: [1, -34],
+            }),
+  'scend': new leaf.Icon({
+            iconUrl: '../../leaflet/images/flag-green.png',
+            iconSize: [25, 25],
+            iconAnchor: [4, 18],
+            popupAnchor: [1, -34],
+          }),  
+  'sctp': new leaf.Icon({
+            iconUrl: '../../leaflet/images/flag-red.png',
+            iconSize: [22, 22],
+            iconAnchor: [4, 18],
+            popupAnchor: [1, -34]
+          })
+}
 
-module.exports = {leaf,baseMaps, currentMap}
+module.exports = {leaf,baseMaps, mapIcons, currentMap}
