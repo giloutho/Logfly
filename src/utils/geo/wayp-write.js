@@ -94,7 +94,8 @@ function writeOzi(arrWayp, filePath) {
 
 
 function writeCup(arrWayp, filePath) {
-      if (arrWayp.length > 0) {
+    let res
+    if (arrWayp.length > 0) {
         let cupText = ''
         // Line 1 : header
         cupText += 'name,code,country,lat,lon,elev,style,rwdir,rwlen,freq,desc\r\n'
@@ -110,24 +111,29 @@ function writeCup(arrWayp, filePath) {
             if (filePath === '') {
                 const exportResult = ipcRenderer.sendSync('save-wpt',cupText,'cup',filePath)
                 if (exportResult.indexOf('Error') !== -1) {
+                    res = 'error'
                     alert(exportResult)      
                 } else {
+                    res = exportResult
                     alert(i18n.gettext('Successful operation'))
                 }     
             } else if (filePath.indexOf('@') > -1) {
                 filePath = filePath.substring(1)
                 const exportResult = ipcRenderer.sendSync('save-wpt',cupText,'cup',filePath)
                 if (exportResult.indexOf('Error') !== -1) {
+                    res = 'error'
                     alert(exportResult)      
                 } else {
+                    res = exportResult
                     alert(i18n.gettext('Successful operation'))
                 }     
             }       
         } catch (error) {
+            res = 'error'
             log.error('Error in writeCup : '+error)   
-        }
-        
-      }
+        }        
+    }
+    return res
 }
 
 function writeCompe(arrWayp, filePath) {
@@ -142,7 +148,6 @@ function writeCompe(arrWayp, filePath) {
             const sCode = element.shortName
             const compLat = encodeCompLat(parseFloat(element.lat))
             const compLong = encodeCompLong(parseFloat(element.long))
-            console.log(element.alti+' -> '+parseFloat(element.alti))
             const sAlt = parseFloat(element.alti).toFixed(6)
             compeText+= 'W  '+sCode+' A '+compLat+' '+compLong+' 27-MAR-62 00:00:00 '+sAlt+' '+sName+'\r\n'
         }
@@ -164,10 +169,56 @@ function writeCompe(arrWayp, filePath) {
                 }     
             }
         } catch (error) {
-            log.error('Error in writeCompe : '+error) 
+            log.error('Error in writeDump : '+error) 
         }
         
     }
+}
+
+// Write waypoint in GPSDump format
+function writeDump(arrWayp, filePath) {
+    let res
+    if (arrWayp.length > 0) {
+        // Line 1 : header
+        let dumpText = '$FormatGEO\r\n'
+        for (let i = 0; i < arrWayp.length; i++) {            
+            const element = arrWayp[i]
+            const fLat = dmsh(arrWayp[i].lat, 'NS')
+            const fLong = dmsh(arrWayp[i].long,'EW')
+            const newCoord1 = `${element.shortName}    ${fLat.h} ${fLat.d.toString().padStart(2,'0')} ${fLat.m.toString().padStart(2,'0')} ${fLat.s.toFixed(2).padStart(5,'0')}`
+            const newCoord2 = `    ${fLong.h} ${fLong.d.toString().padStart(3,'0')} ${fLong.m.toString().padStart(2,'0')} ${fLong.s.toFixed(2).padStart(5,'0')}  ${element.alti.toString().padStart(4,' ')}`
+            dumpText += newCoord1+newCoord2
+            if (i < arrWayp.length-1) {
+                dumpText += '\r\n'
+            }            
+        }
+        try {            
+            if (filePath === '') {
+                const exportResult = ipcRenderer.sendSync('save-wpt',dumpText,'dump',filePath)
+                if (exportResult.indexOf('Error') !== -1) {
+                    res = 'error'
+                    alert(exportResult)      
+                } else {
+                    res = exportResult
+                    alert(i18n.gettext('Successful operation'))
+                }     
+            } else if (filePath.indexOf('@') > -1) {
+                filePath = filePath.substring(1)
+                const exportResult = ipcRenderer.sendSync('save-wpt',dumpText,'dump',filePath)
+                if (exportResult.indexOf('Error') !== -1) {
+                    res = 'error'
+                    alert(exportResult)      
+                } else {
+                    res = exportResult
+                    alert(i18n.gettext('Successful operation'))
+                }     
+            }       
+        } catch (error) {
+            res = 'error'
+            log.error('Error in writeCup : '+error)   
+        }        
+    }
+    return res
 }
 
 function writeGpx(arrWayp, filePath, withDesc) {
@@ -358,9 +409,22 @@ function encodeCupLong(degrees) {
     return cupLong   
 }
 
+function dmsh(coordinates, hs) {
+    let h = hs[0]
+    if (coordinates < 0) {
+      h = hs[1]
+      coordinates = -coordinates
+    }
+    const d = Math.floor(coordinates)
+    const m = Math.floor(coordinates * 60) % 60
+    const s = (3600 * coordinates) % 60
+
+    return { d, m, s, h }
+}
 
 module.exports.writeOzi = writeOzi
 module.exports.writeCup = writeCup
 module.exports.writeCompe = writeCompe
 module.exports.writeGpx = writeGpx
 module.exports.writeKml = writeKml
+module.exports.writeDump = writeDump
