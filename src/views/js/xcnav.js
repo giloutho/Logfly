@@ -44,6 +44,8 @@ let currLeague
 let markerPushIcon
 let newMarker
 let markerList = []
+let trackDisplay = false
+let thermalDisplay = false
 let opt_path = {
     color: 'blue',
     weight: 1.5,
@@ -55,6 +57,8 @@ iniForm()
 let locMeasure = new myMeasure()
 const scoreGroup = new L.LayerGroup()
 const markerGroup = new L.LayerGroup()
+const tracksGroup = new L.LayerGroup()
+const thermalGroup = new L.LayerGroup()
 const tooltip = L.DomUtil.get('tooltip')
 let calcScore = true
 displayEmptyMap()
@@ -83,6 +87,7 @@ function iniForm() {
     document.getElementById('mn-route').addEventListener('click', (event) => {callDisk()})
     document.getElementById('mn-wayp').innerHTML = i18n.gettext('Waypoints')
     document.getElementById('mn-track').innerHTML = i18n.gettext('Track')
+    document.getElementById('mn-track').addEventListener('click',(event) => {callTrack()})
     document.getElementById("lb-totdist").innerHTML = i18n.gettext('Total distance')+' : '                       
     document.getElementById("lb-duration").innerHTML = i18n.gettext('Duration')+' : '
     document.getElementById("lb-speed").innerHTML = i18n.gettext('Speed')+' (km/h)'
@@ -148,7 +153,6 @@ function defaultMap() {
     mapLong = defLong != undefined && defLong != '' ? defLong : 6.865  // Mont Blanc
     mapxc = L.map('mapid', {editable: true}).setView([mapLat, mapLong], 12)
 
-
     layerControl = new L.control.layers(baseMaps).addTo(mapxc)
     const defaultMap = store.get('map')
     setCurrentMap(defaultMap)
@@ -188,9 +192,6 @@ function defaultMap() {
     
     scoreGroup.addTo(mapxc)
     layerControl.addOverlay(scoreGroup, i18n.gettext('Score'))
-
-    markerGroup.addTo(mapxc)
-    layerControl.addOverlay(markerGroup, i18n.gettext('Waypoints'))
 
     mapxc.on('baselayerchange', function (e) {
       currentMap = tiles.currentMap(e.layer._url)
@@ -235,7 +236,12 @@ function defaultMap() {
 
     mapxc.on('editable:drawing:commit', (evt) => {
         if (evt.layer instanceof L.Marker) {
+            if (markerList.length < 1) {
+                markerGroup.addTo(mapxc)
+                layerControl.addOverlay(markerGroup, i18n.gettext('Waypoints'))
+            }
             markerList.push(newMarker)
+            console.log(newMarker)
             let markerid = markerList.length - 1
             let markerPopup = '<div class="btn-group-vertical">'
             markerPopup +=  "<button class='btn btn-danger btn-sm' onclick=\"deletepoint('" + markerid + "')\">Delete</button>"
@@ -260,15 +266,40 @@ const cancelDrawing = (event) => {
 	}
 }
 
-function deletepoint(markerid) {
-    mapxc.removeLayer(markerList[markerid])
+function old_deletepoint(markerid) {
     mapxc.closePopup()
+    markerGroup.removeLayer(markerList[markerid])
     for (let i=0; i<markerList.length; i++) {
+       // console.log(`markerList[${i}] ${markerList[i]}  markerid ${markerid}`)   
         if (markerList[i] == markerid) {
           markerList.splice(i, 1);
+         // console.log('splice -> markerList.length '+markerList.length)
           break;
         }
     }
+//    console.log('markerList.length '+markerList.length)
+    if (markerList.length < 1) {
+        console.log('length = 0')
+        mapxc.removeLayer(markerGroup)
+    }
+}
+
+function deletepoint(markerid) {
+    mapxc.closePopup()
+    markerGroup.removeLayer(markerList[markerid])
+    for (let i=0; i<markerList.length; i++) {
+       // console.log(`markerList[${i}] ${markerList[i]}  markerid ${markerid}`)   
+        if (i == markerid) {
+          markerList[i] = null
+         // console.log('splice -> markerList.length '+markerList.length)
+          break;
+        }
+    }
+// //    console.log('markerList.length '+markerList.length)
+//     if (markerList.length < 1) {
+//         console.log('length = 0')
+//         mapxc.removeLayer(markerGroup)
+//     }
 }
 
 function setCurrentMap(defaultMap) {
@@ -349,6 +380,9 @@ function displaySaveOptions(withMarkers) {
         if (withMarkers) {
             let arrMarker = []
             for (let i=0; i<markerList.length; i++) {
+                if (markerList[i] == null) {
+                    continue
+                }
                 let latlng = markerList[i].getLatLng()
                 let coord = {
                     lat : latlng.lat,
@@ -361,36 +395,6 @@ function displaySaveOptions(withMarkers) {
         ipcRenderer.send('display-xc-save', routeSet)    // process-main/modal-win/xcnav-save.js 
     }     
 }
-
-// function saveRoute(withMarkers) {
-//     let gpxTrack = gpxHeader()
-//     if (polyline) {
-//         let latlngs = polyline.getLatLngs()
-//         gpxTrack += '   <rte>\r\n'
-//         for (let i = 0; i < latlngs.length; i++) {
-//             let gpxtrkpt = '      <rtept lat="' + latlngs[i].lat.toFixed(6) + '" lon="' + latlngs[i].lng.toFixed(6) + '"></rtept>\r\n'
-//             gpxTrack += gpxtrkpt
-//         }
-//         gpxTrack += '   </rte>\r\n'
-//     } 
-//     if (withMarkers) {
-//         for (let i=0; i<markerList.length; i++) {
-//             let latlng = markerList[i].getLatLng()
-//             gpxTrack += '   <wpt lat="'+latlng.lat.toFixed(6) + '" lon="' + latlng.lng.toFixed(6) + '"></wpt>\r\n'
-//         }
-//     }
-//     gpxTrack += '</gpx>'
-//     try {
-//         const exportResult = ipcRenderer.sendSync('save-gpx',gpxTrack)
-//         if (exportResult.indexOf('Error') !== -1) {
-//             alert(exportResult)      
-//         } else {
-//             alert(i18n.gettext('Successful operation'))
-//         }        
-//     } catch (error) {
-//         alert(error)
-//     }
-// }
 
 function clearRoute(mode) {
     if (mode) {
@@ -424,8 +428,36 @@ function clearRoute(mode) {
     }
     if (markerList.length > 0) {       
         for (let i=0; i<markerList.length; i++) {
+            if (markerList[i] == null) {
+                continue
+            }   
             mapxc.removeLayer(markerList[i])
         }
+        markerList = []
+        layerControl.removeLayer(markerGroup)
+        mapxc.removeLayer(markerGroup)
+    }
+    if (trackDisplay) {
+        const arrtracks = tracksGroup.getLayers()
+        layerControl.removeLayer(tracksGroup)
+        if (arrtracks.length > 0) {
+            for (let i=0; i<arrtracks.length; i++) {
+                tracksGroup.removeLayer(arrtracks[i])
+            }   
+        }
+        layerControl.removeLayer(tracksGroup)
+        trackDisplay = false
+    }
+    if (thermalDisplay) {
+        const arrthermals = thermalGroup.getLayers()
+        layerControl.removeLayer(thermalGroup)
+        if (arrthermals.length > 0) {
+            for (let i=0; i<arrthermals.length; i++) {
+                thermalGroup.removeLayer(arrthermals[i])
+            }   
+        }
+        layerControl.removeLayer(thermalGroup)
+        thermalDisplay = false
     }
 }
 
@@ -442,11 +474,11 @@ function callDisk() {``
 //     clearRoute()
 //     displayRteDisk(selectedFile.fullPath)
 //   }
-// debugging
+    // debugging
     let gpxPath = '/Users/gil/Documents/Logfly/Routes/flyxc_kml.kml'
     gpxPath = '/Users/gil/Documents/Logfly/Routes/Export1.cup'
     gpxPath = '/Users/gil/Documents/Logfly/Routes/Export4.xctsk'
-    gpxPath = '/Users/gil/Documents/Logfly/Routes/Dump7.wpt'
+    gpxPath = '/Users/gil/Documents/Logfly/Routes/Exportnew1.gpx'
     displayRteDisk(gpxPath)
 }
 
@@ -462,6 +494,7 @@ function displayRteDisk(currFilePath) {
                     let latlngItem = L.latLng(item.lat, item.long)
                     latlngs.push(latlngItem)
                 }
+
             } else if (Array.isArray(resParsing.wayp)) {
                 if (resParsing.wayp.length > 0) {
                     // This is a route which has been recorded like a set of waypoints
@@ -495,46 +528,99 @@ function displayRteDisk(currFilePath) {
     }
 }
 
+function callTrack() {
+    const selectedFile = ipcRenderer.sendSync('open-file','')
+    if(selectedFile.fullPath != null) {
+      if (selectedFile.fileExt == 'IGC') {
+        displayIgc(selectedFile.fullPath)
+     // } //else if (selectedFile.fileExt == 'GPX') {
+      //  displayGpx(selectedFile.fullPath)
+      } else {
+        alert(i18n.gettext('Invalid Track'))
+      }
+    }  
+        // debugging
+    // let igcPath = '/Users/gil/Documents/Logfly/Routes/test.IGC'
+    // displayIgc(igcPath)
+  }
 
-// function readGpx() {
-//     let gpxPath = '/Users/gil/Documents/Logfly/Gpx/xcnav1.gpx'
-//   //  gpxPath = '/Users/gil/Documents/Logfly/Gpx/flyxcroute.gpx'
-// //    gpxPath = '/Users/gil/Documents/Logfly/Gpx/Parmelan_Roc.gpx'
-//    //  gpxPath = '/Users/gil/Documents/Logfly/Gpx/avecwp.gpx'
-//   //  gpxPath = '/Users/gil/Documents/Logfly/Gpx/Thermiques.gpx'
-//     let content = fs.readFileSync(gpxPath, 'utf8')
-//     if (content != null)  {    
-//         try {
-//             let resParsing = ipcRenderer.sendSync('gpx-parsing', content)  // process-main/gpx/gpx-parsing.js
-//             if (Array.isArray(resParsing.rte)) {
-//                 let latlngs = []
-//                 for (let i = 0; i < resParsing.rte.length; i++) {
-//                     const item = resParsing.rte[i]
-//                     let latlngItem = L.latLng(item.lat, item.long)
-//                     console.log(latlngItem)
-//                     latlngs.push(latlngItem)
-//                 }
-//                 polyline = L.polyline(latlngs).addTo(mapxc)
-//                 polyline.enableEdit()
-//                 mapxc.fitBounds(polyline.getBounds())
-//                 polyline.showMeasurements()
-//                 polyline.updateMeasurements()
-//                 displayFeatures()
-//             } else {
-//                 console.log("resParsing.rte is not an array");
-//             }
-//             if (Array.isArray(resParsing.wayp)) {
-//                 console.log(resParsing.wayp.length+' wayp')
-//                 loadMarkers(resParsing.wayp)
-//             } else {
-//                 console.log("resParsing.wayp is not an array");
-//             }
-//         } catch (error) {
-//             console.log(error)
-//         }
-//     }
-//     displaySaveOptions(true)
-// }
+function displayIgc(trackPath) {
+  const igcString = fs.readFileSync(trackPath, 'utf8')  
+  try {
+    track = ipcRenderer.sendSync('read-igc', igcString)  // process-main/igc/igc-read.js
+    if (track.fixes.length> 0) {
+        const anatrack = ipcRenderer.sendSync('ask-analyze', track.fixes)  // process-main/igc/igc-run-analyzer.js
+        displayThermals(track, anatrack.thermals)
+        let trackOptions = {
+            color: 'red',
+            weight: 2,
+            opacity: 0.85
+        }
+        let pilotName = 'Unknown'
+        if (track.info.pilot != undefined && track.info.pilot != null && track.info.pilot != '') {
+            pilotName = track.info.pilot
+        }
+        const geojsonLayer = L.geoJson(track.GeoJSON,{ style: trackOptions})
+        if (!trackDisplay) {
+            tracksGroup.addTo(mapxc)
+            layerControl.addOverlay(tracksGroup, i18n.gettext('Tracks'))
+            trackDisplay = true
+        }
+        tracksGroup.addLayer(geojsonLayer)
+        mapxc.fitBounds(geojsonLayer.getBounds())
+
+    } else {
+      alert(track.info.parsingError)
+    }        
+  } catch (error) {
+    alert('Error '+' : '+error)      
+  }   
+} 
+
+function displayThermals(track, anaThermals) {
+    let thGeoJson = { 
+        "type": "Feature", 
+        "properties": {
+            "name": "Thermals",
+            "desc": ""
+        },
+        "geometry": 
+            { "type": "MultiPoint", 
+            "coordinates": []
+            } 
+    }
+    let thCoord = []
+    for (let i = 0; i < anaThermals.length; i++) {
+        const thermalSegment = anaThermals[i]
+        for (let k = thermalSegment.idxStart; k < thermalSegment.idxEnd+1; k++) {
+            thCoord.push([track.fixes[k].longitude,track.fixes[k].latitude])
+        }
+    }
+    let thStyle = {
+        'color': "#FFFF00",
+        'weight': 2,
+        'opacity': 1
+    }  
+    let geojsonMarkerOptions = {
+        radius: 3,
+        fillColor: "#ff7800",
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    }
+    thGeoJson.geometry.coordinates = thCoord
+    let thLayerPoints =  L.geoJson(thGeoJson,{
+        style : thStyle,
+        pointToLayer: function(f, latlng) {return L.circleMarker(latlng,geojsonMarkerOptions)}
+    })
+    if (!thermalDisplay) {
+        thermalGroup.addTo(mapxc)
+        layerControl.addOverlay( thermalGroup, i18n.gettext('Thermals'))
+        thermalDisplay = true
+    }
+    thermalGroup.addLayer(thLayerPoints)
+}
 
 // from array of latlngs, use Leaflet's function distanceTo(lastpoint)
 async function displayFeatures() {
@@ -547,7 +633,6 @@ async function displayFeatures() {
         trkdistance += latlngs[i].distanceTo(lastpoint)
         lastpoint = latlngs[i]
         nbMarkers++
-      //  console.log(`lat ${i} : ${latlngs[i].lat} lon ${i} : ${latlngs[i].lng}`)
     }
     trkdistance = trkdistance / 1000
     legendFields = getLegend()
@@ -587,6 +672,10 @@ function loadMarkers(arrMarkers) {
         markerPopup += '</div>'
         newMarker.bindPopup(markerPopup)
         markerGroup.addLayer(newMarker)
+    }
+    if (markerList.length > 0) {
+        markerGroup.addTo(mapxc)
+        layerControl.addOverlay(markerGroup, i18n.gettext('Waypoints'))
     }
 }
 
