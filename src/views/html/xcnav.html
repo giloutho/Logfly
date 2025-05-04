@@ -30,28 +30,16 @@
             <nav class="navbar navbar-expand-lg  navbar-custom">
                 <div class="container-fluid">
                     <button type="button" id="toggleMenu" class="btn btn-outline-primary"">Menu On</button>
-                    <!--- le mx3 a été trouvé sur https://stackoverflow.com/questions/48068539/how-to-add-space-inbetween-nav-items-in-bootstrap heck connections-->
-                    <span class="navbar-text mx-3" id="db-state"></span>
+
                     <!--- https://www.w3schools.com/bootstrap4/bootstrap_navbar.asp pour comprendre les possibilités immenses de cette navbar -->
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="nav navbar-nav ml-auto">
-                            <li class="nav-item">
-                              <a class="nav-link" id="mn-route" href="#">Route</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link" id="mn-wayp" href="#">Balises</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link" id="mn-track" href="#">Trace</a>
-                            </li>              
-                            <!-- Dropdown -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarrend" data-toggle="dropdown">Scoring</a>
-                                <div class="dropdown-menu">
-                                <a class="dropdown-item" id="drop1" href="#">Drop 1</a>
-                                <a class="dropdown-item" id="drop2" href="#">Drop 2</a>
-                                </div>
-                            </li>                    
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+                        <ul class="nav navbar-nav">
+                            <li>
+                                <button type="button" id="bt-route" class="btn btn-outline-primary">Route</button> 
+                            </li>   
+                            <li>
+                                <button type="button" id="bt-track" class="btn btn-outline-primary" style="margin-left:10px">Trace</button> 
+                            </li>                
                         </ul>
                     </div>
                 </div>
