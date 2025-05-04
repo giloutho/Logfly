@@ -83,11 +83,10 @@ function iniForm() {
         var rendered = Mustache.render(template, menuOptions)
         document.getElementById('target-sidebar').innerHTML = rendered
     })
-    document.getElementById('mn-route').innerHTML = i18n.gettext('Route')
-    document.getElementById('mn-route').addEventListener('click', (event) => {callDisk()})
-    document.getElementById('mn-wayp').innerHTML = i18n.gettext('Waypoints')
-    document.getElementById('mn-track').innerHTML = i18n.gettext('Track')
-    document.getElementById('mn-track').addEventListener('click',(event) => {callTrack()})
+    document.getElementById('bt-route').innerHTML = i18n.gettext('Route')
+    document.getElementById('bt-route').addEventListener('click', (event) => {callDisk()})
+    document.getElementById('bt-track').innerHTML = i18n.gettext('Track')
+    document.getElementById('bt-track').addEventListener('click',(event) => {callTrack()})
     document.getElementById("lb-totdist").innerHTML = i18n.gettext('Total distance')+' : '                       
     document.getElementById("lb-duration").innerHTML = i18n.gettext('Duration')+' : '
     document.getElementById("lb-speed").innerHTML = i18n.gettext('Speed')+' (km/h)'
@@ -160,19 +159,19 @@ function defaultMap() {
     markerPushIcon = L.AwesomeMarkers.icon({icon: 'fa-bullseye', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'}) 
     // define an array of easy buttons to build a toolbar
     let arrButtons = [ 
-        L.easyButton( 'fa fa-expand fa-2x', function(control){
+        L.easyButton( '<img src="../../assets/img/Mesure.png">', function(control){
             locMeasure._toggleMeasure()}, i18n.gettext('Measure')),
-          L.easyButton( 'fa-plus-square-o fa-2x', function(control){
+          L.easyButton( '<img src="../../assets/img/center.png">', function(control){
             centerPolyline()}, i18n.gettext('Displays all map segments')),
-          L.easyButton( 'fa fa-line-chart fa-2x', function(control){
+          L.easyButton( '<img src="../../assets/img/path.png">', function(control){
             polyline = mapxc.editTools.startPolyline()
           }, i18n.gettext('Draw a route')),
           L.easyButton( 'fa fa-map-marker fa-2x', function(control){
             newMarker = mapxc.editTools.startMarker(null, {icon: markerPushIcon})}, i18n.gettext('Create a new marker')),          
-          L.easyButton( 'fa-trash fa-2x', function(control){
+          L.easyButton( '<img src="../../assets/img/trash.png">', function(control){
             clearRoute(true)
           }, i18n.gettext('Remove map segments')),
-          L.easyButton( 'fa-save fa-2x', function(control){
+          L.easyButton( '<img src="../../assets/img/save_bw.png">', function(control){
             displaySaveOptions(true)
            // saveRoute(true)
           }, i18n.gettext('Save route'))
@@ -236,6 +235,7 @@ function defaultMap() {
 
     mapxc.on('editable:drawing:commit', (evt) => {
         if (evt.layer instanceof L.Marker) {
+            console.log(`markerList.length = ${markerList.length}`)
             if (markerList.length < 1) {
                 markerGroup.addTo(mapxc)
                 layerControl.addOverlay(markerGroup, i18n.gettext('Waypoints'))
@@ -295,11 +295,6 @@ function deletepoint(markerid) {
           break;
         }
     }
-// //    console.log('markerList.length '+markerList.length)
-//     if (markerList.length < 1) {
-//         console.log('length = 0')
-//         mapxc.removeLayer(markerGroup)
-//     }
 }
 
 function setCurrentMap(defaultMap) {
@@ -431,7 +426,7 @@ function clearRoute(mode) {
             if (markerList[i] == null) {
                 continue
             }   
-            mapxc.removeLayer(markerList[i])
+            markerGroup.removeLayer(markerList[i])
         }
         markerList = []
         layerControl.removeLayer(markerGroup)
@@ -469,17 +464,11 @@ function loadRoute() {
 }
 
 function callDisk() {``
-//   const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathWork'))
-//   if(selectedFile.fullPath != null) {
-//     clearRoute()
-//     displayRteDisk(selectedFile.fullPath)
-//   }
-    // debugging
-    let gpxPath = '/Users/gil/Documents/Logfly/Routes/flyxc_kml.kml'
-    gpxPath = '/Users/gil/Documents/Logfly/Routes/Export1.cup'
-    gpxPath = '/Users/gil/Documents/Logfly/Routes/Export4.xctsk'
-    gpxPath = '/Users/gil/Documents/Logfly/Routes/Exportnew1.gpx'
-    displayRteDisk(gpxPath)
+  const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathWork'))
+  if(selectedFile.fullPath != null) {
+    clearRoute()
+    displayRteDisk(selectedFile.fullPath)
+  }
 }
 
 function displayRteDisk(currFilePath) {
@@ -532,23 +521,52 @@ function callTrack() {
     const selectedFile = ipcRenderer.sendSync('open-file','')
     if(selectedFile.fullPath != null) {
       if (selectedFile.fileExt == 'IGC') {
-        displayIgc(selectedFile.fullPath)
-     // } //else if (selectedFile.fileExt == 'GPX') {
-      //  displayGpx(selectedFile.fullPath)
+        callIgc(selectedFile.fullPath)
+      } else if (selectedFile.fileExt == 'GPX') {
+        callGpx(selectedFile.fullPath)
       } else {
         alert(i18n.gettext('Invalid Track'))
       }
     }  
-        // debugging
-    // let igcPath = '/Users/gil/Documents/Logfly/Routes/test.IGC'
-    // displayIgc(igcPath)
   }
 
-function displayIgc(trackPath) {
+function callIgc(trackPath) {
   const igcString = fs.readFileSync(trackPath, 'utf8')  
   try {
     track = ipcRenderer.sendSync('read-igc', igcString)  // process-main/igc/igc-read.js
     if (track.fixes.length> 0) {
+        displayTrack(track)
+    } else {
+      alert(track.info.parsingError)
+    }        
+  } catch (error) {
+    alert('Error '+' : '+error)      
+  }   
+} 
+
+function callGpx(trackPath) {
+    const gpxString = fs.readFileSync(trackPath, 'utf8') 
+    try {
+    // gpx-read.js calls first gpx-to-igc
+    // if gpx-to-igc returns a valid igc string, gps-read calls IGCDecoder
+    // and finally returns a valid track 
+    track = ipcRenderer.sendSync('read-gpx', gpxString)  // process-main/gpx/gpx-read.js
+    if (track.fixes != undefined && track.fixes.length> 0) {
+        displayTrack(track)
+    } else {
+        if (track.info != undefined) {
+            alert(track.info.parsingError)
+        } else {
+            alert('Track returned undefined')
+        }
+    }        
+    } catch (error) {
+        alert('Error '+' : '+error)      
+    }  
+}
+
+function displayTrack(track) {
+    try {
         const anatrack = ipcRenderer.sendSync('ask-analyze', track.fixes)  // process-main/igc/igc-run-analyzer.js
         displayThermals(track, anatrack.thermals)
         let trackOptions = {
@@ -568,14 +586,10 @@ function displayIgc(trackPath) {
         }
         tracksGroup.addLayer(geojsonLayer)
         mapxc.fitBounds(geojsonLayer.getBounds())
-
-    } else {
-      alert(track.info.parsingError)
-    }        
-  } catch (error) {
-    alert('Error '+' : '+error)      
-  }   
-} 
+    } catch (error) {
+      alert('Error '+' : '+error)      
+    }   
+  } 
 
 function displayThermals(track, anaThermals) {
     let thGeoJson = { 
