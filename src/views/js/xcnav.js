@@ -159,10 +159,6 @@ function defaultMap() {
     markerPushIcon = L.AwesomeMarkers.icon({icon: 'fa-bullseye', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'}) 
     // define an array of easy buttons to build a toolbar
     let arrButtons = [ 
-        L.easyButton( '<img src="../../assets/img/Mesure.png">', function(control){
-            locMeasure._toggleMeasure()}, i18n.gettext('Measure')),
-          L.easyButton( '<img src="../../assets/img/center.png">', function(control){
-            centerPolyline()}, i18n.gettext('Displays all map segments')),
           L.easyButton( '<img src="../../assets/img/path.png">', function(control){
             polyline = mapxc.editTools.startPolyline()
           }, i18n.gettext('Draw a route')),
@@ -174,7 +170,11 @@ function defaultMap() {
           L.easyButton( '<img src="../../assets/img/save_bw.png">', function(control){
             displaySaveOptions(true)
            // saveRoute(true)
-          }, i18n.gettext('Save route'))
+          }, i18n.gettext('Save route')),
+          L.easyButton( '<img src="../../assets/img/Mesure.png">', function(control){
+            locMeasure._toggleMeasure()}, i18n.gettext('Measure')),
+          L.easyButton( '<img src="../../assets/img/center.png">', function(control){
+            centerPolyline()}, i18n.gettext('Displays all map segments'))
     ]
     L.easyBar(arrButtons).addTo(mapxc)
 
