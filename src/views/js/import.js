@@ -221,9 +221,9 @@ function listSerialPorts() {
     ipcRenderer.invoke('ports-list').then((result) => {
         if (result instanceof Array) { 
             msg = result.length+' '+i18n.gettext('ports detected')+'<br>'
-            msg += '<table><tr><th>Serial Number</th><th>Path</th><th>Manufacturer</th></tr>'
+            msg += '<table><tr><th>Serial Number</th><th>Path</th><th>Manufacturer</th><th>Product Id</th><th>Vendor Id</th></tr>'
             for (let i = 0; i < result.length; i++) {
-                let manuF = ''
+                let manuF = 'unknown'
                 if (typeof result[i].manufacturer != 'undefined') {
                     if (result[i].manufacturer.search(regexProlif) >= 0) {
                         manuF = result[i].manufacturer+' (Flytec)'
@@ -233,7 +233,7 @@ function listSerialPorts() {
                         manuF = result[i].manufacturer+' (Flymaster Old)'     
                     }
                 }               
-                msg += ' <tr><td>'+result[i].serialNumber+'</td><td>'+result[i].path+'</td><td>'+manuF+'</td></tr>'                             
+                msg += ' <tr><td>'+result[i].serialNumber+'</td><td>'+result[i].path+'</td><td>'+manuF+'</td><td>'+result[i].productId+'</td><td>'+result[i].vendorId+'</td></tr>'                             
             }         
             msg += '</table>'
         } else {
@@ -359,7 +359,7 @@ function displayDiskResult(searchIgc) {
   } 
 }
 
-function serialGpsCall(gpsModel) {
+function serialGpsCall_Old(gpsModel) {
   let gpsCom = []
   let msg
   clearTable()
@@ -422,6 +422,48 @@ function serialGpsCall(gpsModel) {
             log.info(msg+' FTDI manufacturer detected on '+result[i].path+' (Flymaster Old)')            
           }
         }
+      }
+    } else {
+      log.error(msg+' No serial port found')
+    }
+    if (gpsCom.length > 0) {      
+      callFlightList(gpsCom, gpsModel)  
+    } else {
+      displayStatus(i18n.gettext('No usable serial port detected',false))
+    }
+  })
+}
+
+function serialGpsCall(gpsModel) {
+  let gpsCom = []
+  let msg
+  clearTable()
+  displayWaiting('many')
+
+  ipcRenderer.invoke('ports-list').then((result) => {
+    if (result instanceof Array) { 
+      switch (gpsModel) {
+        case 'FlymasterSD':
+          msg = '[Import Flymaster SD]  '  
+          break;      
+        case 'FlymasterOld':
+          msg = '[Import Flymaster Old]  '  
+          break;             
+        case 'Flytec20':
+          msg = '[Import Flytec/Brau 6020-30 ]  '  
+          break;  
+        case 'Flytec15':
+          msg = '[Import Flytec 6015/Brau IQ]  '  
+          break;             
+      }      
+      log.info(msg+result.length+' ports detected')
+      for (let i = 0; i < result.length; i++) {       
+        gpsReq =  {
+          'chip': result[i].manufacturer,
+          'model': gpsModel,
+          'port': result[i].path
+        }          
+        gpsCom.push(gpsReq)             
       }
     } else {
       log.error(msg+' No serial port found')
