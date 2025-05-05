@@ -50,8 +50,7 @@ const createWindow = () => {
     store.set('sitetablelines',12)
   }
 
-  
-  /*
+/* 
   //  Code with splahscreen
 
  const windowOptions = {
@@ -79,7 +78,7 @@ const createWindow = () => {
   // end of code with splahscreen
 */
 
- 
+
   // Code without splashscreen
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -161,12 +160,8 @@ const createWindow = () => {
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
   if (startOk) { 
-    // inversion des 
-    checkAndStart()
-    // Redondant la page est lancée par checkAndStart
-  //  openWindow('logbook')
-   // openWindow('equip')
-  
+   // checkAndStart()  
+   openWindow('import')
   } else {
     openWindow('problem')
   }
@@ -265,7 +260,7 @@ function openWindow(pageName) {
         break
     case "wayp":
       mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'))
-      //mainWindow.webContents.openDevTools()
+      mainWindow.webContents.openDevTools()
       break 
     case "airspaces":
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))
@@ -282,6 +277,10 @@ function openWindow(pageName) {
       mainWindow.loadFile(path.join(__dirname, './views/html/utils.html'))
       //mainWindow.webContents.openDevTools()  
       break         
+    case "xc":
+      mainWindow.loadFile(path.join(__dirname, './views/html/xcnav.html'))
+     // mainWindow.webContents.openDevTools()  
+      break     
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))
           break                     
@@ -303,9 +302,7 @@ async function checkAndStart() {
   if (checkLogfly) {
     const infosOk = await checkInfos()
     if (infosOk) {
-      console.log('infos OK '+releaseInfo.version)
       const currVersion = app.getVersion() 
-      console.log('currVersion '+currVersion+' json.version '+releaseInfo.version)
       if (releaseInfo.version > currVersion || releaseInfo.message !== undefined )  {
           openWindow('infos')
       } else {
@@ -316,7 +313,7 @@ async function checkAndStart() {
     }    
   } else {
     openWindow('logbook')
-  }
+ }
 }
 
 async function checkRequest() { 
