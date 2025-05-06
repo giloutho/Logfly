@@ -19,7 +19,8 @@ const statusContent = document.getElementById("status")
 // waiting template 
 const waitTpl = document.getElementById('wait-template').innerHTML
 // buttons definition
-const btnDisk = document.getElementById('imp-disk')
+const btnDskTrack = document.getElementById('imp-dsk-track')
+const btnDskFolder = document.getElementById('imp-dsk-folder')
 const btnFlymSD = document.getElementById('imp-gps-flysd')
 const btnFlymOld = document.getElementById('imp-gps-flyold')
 const btnFlytec20 = document.getElementById('imp-gps-fly20')
@@ -103,6 +104,8 @@ function iniForm() {
     document.getElementById('imp-gps').innerHTML = i18n.gettext('GPS import')
     document.getElementById('imp-disk').innerHTML = i18n.gettext('Disk import')
     document.getElementById('imp-manu').innerHTML = i18n.gettext('Flight without GPS track')
+    btnDskTrack.innerHTML = i18n.gettext('Track')
+    btnDskFolder.innerHTML = i18n.gettext('Folder')
     btnListUsb.innerHTML = i18n.gettext('Usb list')
     btnListUsb.addEventListener('click',(event) => {listUsb()})  
     btnListSerial.innerHTML = i18n.gettext('Serial ports')
@@ -125,7 +128,8 @@ function iniForm() {
     btnRever.addEventListener('click',(event) => {callUsbGps('reverlog')})
     btnSyride.addEventListener('click', (event) => {callSyride()})
     btnSyrUsb.addEventListener('click',(event) => {callUsbGps('syrideusb')})
-    btnDisk.addEventListener('click', (event) => {callDisk()})
+    btnDskTrack.addEventListener('click', (event) => {callTrack()})
+    btnDskFolder.addEventListener('click', (event) => {callFolder()})
     btnManu.addEventListener('click', (event) => {callManu()})
 }
 
@@ -281,6 +285,8 @@ function callSyride() {
   if (syridePath.parapentepath != null) {
    currStatusContent = '<strong>Syride : </strong>' 
    simpleWaiting()
+   // We don't want to limit the number of files
+   store.set('limit-disk',99)
    ipcRenderer.send('tracks-igc', syridePath.parapentepath)   
   } else {
     clearTable()
@@ -290,12 +296,25 @@ function callSyride() {
 }
 
 
-function callDisk() {
+function callFolder() {
+  const selectedPath = ipcRenderer.sendSync('open-directory',store.get('pathimport'))
+  if (selectedPath != null) {
+    currStatusContent = selectedPath+' : '
+    simpleWaiting()
+    // We don't want to limit the number of files
+    store.set('limit-disk',99)
+    ipcRenderer.send('tracks-disk', selectedPath) 
+  }
+}
+
+function callTrack() {
   const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathimport'))
   if(selectedFile.fullPath != null) {
     let selectedPath = selectedFile.directoryName
     currStatusContent = selectedPath+' : '
     simpleWaiting()
+    // We don't want to limit the number of files
+    store.set('limit-disk',99)
     ipcRenderer.send('tracks-disk', selectedPath)     
   }
 }
@@ -326,15 +345,28 @@ function callManu() {
 
 function newCallUsbImport(selectedPath, statusContent) {
   currStatusContent = statusContent
-  ipcRenderer.send('tracks-disk', selectedPath)   
+  const limitUsb = store.get('gps-usb')
+  if(limitUsb == undefined || limitUsb == '' || limitUsb == null ) {
+    limitUsb = '12'
+    store.set('gps-usb',12)
+  }
+  store.set('limit-disk',limitUsb)
+  ipcRenderer.send('tracks-disk', selectedPath)   // // process-main/gps-tracks/import-disk.js
 }
 
 function displayDiskResult(searchIgc) {
   clearTable()
+  let usbLimit = store.get('gps-usb')
+  if(usbLimit == undefined || usbLimit == '' || usbLimit == null ) {usbLimit = '6'}
   let statusReport = currStatusContent
   if (searchIgc.igcForImport.length > 0) {
-    statusReport += searchIgc.igcForImport.length+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;/&nbsp;'
-    statusReport += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('igc files found')+'&nbsp;&nbsp;&nbsp;'
+    statusReport += searchIgc.igcForImport.length+'&nbsp;/&nbsp;'
+    statusReport += searchIgc.totalIGC+'&nbsp;'+i18n.gettext('tracks decoded')+'&nbsp;&nbsp;'
+    if (usbLimit < 99) {
+    statusReport += '['+i18n.gettext('USB limit')+':&nbsp;'+usbLimit+'&nbsp;'+i18n.gettext('monthes')+']&nbsp;&nbsp;&nbsp;'
+    } else {
+      statusReport += '&nbsp;'
+    }
     statusReport += '<strong>[&nbsp;'+i18n.gettext('Tracks to be added')+'&nbsp;:&nbsp;'
     currStatusContent = statusReport
     statusReport += searchIgc.totalInsert+'&nbsp;]</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
