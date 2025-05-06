@@ -4,24 +4,30 @@ const path = require('path')
 const {globSync} = require('glob')
 const fs = require('fs')
 const IGCParser = require('igc-parser')   // https://github.com/Turbo87/igc-parser
+const Store = require('electron-store')
+const store = new Store()
 const offset = require('../../utils/geo/offset-utc.js')
 const dblog = require('../../utils/db/db-search.js')
 const gpxIgc = require('../gpx/gpx-to-igc.js')
+const { file } = require('fs-jetpack')
 
 ipcMain.on('tracks-disk', (event,importPath) => {
     scanFolders(event,importPath)
 })
 
+// Syride case
 ipcMain.on('tracks-igc', (event,importPath) => {
   scanOnlyIgc(event,importPath)
 })
 
 function scanFolders(event,importPath) {  
     log.info('[scanFolders] for '+importPath)
-    const searchIgc = runSearchIgc(importPath)
+    let usbLimit = store.get('limit-disk') 
+    if(usbLimit == undefined || usbLimit == '' || usbLimit == null ) {usbLimit = '99'}
+    const searchIgc = runSearchIgc(importPath,usbLimit)
     searchIgc.totalIGC =searchIgc.igcForImport.length
     log.info('Igc : '+searchIgc.igcForImport.length)
-    const searchGpx = runSearchGpx(importPath)
+    const searchGpx = runSearchGpx(importPath, usbLimit)
     log.info('Gpx : '+searchGpx.igcForImport.length)
     if (searchGpx.igcForImport.length > 0) {
         for (let index = 0; index < searchGpx.igcForImport.length; index++) {
@@ -57,7 +63,9 @@ function scanFolders(event,importPath) {
 
 function scanOnlyIgc(event,importPath) {  
   log.info('[scanOnlyIgc] for '+importPath)
-  const searchIgc = runSearchIgc(importPath)
+  let usbLimit = store.get('limit-disk')
+  if(usbLimit == undefined || usbLimit == '' || usbLimit == null ) {usbLimit = '99'}
+  const searchIgc = runSearchIgc(importPath,usbLimit)
   searchIgc.totalIGC =searchIgc.igcForImport.length
   log.info('Igc : '+searchIgc.igcForImport.length)
   if (searchIgc.igcForImport.length > 0) {
@@ -78,7 +86,7 @@ function scanOnlyIgc(event,importPath) {
   event.sender.send('tracks-result', searchIgc)  
 }
 
-function runSearchIgc(importPath) {
+function runSearchIgc(importPath, limitMonths) {
   let searchResult = {
     errReport: '',
     totalIGC : 0,
@@ -92,17 +100,21 @@ function runSearchIgc(importPath) {
   const arrayIGC = globSync(path.join(importPath,'**/*.igc'),{nocase : true,windowsPathsNoEscape:true})
   if (arrayIGC != null && arrayIGC instanceof Array) {
     log.info('[runSearchTracks] in '+importPath+' returns '+arrayIGC.length+' files')
-    for (let index = 0; index < arrayIGC.length; index++) {   
-      let igcData = fs.readFileSync(arrayIGC[index], 'utf8')      
+
+    const recentFiles = filterRecentFiles(arrayIGC, limitMonths)
+    for (let index = 0; index < recentFiles.length; index++) {   
+
+      let igcData = fs.readFileSync(recentFiles[index], 'utf8')      
       try {
         let flightData = IGCParser.parse(igcData, { lenient: true })  
-        checkedIgc = new validIGC(arrayIGC[index],flightData, igcData)
+        checkedIgc = new validIGC(recentFiles[index],flightData, igcData)
         if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
       } catch (error) {
-        log.warn('   [IGC] decoding error on '+arrayIGC[index]+' -> '+error)
-        searchResult.igcBad.push(arrayIGC[index])
+        log.warn('   [IGC] decoding error on '+recentFiles[index]+' -> '+error)
+        searchResult.igcBad.push(recentFiles[index])
       }          
-    }      
+    } 
+    log.info('[runSearchTracks] after filtering returns : '+searchResult.igcForImport.length)     
   } else {
     log.error('[runSearchTracks] no files returned from '+importPath)
     searchResult.errReport = errormsg 
@@ -112,7 +124,7 @@ function runSearchIgc(importPath) {
 }
 
 // The principle is simple : the GPX is read and immediately encoded in IGC
-function runSearchGpx(importPath,_callback) {
+function runSearchGpx(importPath, limitMonths) {
     let searchResult = {
       errReport: '',
       totalIGC : 0,
@@ -124,18 +136,20 @@ function runSearchGpx(importPath,_callback) {
     // const  arrayMinGPX = glob.sync(path.join(importPath, '**/*.gpx'))
     // const arrayGPX = [...arrayUpGPX, ...arrayMinGPX]
     if (arrayGPX != null && arrayGPX instanceof Array) {
-      log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files')
-      for (let index = 0; index < arrayGPX.length; index++) {   
-        const gpxString = fs.readFileSync(arrayGPX[index], 'utf8')
+      log.info('[runSearchGpx] getDirectories returns '+arrayGPX.length+' files limite : '+limitMonths)
+     // let limitMonthes = 99
+      const recentFiles = filterRecentFiles(arrayGPX, limitMonths)
+      for (let index = 0; index < recentFiles.length; index++) {   
+        const gpxString = fs.readFileSync(recentFiles[index], 'utf8')
         const newIgc = gpxIgc.encodeIGC(gpxString, false) 
         const igcData = newIgc.igcString
         try {
           let flightData = IGCParser.parse(igcData, { lenient: true })  
-          checkedIgc = new validIGC(arrayGPX[index],flightData, igcData)
+          checkedIgc = new validIGC(recentFiles[index],flightData, igcData)
           if (checkedIgc.validtrack) searchResult.igcForImport.push(checkedIgc)
         } catch (error) {
-          log.warn('   [IGC] decoding error on '+arrayGPX[index]+' -> '+error)
-          searchResult.igcBad.push(arrayGPX[index])
+          log.warn('   [IGC] decoding error on '+recentFiles[index]+' -> '+error)
+          searchResult.igcBad.push(recentFiles[index])
         }          
       }      
     } else {
@@ -187,4 +201,23 @@ function validIGC(path, flightData, igcData) {
     this.errors = flightData.errors  // igc-parser returns an array
     this.validtrack = false
   }
+}
+
+function filterRecentFiles(files, months) {
+  let recentFiles
+  if (months == 99) {
+      // Si months est égal à 99, copier tous les fichiers sans filtrage
+      recentFiles = [...files]
+      console.log('recentFiles à 99 : '+recentFiles.length)
+  } else {
+      const dateThreshold = new Date()
+      dateThreshold.setMonth(dateThreshold.getMonth() - months) 
+
+      recentFiles = files.filter(selectedFile => {
+          const fileDate = fs.statSync(selectedFile).birthtime // Date de création du fichier
+          return fileDate >= dateThreshold // Vérifie si le fichier a été créé dans les "months" derniers mois
+      })
+  }
+
+  return recentFiles // Retourne les fichiers récents pour un traitement ultérieur si nécessaire
 }
