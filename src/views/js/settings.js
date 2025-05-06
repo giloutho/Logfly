@@ -271,6 +271,7 @@ function iniPilot() {
       store.set('pilotid',document.getElementById('tx-login').value)
       store.set('pilotpass',document.getElementById('tx-pass').value)
       store.set('gps',selectGps.value)
+      store.set ('gps-usb',document.getElementById('tx-gps-usb').value)
       store.set('gpsnewflights',document.getElementById('check-gps-limit').checked)
       store.set('league',selectLeague.value)
       alert(i18n.gettext('Saved changes'))
@@ -638,6 +639,9 @@ function iniPilotSettings() {
   let selectedGPS = store.get('gps')
   if (selectedGPS == '' || selectedGPS == null) selectedGPS = 'none'
   selectGps.value = selectedGPS
+  let usbLimit = store.get('gps-usb')
+  if(usbLimit == undefined || usbLimit == '' || usbLimit == null ) {usbLimit = '6'}
+  document.getElementById('tx-gps-usb').value = usbLimit
   if (store.get('gpsnewflights'))
     document.getElementById('check-gps-limit').checked = true
   else
@@ -755,6 +759,7 @@ function translateLabels() {
   document.getElementById('lg-gl-check').innerHTML = i18n.gettext('Priority on IGC field')
   document.getElementById('lg-glider').innerHTML = i18n.gettext('Glider')
   document.getElementById('lg-currgps').innerHTML = i18n.gettext('Usual GPS')
+  document.getElementById('lg-gps-usb').innerHTML = i18n.gettext('USB limit')
   document.getElementById('lg-gps-limit').innerHTML = i18n.gettext('Only display new flights')
   document.getElementById('lg-pilotmail').innerHTML = i18n.gettext('Pilot mail')
   document.getElementById('lg-league').innerHTML = i18n.gettext('League')
