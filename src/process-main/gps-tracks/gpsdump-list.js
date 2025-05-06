@@ -16,22 +16,6 @@ ipcMain.on('flightlist', (event, gpsCom) => {
   event.sender.send('gpsdump-flist', flightList)
 })
 
-// function openWindow(event,gpsCom) {
-//   const modalPath = path.join('file://', __dirname, '../../views/html/waiting2.html')
-//   let win = new BrowserWindow({ 
-//     width: 300,
-//     height: 300,
-//     frame: false 
-//   })
-//   win.loadURL(modalPath)
-//   win.webContents.on('did-finish-load', function() {
-//     win.show()
-//     readOnPorts(gpsCom)
-//     event.sender.send('gpsdump-flist', flightList)
-//     win.close()
-//   })
-// }
-
 function readOnPorts(gpsCom) {
   /**
    *      GpsCom is an array of
@@ -41,6 +25,8 @@ function readOnPorts(gpsCom) {
    *          'port': result[i].path
    *        }            
   */  
+  // Since version 6.08, we systematically query all ports
+  // manufacturer is not always present (especially on Windows)
   try {
     for (let i = 0; i < gpsCom.length; i++) {
       flightList = {
@@ -53,7 +39,7 @@ function readOnPorts(gpsCom) {
         otherlines:[]
       }       
       askFlightList(gpsCom[i])
-      if (flightList.error === false) {
+      if (flightList.flights.length > 0 ) {
         break
       }    
     }    
@@ -82,7 +68,6 @@ function askFlightList(gpsModel) {
   switch (modelGPS) {
     case 'FlymasterSD':
       paramGPS = gpsDumpParams[specOS].flym      
-      console.log(paramGPS)       
       break      
     case 'FlymasterOld':
       paramGPS = gpsDumpParams[specOS].flymold          
@@ -125,7 +110,6 @@ function askFlightList(gpsModel) {
           break            
         case 'mac64':
             paramPort = gpsModel.port.replace('/dev/tty','-cu')
-            console.log(paramPort)
             // in terminal :  ./GpsDumpMac64_9 -gyn -cu.usbmodem0000001 -ltempo.txt -f0  
             log.info(path.basename(gpsDumpPath)+' '+paramGPS+' '+paramPort+' '+paramFile+' '+paramList)
             data = execFileSync(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
@@ -151,7 +135,6 @@ function askFlightList(gpsModel) {
             const rawData = spawn(gpsDumpPath, [paramGPS,paramPort,paramFile,paramList])
             // voir https://dzone.com/articles/understanding-execfile-spawn-exec-and-fork-in-node
             data = rawData.stdout.toString()
-            console.log('data : '+data)
             break
       }
     } catch (err) {
@@ -232,11 +215,6 @@ function flightlistFlymaster(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
       flightList.model = gpsModel
     }
     let gpsdumpOrder = gpsdumpGPS+','+gpsdumpPort+','+typeGPS
-    console.log('flightlistFlymaster '+gpsdumpOrder)
-    for (let index = 0; index < lines.length; index++) {
-      console.log(lines[index])
-      
-    }
     if (lines.length > 0) {
       switch (specOS) {
         case 'win':
@@ -290,9 +268,7 @@ function flightlistFlytec(gpsdumpOutput,gpsModel,gpsdumpGPS,gpsdumpPort) {
       // on a enlevé le point virgule de départ pour essai concluant sous Linux
       let regexDateHours = /([^;]*);([^;]*);([^;]*);([^;]*);/
       for (let i = 0; i < lines.length; i++) {
-        console.log(i+' '+lines[i])
         if (lines[i].match(regexDateHours)) {
-          //console.log(i+' '+lines[i])
           let flDate = regexDateHours.exec(lines[i])
           let flight = {}
           // If a flight is "new", this means that it must be added to the logbook
