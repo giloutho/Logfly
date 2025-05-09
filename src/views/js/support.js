@@ -279,7 +279,7 @@ function checkEmail() {
         return (true)
       }
       $('#c-email').val('').css( "border-color", "red" )
-      alert(i18n.gettext('Invalid email address!')) 
+      alert(i18n.gettext('Invalid email address format')) 
       return (false)
    }
 }
@@ -303,7 +303,7 @@ async function sendMail() {
       const resMail = await mailing.sendByGmail(mailName, mailEmail, mailMessage,'Support')    
       // Vérification du résultat
       if (resMail && resMail.messageId) {
-          alert(i18n.gettext('Email sent successfully!'))
+          alert(i18n.gettext('Email sent successfully'))
       } else {
           alert(i18n.gettext('Failed to send email'))
       }

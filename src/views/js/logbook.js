@@ -422,7 +422,7 @@ function tableTagFiltered(tagVal) {
       }
     } else {
       const tagId = 'tag'+tagVal
-      const msg = i18n.gettext('No flights tagged with ')+'"'+store.get(tagId)+'"'
+      const msg = i18n.gettext('No flights tagged with')+' "'+store.get(tagId)+'"'
       alert(msg)
     }
   }

@@ -114,7 +114,7 @@ function askFolderCopy() {
     if (selectedPath != null) {
         clearStatus()
         $('#div_text').addClass('d-none')
-        const msg1 = i18n.gettext('Copy the current logbook to ')+selectedPath
+        const msg1 = i18n.gettext('Copy the current logbook to')+' '+selectedPath
         const mgs2 = i18n.gettext('Copy')
         let msg = msg1+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-info" style="margin-bottom: 10px" onclick="copyLogbook(\'' +selectedPath+'\')" id="btn-export">'
         msg += mgs2+'</button>'

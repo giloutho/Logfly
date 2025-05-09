@@ -245,11 +245,11 @@ function iniForm() {
   selectSendToGps.appendChild(elemOption)
   let sky2Option = document.createElement("option")
   sky2Option.value = 'sky2'
-  sky2Option.innerHTML = i18n.gettext('Send to Skytraax 2')
+  sky2Option.innerHTML = i18n.gettext('Send to Skytraxx 2')
   selectSendToGps.appendChild(sky2Option)
   let sky3Option = document.createElement("option")
   sky3Option.value = 'sky3'
-  sky3Option.innerHTML = i18n.gettext('Send to Skytraax 3/4')
+  sky3Option.innerHTML = i18n.gettext('Send to Skytraxx 3/4')
   selectSendToGps.appendChild(sky3Option)
   let cpilOption = document.createElement("option")
   cpilOption.value = 'cpilot'

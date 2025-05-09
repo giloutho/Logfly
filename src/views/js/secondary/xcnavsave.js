@@ -329,7 +329,7 @@ async function sendEmail(filePath) {
 
         // Vérification du résultat
         if (resMail && resMail.messageId) {
-            alert(i18n.gettext('Email sent successfully!'))
+            alert(i18n.gettext('Email sent successfully'))
         } else {
             alert(i18n.gettext('Failed to send email'))
         }

@@ -139,7 +139,7 @@ function infoStatus() {
         let countRec = stmt.get()
         let contentStatus = '<form class="form-inline">'
         contentStatus += '<span class="badge badge-dark">'+i18n.gettext('Equipment')+'</span>'
-        contentStatus += '<span style="margin-left: 10px;">'+i18n.gettext('You can record all operations ')+' : '
+        contentStatus += '<span style="margin-left: 10px;">'+i18n.gettext('You can record all operations')+' : '
         contentStatus += i18n.gettext('purchase')+', '
         contentStatus += i18n.gettext('sale')+', '
         contentStatus += i18n.gettext('overhaul')+', '
