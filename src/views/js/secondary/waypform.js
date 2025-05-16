@@ -48,6 +48,7 @@ ipcRenderer.on('current-wayp', (event, currWayp) => {
         txAlt.value = editWayp.alti
     }   
     currentMap = editWayp.currMap
+    console.log({currentMap})
     defaultZoom = editWayp.zoom
     txLongName.value = editWayp.longName
     txShortName.value = editWayp.shortName
@@ -275,14 +276,17 @@ function displayMap() {
         case 'ign':
           baseMaps.IGN.addTo(mapPm)  
           break      
+        case 'sat':
+            baseMaps.Satellite.addTo(mapPm)
+            break             
         case 'osm':
           baseMaps.OSM.addTo(mapPm) 
           break
         case 'mtk':
           baseMaps.MTK.addTo(mapPm)  
           break  
-        case '4u':
-          baseMaps.UMaps.addTo(mapPm)
+        case 'esri':
+            baseMaps.EsriTopo.addTo(mapPm)
           break     
         case 'out':
           baseMaps.Outdoor.addTo(mapPm)           
