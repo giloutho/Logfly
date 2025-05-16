@@ -10,7 +10,7 @@ ipcMain.on('display-xc-save', (event, routeSet) => {
 function openWindow(event, routeSet) {
     const xcsavetHtmlPath = path.join('file://', __dirname, '../../views/html/secondary/xcnavsave.html')
     let win = new BrowserWindow({ 
-        width: 450,   
+        width: 500,   
         height: 450,
         frame : true,
         parent: BrowserWindow.getFocusedWindow(),
