@@ -42,6 +42,7 @@ function iniForm() {
         log.error('[downsites.js] Error while loading the language file')
     }  
     document.getElementById("tag-help").innerHTML = i18n.gettext('Click a coloured button')
+    document.getElementById("selected-tag-text").innerHTML = '<b>'+i18n.gettext('No tag selected')+'</b>'
     btnCancel.innerHTML = i18n.gettext('Cancel')
     btnCancel.addEventListener('click',(event)=>{window.close()}) 
     btnOk.addEventListener('click', (event) => {saveTag()} )    
