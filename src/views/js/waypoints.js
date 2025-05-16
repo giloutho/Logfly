@@ -686,6 +686,10 @@ function setCurrentMap(defaultMap) {
       baseMaps.IGN.addTo(mapwp)  
       currentMap = 'ign'
       break      
+    case 'sat':
+      baseMaps.sat.addTo(mapwp)  
+      currentMap = 'sat'
+      break        
     case 'osm':
       baseMaps.OSM.addTo(mapwp) 
       currentMap = 'osm'
@@ -694,9 +698,9 @@ function setCurrentMap(defaultMap) {
       baseMaps.MTK.addTo(mapwp)  
       currentMap = 'mtk'
       break  
-    case '4u':
-      baseMaps.UMaps.addTo(mapwp)
-      currentMap = '4u'
+    case 'esri':
+      baseMaps.Esri_WorldTopoMap.addTo(mapwp)
+      currentMap = 'esri'
       break     
     case 'out':
       baseMaps.Outdoor.addTo(mapwp)   
