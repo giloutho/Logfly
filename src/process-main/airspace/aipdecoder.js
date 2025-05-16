@@ -229,8 +229,8 @@ function roundCoords(coords) {
     return coords.map(([lon, lat]) => [Math.round(lon * multiplier) / multiplier, Math.round(lat * multiplier) / multiplier])
 }
 
-ipcMain.handle('openaip', async (event, openAipArray, filter) => {
-    const result = await processDecoding(openAipArray,filter)
+ipcMain.handle('openaip', async (event, openAipArray, filter,floorbelow) => {
+    const result = await processDecoding(openAipArray,filter,floorbelow)
     return result
 })
 
@@ -293,60 +293,62 @@ ipcMain.handle('check-aip', async (event, checkRequest) => {
     }
 })
 
-async function processDecoding(openAipArray,filter) {
-  const promiseArray = []
-  for (const item of openAipArray) {
-      promiseArray.push(processItem(item))
-  }
-  const result = await Promise.all(promiseArray)
-  let finalResult
-  if (filter) {
-      finalResult = result.filter((filterAip))
-  } else {
-      finalResult = [...result]
-  }
-  let totalGeoJson =[]
-  for (let i = 0; i < finalResult.length; i++) {
-      const el = finalResult[i]
-      // les coordonnées sont un double tableau...
-      // je ne sais pas pourquoi mais si on fait simple tableau -> erreur
-      let arrCoord = []
-      arrCoord.push(el.polygon)
-      // Problème des parcs comme celui des Bauges
-      // le fait que ce soit une hauteur sol n'est pas clairement défini
-      // Floor -> 0m Ceiling 300m donc chaque point sera forcément valide
-      // Par déduction on a supposé que quand réferenceDatum était Gnd pour Floor et Ceiling
-      // il s'agissait d'une hauteur sol mais rien en permet de vraiment valider
-      let AltLimitTopAGL 
-      if (el.floorRefGnd == 'Gnd' && el.topRefGnd == 'Gnd') {        
-        AltLimitTopAGL = true
-      } else {
-        AltLimitTopAGL = false
-      }
-      let aipGeojson = {
-          type :"Feature",
-          properties : {
-             type : el.type,
-             Class : el.icaoClass,
-             Name : el.name,
-             id : el.id,
-             Comment : "",
-             Floor : el.floorM,
-             FloorLabel : el.floorLabel+' '+el.floorRefGnd,
-             Ceiling : el.topM,
-             CeilingLabel : el.topLabel+' '+el.topRefGnd,   
-             AltLimit_Top_AGL :  AltLimitTopAGL,             
-             AltLimit_Bottom_AGL : false, 
-             Color : getColor(el)       
-          },
-          geometry : {
-              type : "Polygon",
-              coordinates : arrCoord
-          } 
-      }
-      totalGeoJson.push(aipGeojson)
+async function processDecoding(openAipArray,filter,floorbelow) {
+    const promiseArray = []
+    for (const item of openAipArray) {
+        promiseArray.push(processItem(item))
     }
-  return totalGeoJson
+    const result = await Promise.all(promiseArray)
+    let finalResult
+    if (filter) {
+        finalResult = result.filter((filterAip))
+    } else {
+        finalResult = [...result]
+    }
+    let totalGeoJson =[]
+    for (let i = 0; i < finalResult.length; i++) {
+        const el = finalResult[i]
+        if (el.floorM < floorbelow) {
+            // les coordonnées sont un double tableau...
+            // je ne sais pas pourquoi mais si on fait simple tableau -> erreur
+            let arrCoord = []
+            arrCoord.push(el.polygon)
+            // Problème des parcs comme celui des Bauges
+            // le fait que ce soit une hauteur sol n'est pas clairement défini
+            // Floor -> 0m Ceiling 300m donc chaque point sera forcément valide
+            // Par déduction on a supposé que quand réferenceDatum était Gnd pour Floor et Ceiling
+            // il s'agissait d'une hauteur sol mais rien en permet de vraiment valider
+            let AltLimitTopAGL 
+            if (el.floorRefGnd == 'Gnd' && el.topRefGnd == 'Gnd') {        
+                AltLimitTopAGL = true
+            } else {
+                AltLimitTopAGL = false
+            }
+            let aipGeojson = {
+                type :"Feature",
+                properties : {
+                    type : el.type,
+                    Class : el.icaoClass,
+                    Name : el.name,
+                    id : el.id,
+                    Comment : "",
+                    Floor : el.floorM,
+                    FloorLabel : el.floorLabel+' '+el.floorRefGnd,
+                    Ceiling : el.topM,
+                    CeilingLabel : el.topLabel+' '+el.topRefGnd,   
+                    AltLimit_Top_AGL :  AltLimitTopAGL,             
+                    AltLimit_Bottom_AGL : false, 
+                    Color : getColor(el)       
+                },
+                geometry : {
+                    type : "Polygon",
+                    coordinates : arrCoord
+                } 
+            }
+            totalGeoJson.push(aipGeojson)
+        }
+    }
+    return totalGeoJson
 }
 
 function processItem(item) {
@@ -389,6 +391,9 @@ function filterAip(item) {
       case 'D' :
           keptItem = true
           break
+      case 'E' :
+          keptItem = true
+          break          
       case 'SUA' :
           switch (item.typeRef) {
               case 10: 
@@ -397,14 +402,20 @@ function filterAip(item) {
               case 11 :
                   keptItem = false
                   break
+              case 19 :
+                  keptItem = true      // ProtectedArea
+                  break                  
               case 21 :
                   keptItem = false
                   break
+              case 26 :
+                  keptItem = true   // CTA
+                  break                  
               case 28 :
                   keptItem = false
                   break
               case 29 :
-                  keptItem = false
+                  keptItem = true   // LowAltitudeOverflightRestriction
                   break
               case 33 :
                   keptItem = false
@@ -417,7 +428,7 @@ function filterAip(item) {
           keptItem = false
           break
   }
- if (keptItem) return item
+  if (keptItem) return item 
 }
 
 // FlyXC colour grid
