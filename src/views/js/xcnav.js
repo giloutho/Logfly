@@ -6,6 +6,7 @@ const fs = require('fs')
 const Store = require('electron-store')
 const log = require('electron-log')
 const { scoringRules } = require('igc-xc-score')
+const turfBoolean = require('@turf/boolean-point-in-polygon').default
 
 const store = new Store()
 let menuFill = require('../../views/tpl/sidebar.js')
@@ -14,6 +15,8 @@ const settingsList = require('../../settings/settings-list.js')
 const scoring = require('../../utils/nav-scoring.js')
 const rteread = require('../../utils/geo/rte-read.js')
 const tiles = require('../../leaflet/tiles.js')
+const configkey  = require ('../../../config/config.js')
+const listkey = configkey.access
 const L = tiles.leaf
 const baseMaps = tiles.baseMaps
 const mapIcons = tiles.mapIcons
@@ -53,6 +56,10 @@ let opt_path = {
     smoothFactor: 1
 }
 
+ipcRenderer.on('back_airmenu', (_, values) => { 
+    reqOpenAip(values)
+})
+
 iniForm()
 let locMeasure = new myMeasure()
 const scoreGroup = new L.LayerGroup()
@@ -87,6 +94,9 @@ function iniForm() {
     document.getElementById('bt-route').addEventListener('click', (event) => {callDisk()})
     document.getElementById('bt-track').innerHTML = i18n.gettext('Track')
     document.getElementById('bt-track').addEventListener('click',(event) => {callTrack()})
+    document.getElementById('bt-airspace').innerHTML = i18n.gettext('Airspace')
+    //document.getElementById('bt-airspace').addEventListener('click',(event) => {reqOpenAip()})
+    document.getElementById('bt-airspace').addEventListener('click',(event) => {debugAip()})
     document.getElementById("lb-totdist").innerHTML = i18n.gettext('Total distance')+' : '                       
     document.getElementById("lb-duration").innerHTML = i18n.gettext('Duration')+' : '
     document.getElementById("lb-speed").innerHTML = i18n.gettext('Speed')+' (km/h)'
@@ -188,6 +198,26 @@ function defaultMap() {
     const kk7Group = new L.LayerGroup()
     kk7Group.addLayer(kk7layer)
     layerControl.addOverlay(kk7Group, "Thermal.kk7.ch")
+
+    // const oaciFrLayer = L.tileLayer('https://data.geopf.fr/private/wmts?apikey=ign_scan_ws'+
+    //     '&REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
+    //     '&LAYER={ignLayer}&STYLE={style}&FORMAT={format}'+
+    //     '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}',
+    //     {
+    //         ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-OACI',
+    //         style: 'normal',
+    //         format: 'image/jpeg',
+    //         service: 'WMTS',
+    //         attribution: '&copy; <a href="http://www.ign.fr/">IGN</a>',
+    //         tileSize : 256,
+    //         minZoom : 7,
+    //         maxZoom : 11
+    //     }
+    // )
+    // const oaci = new L.LayerGroup()
+    // oaci.addLayer(oaciFrLayer)
+    // layerControl.addOverlay(oaci, "OACI France")
+
     
     scoreGroup.addTo(mapxc)
     layerControl.addOverlay(scoreGroup, i18n.gettext('Score'))
@@ -244,7 +274,7 @@ function defaultMap() {
             console.log(newMarker)
             let markerid = markerList.length - 1
             let markerPopup = '<div class="btn-group-vertical">'
-            markerPopup +=  "<button class='btn btn-danger btn-sm' onclick=\"deletepoint('" + markerid + "')\">Delete</button>"
+            markerPopup +=  "<button class='btn btn-danger btn-sm' onclick=\"deletepoint('" + markerid + "')\">"+i18n.gettext('Delete')+"</button>"
             markerPopup += '</div>'
             newMarker.bindPopup(markerPopup)
             markerGroup.addLayer(newMarker)
@@ -253,6 +283,33 @@ function defaultMap() {
 
     iniLeague()
     mapxc.on("moveend", function() {drawFAISectors()})
+    // mapxc.on('zoomend', function() { console.log('Zoom : '+mapxc.getZoom()) })
+    mapxc.on('click',function(e){
+        lat = e.latlng.lat
+        lon = e.latlng.lng
+        let html = ''
+        let pointClick = [e.latlng.lng, e.latlng.lat]
+        mapxc.eachLayer(function(layer){
+            if (layer.hasOwnProperty('feature')) {
+            if (layer.feature.hasOwnProperty('properties')) {
+                if (layer.feature.geometry.type == 'Polygon') { 
+                if (turfBoolean(pointClick, layer.feature)) {
+                        html += '<i class="fa fa-space-shuttle"></i>&nbsp;'+layer.feature.properties.Class+'&nbsp;&nbsp;['+layer.feature.properties.type+']&nbsp;&nbsp;'
+                        html += layer.feature.properties.Name+'<br/>'
+                        html += '<i class="fa fa-arrow-down"></i>&nbsp;'+layer.feature.properties.FloorLabel+'('+layer.feature.properties.Floor+'m )&nbsp;&nbsp;&nbsp;'
+                        html += '<i class="fa fa-arrow-up"></i>&nbsp;'+layer.feature.properties.CeilingLabel+' ('+layer.feature.properties.Ceiling+'m )</br></br>'
+                }
+                }
+            }
+            }    
+        })
+        if (html != '') {
+            mapxc.openPopup(html, e.latlng, {
+            offset: L.point(0, -24)
+            })
+        }
+    })
+
 }
 
 // https://github.com/Leaflet/Leaflet.Editable/issues/158
@@ -463,8 +520,14 @@ function loadRoute() {
     }
 }
 
-function callDisk() {``
-  const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathWork'))
+function callDisk() {
+  //const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathWork'))
+  const selectedFile = {
+    fullPath : '/Users/gil/Documents/Logfly/Routes/Parmelan3.gpx',
+    directoryName : '',
+    fileName : '',
+    fileExt : ''
+  }
   if(selectedFile.fullPath != null) {
     clearRoute()
     displayRteDisk(selectedFile.fullPath)
@@ -823,6 +886,101 @@ function displayScoring(xcscore) {
     drawFAISectors()
 }
 
+// ****************** openAIP section *********************
+function debugAip() {
+    const showRadius = true
+    ipcRenderer.send('air-menu',showRadius)
+}
+
+async function reqOpenAip(airfilter) {
+    if (navigator.offLine) {
+      alert(i18n.gettext('No Internet connection'))  
+    } else {
+      const airspaces = await downloadAirspaces(airfilter)
+      // debugging
+     //   const filejson = path.join('/Users/gil/Documents/Logfly/Routes', 'openaip.json');
+      //    fs.writeFileSync(filejson, JSON.stringify(airspaces))
+        // end debugging
+      const nbDownl = airspaces.length
+      
+      if (Array.isArray(airspaces)) {
+          ipcRenderer.invoke('openaip',airspaces,true,airfilter.floor).then((totalGeoJson) => {      
+              const nbAip = totalGeoJson.length        
+              if (nbAip > 0) {
+                  displayAip(totalGeoJson) 
+              } else {
+                const noAip = i18n.gettext('No airspace involved')+'/ '+nbDownl+' '+i18n.gettext('received')
+                alert(noAip)
+              }
+              // debugging
+              // const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json')
+              // fs.writeFileSync(filename, JSON.stringify(totalGeoJson))
+          })
+      } 
+          
+  }
+}
+
+function displayAip(totalGeoJson) {
+    if (typeof aipGroup !== "undefined") {
+        layerControl.removeLayer(aipGroup)
+        mapxc.removeLayer(aipGroup)
+    }
+    aipGroup = new L.LayerGroup()
+    for (let index = 0; index < totalGeoJson.length; index++) {
+        const element = totalGeoJson[index]
+        //  console.log(element.properties.Name+' '+element.properties.id+' '+element.properties.Floor+' '+element.properties.AltLimit_Top_AGL)
+        //let airSpace = L.geoJson(element,{ style: styleAip, onEachFeature: aipPopup})
+        let airSpace = new L.geoJson(element,{ style: styleAip})
+        aipGroup.addLayer(airSpace)
+    }  
+    layerControl.addOverlay(aipGroup, i18n.gettext('Airspaces'))
+    aipGroup.addTo(mapxc)
+}
+
+async function downloadAirspaces(airfilter) {
+  const openAipKey = listkey.openaip
+  const center = mapxc.getCenter().lat+','+mapxc.getCenter().lng
+  const distance = airfilter.radius
+  const icaoFilter = airfilter.classes     // [0,1,2,3,4]   // F = 5   G = 6
+  const airspaces = []
+  let delayMs = 10
+  let page = 1
+  let totalPages = 1
+  const openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&pos=${center}&dist=${distance}&icaoClass=${icaoFilter}&apiKey=${openAipKey}`
+  while (page <= totalPages) {       
+      try {
+        //console.log(`fetching page ${page}/${totalPages}`)
+        const response = await fetch(openAip_Url)
+        // Delay to avoid too many requests.
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
+        if (response.ok) {
+          const info = await response.json()
+          totalPages = info.totalPages
+          airspaces.push(...info.items)
+          page++
+          delayMs = 10        
+        } else {
+          delayMs *= 2
+          console.error(`HTTP status ${response.status}`)
+        }
+      } catch (e) {
+        console.error(`Error`, e)
+      }
+    }
+    return airspaces
+}
+
+function aipPopup(feature, layer) {
+  if (feature.properties) {
+      let popupMsg = '<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name
+      popupMsg += '<BR/>Floor : '+feature.properties.Floor+'  '+feature.properties.FloorLabel
+      popupMsg += '<BR/>Ceiling : '+feature.properties.Ceiling+'  '+feature.properties.CeilingLabel
+      layer.bindPopup(popupMsg)
+  }
+}
+
+
 /* ******************* UI functions ******************** */
 
 function drawFAISectors() {
@@ -925,6 +1083,16 @@ function updateTooltip (e) {
     else {
         tooltip.innerHTML = 'Click on last point to finish line.';
     }
+}
+
+function styleAip(feature) {
+  return{      
+    fillColor: feature.properties.Color,
+    fillOpacity: 0.4,
+    weight: 1,
+    opacity: 1,
+    color: 'white'
+  }
 }
 
 /* **************** Comptuting functions ********************* */

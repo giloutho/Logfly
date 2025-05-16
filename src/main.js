@@ -50,7 +50,7 @@ const createWindow = () => {
     store.set('sitetablelines',12)
   }
 
- 
+ /*
   //  Code with splahscreen
 
  const windowOptions = {
@@ -76,9 +76,9 @@ const createWindow = () => {
 })
 
   // end of code with splahscreen
+*/
 
 
-/*
   // Code without splashscreen
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -91,7 +91,7 @@ const createWindow = () => {
     }      
   })
     // End of code without splashscreen
-*/
+
 
 
   const macTemplate = [
@@ -160,7 +160,8 @@ const createWindow = () => {
   process.platform === "darwin" && Menu.setApplicationMenu(Menu.buildFromTemplate(macTemplate))
 
   if (startOk) { 
-    checkAndStart()  
+    //checkAndStart()  
+    openWindow('xc')
   } else {
     openWindow('problem')
   }
@@ -278,7 +279,7 @@ function openWindow(pageName) {
       break         
     case "xc":
       mainWindow.loadFile(path.join(__dirname, './views/html/xcnav.html'))
-     // mainWindow.webContents.openDevTools()  
+      mainWindow.webContents.openDevTools()  
       break     
     case "problem":
           mainWindow.loadFile(path.join(__dirname, './views/html/problem.html'))

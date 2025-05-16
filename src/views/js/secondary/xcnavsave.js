@@ -44,7 +44,7 @@ function iniForm() {
     document.getElementById('save-kml').innerHTML = i18n.gettext('Save as Google Earth (kml)')
     document.getElementById('save-xctrack').innerHTML = i18n.gettext('Save as XCTrack')
     document.getElementById('save-dump').innerHTML = i18n.gettext('Save as GPSDump wpt')
-    document.getElementById('lb-mail').innerHTML = i18n.gettext('Recipient adress')
+    document.getElementById('lb-mail').innerHTML = i18n.gettext('Recipient')
     btnCancel.innerHTML = i18n.gettext('Close')
     btnCancel.addEventListener('click',(event)=>{window.close()})     
 }
@@ -326,10 +326,8 @@ async function sendEmail(filePath) {
         const adress = mailAdress.value;
         const msg = i18n.gettext('Attached is the route worked out with Logfly')
         const resMail = await mailing.sendByGmail('', adress, msg, filePath)
-
-        // Vérification du résultat
         if (resMail && resMail.messageId) {
-            alert(i18n.gettext('Email sent successfully'))
+            alert(i18n.gettext('Email sent successfully to '+resMail.envelope.to[0]))
         } else {
             alert(i18n.gettext('Failed to send email'))
         }

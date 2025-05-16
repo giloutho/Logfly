@@ -1062,7 +1062,7 @@ async function reqOpenAip() {
         // end debugging
       const nbDownl = airspaces.length
       if (Array.isArray(airspaces)) {
-          ipcRenderer.invoke('openaip',airspaces,true).then((totalGeoJson) => {      
+          ipcRenderer.invoke('openaip',airspaces,true,500).then((totalGeoJson) => {      
               const nbAip = totalGeoJson.length        
               if (nbAip > 0) {
                   displayAip(totalGeoJson) 
@@ -1140,7 +1140,7 @@ function displayAip(totalGeoJson) {
   aipGroup = new L.LayerGroup()
   for (let index = 0; index < totalGeoJson.length; index++) {
     const element = totalGeoJson[index]
-   console.log(element.properties.Name+' '+element.properties.id)
+   console.log(element.properties.Name+' '+element.properties.id+' '+element.properties.Floor)
     //let airSpace = L.geoJson(element,{ style: styleAip, onEachFeature: aipPopup})
     let airSpace = new L.geoJson(element,{ style: styleAip})
     aipGroup.addLayer(airSpace)
