@@ -76,7 +76,7 @@ function iniForm() {
       document.getElementById('target-sidebar').innerHTML = rendered
   })
   document.getElementById("txt-download").innerHTML = i18n.gettext("Downloading digital elevation data")
-  document.getElementById('fullmap').innerHTML = i18n.gettext('Full screen map')
+  document.getElementById('fullmap').innerHTML = i18n.gettext('Full map')
   document.getElementById('tx-search').placeholder = i18n.gettext('Search')+'...'
   document.getElementById('lb-filter').innerHTML = i18n.gettext('Filter')
   $('button[data-toggle="dropdown"]').text(i18n.gettext('Scoring'))   

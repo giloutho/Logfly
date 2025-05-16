@@ -38,8 +38,8 @@ async function sendByGmail(mailName, mailEmail, mailMessage, attachedPath) {
         from: listkey.mailuser,
         to: mailEmail,
         subject: mailSubject,
-        text: mailMessage,
-        //text: `${mailMessage}\n\nAttached file: ${fileName}`, // Inclure le nom du fichier dans le message
+       // text: mailMessage,
+        text: `${mailMessage}\n\nAttached file: ${nameFile}`, 
         attachments: [
             {
                 filename: nameFile,
