@@ -96,7 +96,7 @@ function iniForm() {
     document.getElementById('bt-track').addEventListener('click',(event) => {callTrack()})
     document.getElementById('bt-airspace').innerHTML = i18n.gettext('Airspace')
     //document.getElementById('bt-airspace').addEventListener('click',(event) => {reqOpenAip()})
-    document.getElementById('bt-airspace').addEventListener('click',(event) => {debugAip()})
+    document.getElementById('bt-airspace').addEventListener('click',(event) => {runAirmenu()})
     document.getElementById("lb-totdist").innerHTML = i18n.gettext('Total distance')+' : '                       
     document.getElementById("lb-duration").innerHTML = i18n.gettext('Duration')+' : '
     document.getElementById("lb-speed").innerHTML = i18n.gettext('Speed')+' (km/h)'
@@ -356,34 +356,38 @@ function deletepoint(markerid) {
 
 function setCurrentMap(defaultMap) {
     switch (defaultMap) {
-      case 'open':
-        baseMaps.OpenTopo.addTo(mapxc)  
-        currentMap = 'open'
+        case 'open':
+            baseMaps.OpenTopo.addTo(mapxc)  
+            currentMap = 'open'
         break
-      case 'ign':
-        baseMaps.IGN.addTo(mapxc)  
-        currentMap = 'ign'
+        case 'ign':
+            baseMaps.IGN.addTo(mapxc)  
+            currentMap = 'ign'
         break      
-      case 'osm':
-        baseMaps.OSM.addTo(mapxc) 
-        currentMap = 'osm'
+        case 'sat':
+            baseMaps.Satellite.addTo(mapxc)  
+            currentMap = 'sat'
+        break        
+        case 'osm':
+            baseMaps.OSM.addTo(mapxc) 
+            currentMap = 'osm'
         break
-      case 'mtk':
-        baseMaps.MTK.addTo(mapxc)  
-        currentMap = 'mtk'
+        case 'mtk':
+            baseMaps.MTK.addTo(mapxc)  
+            currentMap = 'mtk'
         break  
-      case '4u':
-        baseMaps.UMaps.addTo(mapxc)
-        currentMap = '4u'
+        case 'esri':
+            baseMaps.EsriTopo.addTo(mapxc)
+            currentMap = 'esri'
         break     
-      case 'out':
-        baseMaps.Outdoor.addTo(mapxc)   
-        currentMap = 'out'        
+        case 'out':
+            baseMaps.Outdoor.addTo(mapxc)   
+            currentMap = 'out'        
         break           
-      default:
-        baseMaps.OSM.addTo(mapxc)  
-        currentMap = 'osm'  
-        break     
+        default:
+            baseMaps.OSM.addTo(mapxc)  
+            currentMap = 'osm'  
+        break   
     }
   }
   
@@ -887,11 +891,28 @@ function displayScoring(xcscore) {
 }
 
 // ****************** openAIP section *********************
-function debugAip() {
-    const showRadius = true
-    ipcRenderer.send('air-menu',showRadius)
+function runAirmenu() {
+    const mainWindow = true
+    ipcRenderer.send('air-menu',mainWindow)
 }
 
+/*
+airfilter = {
+        classes : array of classes : 0=A B=1 C=2 D=3 E= 4 F=5 G=6
+        types : array of types :
+                    3 = Prohibited 
+                    1 = Restricted
+                    2 = Danger
+                    4 = CTR
+                    7 = TMA
+                    6 = RMZ
+                    5 = TMZ
+                    21 = Gliding
+                    0 = Other
+        floor : value in meters,
+        radius : value in meters
+}        
+*/
 async function reqOpenAip(airfilter) {
     if (navigator.offLine) {
       alert(i18n.gettext('No Internet connection'))  
@@ -904,7 +925,7 @@ async function reqOpenAip(airfilter) {
       const nbDownl = airspaces.length
       
       if (Array.isArray(airspaces)) {
-          ipcRenderer.invoke('openaip',airspaces,true,airfilter.floor).then((totalGeoJson) => {      
+          ipcRenderer.invoke('openaip',airspaces,true,airfilter).then((totalGeoJson) => {      
               const nbAip = totalGeoJson.length        
               if (nbAip > 0) {
                   displayAip(totalGeoJson) 

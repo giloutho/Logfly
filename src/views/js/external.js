@@ -76,15 +76,20 @@ function iniForm() {
       $('button[data-toggle="dropdown"]').text(selLeague)    
       runXcScore(selLeague)
     })
-    /* DEBUG SESSION */
-    // let debugTrack = {
-    //   fullPath : '/Users/gil/Documents/El_Logfly/lfparseigc/Argentine1.igc',
-    //   directoryName : '',
-    //   fileName : 'Argentine1',
-    //   fileExt : 'IGC'
-    // }
-    // displayIgc(debugTrack)
-    /* END OF DEBUG SESSION */
+    /* DEBUG SESSION 
+    let igcPath = '/Users/gil/Documents/Logfly/Debug/Test_Leaflet.igc'
+    igcPath = '/Users/gil/Documents/Logfly/Remarquables/Vierge_2025.igc'
+    igcPath = '/Users/gil/Documents/Logfly/IGC_invalides/Trace_ZIT_creys.igc'
+    igcPath = '/Users/gil/Documents/Logfly/IGC_invalides/Trace_vesoud.igc'
+    let debugTrack = {
+      fullPath : igcPath,
+      directoryName : '',
+      fileName : 'Debugging',
+      fileExt : 'IGC'
+    }
+    displayIgc(debugTrack)
+    callFullMap()
+  END OF DEBUG SESSION */
 }
 
 $(document).ready(function () {
@@ -182,6 +187,12 @@ btnMenu.addEventListener('click', (event) => {
 })
 
 btnFullmap.addEventListener('click', (event) => {  
+  console.log('click fullmap')
+  callFullMap() 
+})  
+
+
+  function callFullMap() {
     if (track !== undefined)  {
       if (track.fixes.length> 0) {    
         // functionnal code
@@ -193,8 +204,8 @@ btnFullmap.addEventListener('click', (event) => {
         let err_content = i18n.gettext("Decoding problem in track file")
         ipcRenderer.send('error-dialog',[err_title, err_content])    // process-main/system/messages.js
       } 
-    }     
-  })  
+    } 
+  }
 
   btnFlyxc.addEventListener('click', (event) => { 
     displayFlyxc()
