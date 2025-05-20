@@ -81,6 +81,7 @@ const baseMaps = {
   "OACI_FR" : oaciFrLayer
 }
 
+// Determines the active layer (used in waypoints)
 const currentMap = (mapUrl) => {
   let mapType = ''
   if (mapUrl.includes('{ignLayer}')) {
