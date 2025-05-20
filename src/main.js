@@ -161,7 +161,7 @@ const createWindow = () => {
 
   if (startOk) { 
     //checkAndStart()  
-    openWindow('xc')
+    openWindow('logbook')
   } else {
     openWindow('problem')
   }
