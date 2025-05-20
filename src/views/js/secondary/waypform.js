@@ -272,28 +272,36 @@ function displayMap() {
       switch (defaultMap) {
         case 'open':
           baseMaps.OpenTopo.addTo(mapPm)  
+          currentMap = 'open'
           break
         case 'ign':
           baseMaps.IGN.addTo(mapPm)  
+          currentMap = 'ign'
           break      
         case 'sat':
-            baseMaps.Satellite.addTo(mapPm)
-            break             
+          baseMaps.Satellite.addTo(mapPm)  
+          currentMap = 'sat'
+          break        
         case 'osm':
           baseMaps.OSM.addTo(mapPm) 
+          currentMap = 'osm'
           break
         case 'mtk':
           baseMaps.MTK.addTo(mapPm)  
+          currentMap = 'mtk'
           break  
         case 'esri':
-            baseMaps.EsriTopo.addTo(mapPm)
+          baseMaps.EsriTopo.addTo(mapPm)
+          currentMap = 'esri'
           break     
         case 'out':
-          baseMaps.Outdoor.addTo(mapPm)           
+          baseMaps.Outdoor.addTo(mapPm)   
+          currentMap = 'out'        
           break           
         default:
-          baseMaps.OSM.addTo(mapPm)        
-          break         
+          baseMaps.OSM.addTo(mapPm)  
+          currentMap = 'osm'  
+          break      
       }    
 
     let violetIcon = new L.Icon({
