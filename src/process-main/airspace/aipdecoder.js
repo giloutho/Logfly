@@ -229,12 +229,12 @@ function roundCoords(coords) {
     return coords.map(([lon, lat]) => [Math.round(lon * multiplier) / multiplier, Math.round(lat * multiplier) / multiplier])
 }
 
-ipcMain.handle('openaip', async (event, openAipArray, filter,floorbelow) => {
-    const result = await processDecoding(openAipArray,filter,floorbelow)
+ipcMain.handle('openaip', async (event, openAipArray, filter,airfilter) => {
+    const result = await processDecoding(openAipArray,filter,airfilter)
     return result
 })
 
-ipcMain.handle('check-aip', async (event, checkRequest) => {
+ipcMain.handle('check-aip', async (event, checkRequest,filter,airfilter) => {
     //  checkRequest = {
     //     jsonaip : airspaces,   //json openaip 
     //     track : mainTrack,
@@ -244,7 +244,7 @@ ipcMain.handle('check-aip', async (event, checkRequest) => {
         airGeoJson : [],
         insidePoints : []
       }       
-    const aipGeojson = await processDecoding(checkRequest.jsonaip,true)
+    const aipGeojson = await processDecoding(checkRequest.jsonaip,filter,airfilter)
     if (aipGeojson.length > 0) { 
         // In order to use turfWithin below, the fixes array must be converted in a "turf multipoint object"
         let trackPoints = checkRequest.track.fixes.map(point => [point.longitude,point.latitude] )
@@ -256,7 +256,7 @@ ipcMain.handle('check-aip', async (event, checkRequest) => {
         for (let index = 0; index < aipGeojson.length; index++) {
             const element = aipGeojson[index]            
             if (turfIntersect(element,geoTrack)) {
-               // console.log('intersect in '+element.properties.Name+' Floor : '+ element.properties.Floor+' Ceiling : '+ element.properties.Ceiling+' altLimitTopAGL '+element.properties.AltLimit_Top_AGL)
+                //console.log('intersect in '+element.properties.Name+' Floor : '+ element.properties.Floor+' Ceiling : '+ element.properties.Ceiling+' altLimitTopAGL '+element.properties.AltLimit_Top_AGL)
                 let pushGeoJson = false
                 let ptsWithin = turfWithin(multiPt, element)                    
                 for (let i = 0; i < ptsWithin.features.length; i++) {
@@ -293,7 +293,7 @@ ipcMain.handle('check-aip', async (event, checkRequest) => {
     }
 })
 
-async function processDecoding(openAipArray,filter,floorbelow) {
+async function processDecoding(openAipArray,filter,airfilter) {
     const promiseArray = []
     for (const item of openAipArray) {
         promiseArray.push(processItem(item))
@@ -301,14 +301,18 @@ async function processDecoding(openAipArray,filter,floorbelow) {
     const result = await Promise.all(promiseArray)
     let finalResult
     if (filter) {
-        finalResult = result.filter((filterAip))
+        finalResult = result.filter((item) => filterAip(item,airfilter.types))
+        // for (let index = 0; index < finalResult.length; index++) {
+        //     const element = finalResult[index];
+        //   //  console.log('aip : '+element.name+' '+element.floorM+' - '+element.topM+' - '+element.icaoClass+' '+element.type)
+        // }
     } else {
         finalResult = [...result]
     }
     let totalGeoJson =[]
     for (let i = 0; i < finalResult.length; i++) {
         const el = finalResult[i]
-        if (el.floorM < floorbelow) {
+        if (el.floorM < airfilter.floor) {
             // les coordonnées sont un double tableau...
             // je ne sais pas pourquoi mais si on fait simple tableau -> erreur
             let arrCoord = []
@@ -348,6 +352,7 @@ async function processDecoding(openAipArray,filter,floorbelow) {
             totalGeoJson.push(aipGeojson)
         }
     }
+    // console.log('retenus : '+totalGeoJson.length+' / '+finalResult.length+' analysés (floor : '+airfilter.floor+'m)')
     return totalGeoJson
 }
 
@@ -376,8 +381,13 @@ function processItem(item) {
 // For SUA, there many cases see https://en.wikipedia.org/wiki/Special_use_airspace
 // With the exception of the information zones
 // all areas not identified as accessible to paragliders will be displayed.
-function filterAip(item) {
+
+//The classes have already been filtered in the query to openAIP
+// Types are in an array : 3=Prohibited, 1=Restricted, 2=Danger, 4=CTR, 7=TMA, 6=RMZ, 5=TMZ, 21=Gliding, 0=Other
+
+function filterAip(item,arrTypes) {
   let keptItem
+    console.log('filterAip : '+item.name+' '+item.icaoClass+' '+item.typeRef)
   switch (item.icaoClass) {
         case 'A' :
           keptItem = true
@@ -396,32 +406,58 @@ function filterAip(item) {
           break          
       case 'SUA' :
           switch (item.typeRef) {
-              case 10: 
-                  keptItem = false
-                  break
-              case 11 :
-                  keptItem = false
-                  break
-              case 19 :
-                  keptItem = true      // ProtectedArea
-                  break                  
-              case 21 :
-                  keptItem = false
-                  break
-              case 26 :
-                  keptItem = true   // CTA
-                  break                  
-              case 28 :
-                  keptItem = false
-                  break
-              case 29 :
-                  keptItem = true   // LowAltitudeOverflightRestriction
-                  break
-              case 33 :
-                  keptItem = false
-                  break
-              default:
-                  keptItem = true
+            case 0 :   // Other
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break
+            case 1 :  // Restricted
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break
+            case 2 :  // Restricted
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break 
+            case 3 :  // Prohibited
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                arrTypes.forEach(x => console.log('arrTypes '+x));
+                console.log('Prohibited : '+item.name+' keptItem : '+keptItem)
+                break   
+            case 4 :  // CTR
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break          
+            case 5 :  // TMZ
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break       
+            case 6 :  // RMZ
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break    
+            case 7 :  // TMA
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break                                                                       
+            case 10: 
+                keptItem = false
+                break
+            case 11 :
+                keptItem = false
+                break
+            case 19 :
+                keptItem = true      // ProtectedArea
+                break                  
+            case 21 :  // Gliding                        
+                arrTypes.includes(item.typeRef.toString()) ? keptItem = true : keptItem = false
+                break                  
+            case 26 :
+                keptItem = true   // CTA
+                break                  
+            case 28 :
+                keptItem = false
+                break
+            case 29 :
+                keptItem = true   // LowAltitudeOverflightRestriction, important we always let it
+                break
+            case 33 :
+                keptItem = false
+                break
+            default:
+                keptItem = true
           }
           break
       default:

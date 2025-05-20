@@ -9,6 +9,7 @@ const pieGnerator = require('../../../utils/graphic/pie-generator.js')
 const configkey  = require ('../../../../config/config.js')
 const turfBoolean = require('@turf/boolean-point-in-polygon').default
 const turfHelper = require('@turf/helpers')
+const turfCenter = require('@turf/center').default
 const checkInternetConnected = require('check-internet-connected')
 const listkey = configkey.access
 
@@ -45,6 +46,11 @@ let aipGroup
 let geoScore
 let currOAFile
 
+const layerThermalIdx = 10
+const layerGliderIdx = 11
+const layerScoreIdx = 13
+
+
 iniForm()
 
 let locMeasure = new myMeasure()
@@ -71,6 +77,10 @@ ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
     runXcScore(selLeague)
   })
   if (mainTrack.xcscore != null) displayScoring()
+})
+
+ipcRenderer.on('back_airmenu', (_, values) => { 
+    reqOpenAip(values)
 })
 
 function runXcScore(selScoring) {
@@ -109,26 +119,37 @@ function buildMap() {
   const defaultMap = store.get('map')
   switch (defaultMap) {
     case 'open':
-        baseMaps.OpenTopo.addTo(map)  
-        break
-      case 'ign':
-        baseMaps.IGN.addTo(map)  
-        break      
-      case 'osm':
-        baseMaps.OSM.addTo(map) 
-        break
-      case 'mtk':
-        baseMaps.MTK.addTo(map)  
-        break  
-      case '4u':
-        baseMaps.UMaps.addTo(map)
-        break     
-      case 'out':
-        baseMaps.Outdoor.addTo(map)           
-        break           
-      default:
-        baseMaps.OSM.addTo(map)        
-        break   
+      baseMaps.OpenTopo.addTo(map)  
+      currentMap = 'open'
+      break
+    case 'ign':
+      baseMaps.IGN.addTo(map)  
+      currentMap = 'ign'
+      break      
+    case 'sat':
+      baseMaps.Satellite.addTo(map)  
+      currentMap = 'sat'
+      break        
+    case 'osm':
+      baseMaps.OSM.addTo(map) 
+      currentMap = 'osm'
+      break
+    case 'mtk':
+      baseMaps.MTK.addTo(map)  
+      currentMap = 'mtk'
+      break  
+    case 'esri':
+      baseMaps.EsriTopo.addTo(map)
+      currentMap = 'esri'
+      break     
+    case 'out':
+      baseMaps.Outdoor.addTo(map)   
+      currentMap = 'out'        
+      break           
+    default:
+      baseMaps.OSM.addTo(map)  
+      currentMap = 'osm'  
+      break  
   }    
 
   // const openKey = listkey.openaip
@@ -197,7 +218,9 @@ function buildMap() {
     if (typeof aipGroup !== "undefined") {
       map.addLayer(aipGroup)
     } else {
-      reqOpenAip()
+      //reqOpenAip()
+      const mainWindow = false
+      ipcRenderer.send('air-menu',mainWindow)
     }
   })
 
@@ -445,8 +468,8 @@ function openNav() {
   document.getElementById("graphe").style.marginLeft = "260px"
   document.getElementById('graphe').style.width = screenWidth - 260 + 'px'
   hgChart.reflow()
-  $('.leaflet-control-layers-selector')[9].click()   // see line 722 index is modified for 8 and 9
-  $('.leaflet-control-layers-selector')[10].click()
+  $('.leaflet-control-layers-selector')[layerThermalIdx].click()   // see line 722 index is modified for 8 and 9
+  $('.leaflet-control-layers-selector')[layerGliderIdx].click()
 }
 
 function createPopGlide(feature, layer) {
@@ -970,7 +993,7 @@ function displayScoring() {
       scoreDisplayed = true
   } else {
       scoreGroup.addLayer(geoScore)
-      $('.leaflet-control-layers-selector')[12].click()
+      $('.leaflet-control-layers-selector')[layerScoreIdx].click()
       scoreDisplayed = true
   }
   sidebar.open('score')
@@ -1029,8 +1052,8 @@ function getColor() {
 
 // Display Thermals
 function openPathway() {
-  $('.leaflet-control-layers-selector')[9].click()
-  $('.leaflet-control-layers-selector')[10].click()
+  $('.leaflet-control-layers-selector')[layerThermalIdx].click()
+  $('.leaflet-control-layers-selector')[layerGliderIdx].click()
   sidebar.open('pathway')
 }
 
@@ -1051,18 +1074,20 @@ function displaySegment(lat1,long1,lat2,long2) {
 }   
 
 // ****************** openAIP section *********************
-async function reqOpenAip() {
+async function reqOpenAip(airfilter) {
     if (navigator.offLine) {
       alert(i18n.gettext('No Internet connection'))  
     } else {
-      const airspaces = await downloadAirspaces()
+      $('#waiting-spin').removeClass('d-none')
+      const airspaces = await downloadAirspaces(airfilter)
       // debugging
          // const filejson = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
           //fs.writeFileSync(filejson, JSON.stringify(airspaces))
         // end debugging
       const nbDownl = airspaces.length
       if (Array.isArray(airspaces)) {
-          ipcRenderer.invoke('openaip',airspaces,true,500).then((totalGeoJson) => {      
+        console.log('on invoke')
+          ipcRenderer.invoke('openaip',airspaces,true,airfilter).then((totalGeoJson) => {      
               const nbAip = totalGeoJson.length        
               if (nbAip > 0) {
                   displayAip(totalGeoJson) 
@@ -1070,6 +1095,7 @@ async function reqOpenAip() {
                 const noAip = i18n.gettext('No airspace involved')+'/ '+nbDownl+' '+i18n.gettext('received')
                 alert(noAip)
               }
+                $('#waiting-spin').addClass('d-none')
               // debugging
               // const filename = path.join('/Users/gil/Documents/Flyxc', 'geoaip.json')
               // fs.writeFileSync(filename, JSON.stringify(totalGeoJson))
@@ -1082,7 +1108,18 @@ async function checkOpenAip() {
   if (navigator.offLine) {
     alert(i18n.gettext('No Internet connection'))  
   } else {
-    const airspaces = await downloadAirspaces()
+    // No filter, everything is downloaded
+    let airfilter = {
+        classes : [0,1,2,3,8],
+        types : ['3','1','2'],
+        floor : mainTrack.stat.maxalt.gps,
+        radius :0
+    }        
+    const airspaces = await downloadAirspaces(airfilter)
+          // debugging
+          const filejson = path.join('/Users/gil/Documents/Logfly/Espaces', 'openaip.json');
+          fs.writeFileSync(filejson, JSON.stringify(airspaces))
+        // end debugging
     const nbDownl = airspaces.length
     if (Array.isArray(airspaces)) {
       let checkRequest = {
@@ -1092,7 +1129,7 @@ async function checkOpenAip() {
       }
       currOAFile = ''
       $('#waiting-check').removeClass('d-none')
-      ipcRenderer.invoke('check-aip',checkRequest).then((checkResult) => {     
+      ipcRenderer.invoke('check-aip',checkRequest,true, airfilter).then((checkResult) => {     
         $('#waiting-check').addClass('d-none')
         displayAirCheck(checkResult)       
       })
@@ -1101,15 +1138,28 @@ async function checkOpenAip() {
   }
 }
 
-async function downloadAirspaces() {
+async function downloadAirspaces(airfilter) {
   const openAipKey = listkey.openaip
-  const bbox = mainTrack.GeoJSON.features[0].properties.bbox
+  let openAip_Url
   const airspaces = []
   let delayMs = 10
   let page = 1
   let totalPages = 1
-  const openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&bbox=${bbox}&apiKey=${openAipKey}`
-  log.info(openAip_Url)
+  if (airfilter.radius == 0) {
+     const bbox = mainTrack.GeoJSON.features[0].properties.bbox
+     // Pour une vérification on ne prends pas la classe E qui est un cas vraiment particulier 
+     // si on la garde on sort de fausses violations
+     // par exmemple  LTA FRANCE 3 ALPES 7 ARAVIS est classée E à partir de 3000 pieds
+     // bien qu'elle soit de type 'CTA' c'est une LTA donc autorisée sans radio
+     const icaoFilter = airfilter.classes   
+     openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&bbox=${bbox}&icaoClass=${icaoFilter}&apiKey=${openAipKey}`
+  } else {
+    const geoCenter = turfCenter(mainTrack.GeoJSON.features[0])
+    const center = geoCenter.geometry.coordinates[1]+','+geoCenter.geometry.coordinates[0]
+    const distance = airfilter.radius
+    const icaoFilter = airfilter.classes     // [0,1,2,3,4]   // F = 5   G = 6
+    openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&pos=${center}&dist=${distance}&icaoClass=${icaoFilter}&apiKey=${openAipKey}`
+  }
   while (page <= totalPages) {       
       try {
         //console.log(`fetching page ${page}/${totalPages}`)

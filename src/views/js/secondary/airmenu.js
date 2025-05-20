@@ -7,16 +7,16 @@ const store = new Store()
 const btnCancel = document.getElementById('bt-cancel')
 const btnOk = document.getElementById('bt-ok')
 
-const originWindow = 1
+let originWindow
 
 
 // a template for a secondary window
 
 iniForm()
 
-ipcRenderer.on('airspace-radius', (event, radius) => {    
-    console.log('radius : '+radius)
-    if(!radius) $('#rd-radius').addClass('d-none')
+ipcRenderer.on('airspace-radius', (event, mainWindow) => {    
+    // if mainWindow is true, origin window is the main window -> 1 otherwise -> 2
+    mainWindow ? originWindow = 1 : originWindow = 2
 })
 
 function iniForm() {
@@ -41,9 +41,8 @@ function iniForm() {
 
 function validFields() {
     const values = getAllCheckedValues()
-    // console.log('Valeurs sélectionnées :', values)
     // alert('Checkboxes : ' + values.checkboxes.join(', ') + '\nRadios : ' + values.radios.join(', '))
-    ipcRenderer.sendTo(1,"back_airmenu", values)
+    ipcRenderer.sendTo(originWindow,"back_airmenu", values)
     window.close() 
 }
 
