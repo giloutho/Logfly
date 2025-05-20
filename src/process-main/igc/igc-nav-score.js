@@ -1,3 +1,7 @@
+/* Unused code
+* this module in the main process and called synchronously triggers an error 
+* We use nav-scoring in src/utils
+*/
 const {ipcMain} = require('electron')
 const { scoringRules, solver } = require('igc-xc-score')
 const miniIgcPoints = 5
