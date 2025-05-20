@@ -238,27 +238,38 @@ function defaultMap() {
   //  L.control.layers(baseMaps).addTo(mapOA)
     const defaultMap = store.get('map')
     switch (defaultMap) {
-      case 'open':
-        baseMaps.OpenTopo.addTo(mapOA)  
-        break
-      case 'ign':
-        baseMaps.IGN.addTo(mapOA)  
-        break      
-      case 'osm':
-        baseMaps.OSM.addTo(mapOA) 
-        break
-      case 'mtk':
-        baseMaps.MTK.addTo(mapOA)  
-        break  
-      case '4u':
-        baseMaps.UMaps.addTo(mapOA)
-        break     
-      case 'out':
-        baseMaps.Outdoor.addTo(mapOA)           
-        break           
-      default:
-        baseMaps.OSM.addTo(mapOA)        
-        break     
+    case 'open':
+      baseMaps.OpenTopo.addTo(mapOA)  
+      currentMap = 'open'
+      break
+    case 'ign':
+      baseMaps.IGN.addTo(mapOA)  
+      currentMap = 'ign'
+      break      
+    case 'sat':
+      baseMaps.Satellite.addTo(mapOA)  
+      currentMap = 'sat'
+      break        
+    case 'osm':
+      baseMaps.OSM.addTo(mapOA) 
+      currentMap = 'osm'
+      break
+    case 'mtk':
+      baseMaps.MTK.addTo(mapOA)  
+      currentMap = 'mtk'
+      break  
+    case 'esri':
+      baseMaps.EsriTopo.addTo(mapOA)
+      currentMap = 'esri'
+      break     
+    case 'out':
+      baseMaps.Outdoor.addTo(mapOA)   
+      currentMap = 'out'        
+      break           
+    default:
+      baseMaps.OSM.addTo(mapOA)  
+      currentMap = 'osm'  
+      break   
     }
 }
 

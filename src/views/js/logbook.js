@@ -1422,25 +1422,36 @@ function readIgc(igcID, dbGlider) {
     switch (defaultMap) {
       case 'open':
         baseMaps.OpenTopo.addTo(mapPm)  
+        currentMap = 'open'
         break
       case 'ign':
         baseMaps.IGN.addTo(mapPm)  
+        currentMap = 'ign'
         break      
+      case 'sat':
+        baseMaps.Satellite.addTo(mapPm)  
+        currentMap = 'sat'
+        break        
       case 'osm':
         baseMaps.OSM.addTo(mapPm) 
+        currentMap = 'osm'
         break
       case 'mtk':
         baseMaps.MTK.addTo(mapPm)  
+        currentMap = 'mtk'
         break  
-      case '4u':
-        baseMaps.UMaps.addTo(mapPm)
+      case 'esri':
+        baseMaps.EsriTopo.addTo(mapPm)
+        currentMap = 'esri'
         break     
       case 'out':
-        baseMaps.Outdoor.addTo(mapPm)           
+        baseMaps.Outdoor.addTo(mapPm)   
+        currentMap = 'out'        
         break           
       default:
-        baseMaps.OSM.addTo(mapPm)        
-        break           
+        baseMaps.OSM.addTo(mapPm)  
+        currentMap = 'osm'  
+        break          
     }    
 
     const takeOffPopUp = deco+'<br>'+altDeco+'m'
@@ -1469,25 +1480,36 @@ function readIgc(igcID, dbGlider) {
     switch (defaultMap) {
       case 'open':
         baseMaps.OpenTopo.addTo(mapPm)  
+        currentMap = 'open'
         break
       case 'ign':
         baseMaps.IGN.addTo(mapPm)  
+        currentMap = 'ign'
         break      
+      case 'sat':
+        baseMaps.Satellite.addTo(mapPm)  
+        currentMap = 'sat'
+        break        
       case 'osm':
         baseMaps.OSM.addTo(mapPm) 
+        currentMap = 'osm'
         break
       case 'mtk':
         baseMaps.MTK.addTo(mapPm)  
+        currentMap = 'mtk'
         break  
-      case '4u':
-        baseMaps.UMaps.addTo(mapPm)
+      case 'esri':
+        baseMaps.EsriTopo.addTo(mapPm)
+        currentMap = 'esri'
         break     
       case 'out':
-        baseMaps.Outdoor.addTo(mapPm)           
+        baseMaps.Outdoor.addTo(mapPm)   
+        currentMap = 'out'        
         break           
       default:
-        baseMaps.OSM.addTo(mapPm)        
-        break     
+        baseMaps.OSM.addTo(mapPm)  
+        currentMap = 'osm'  
+        break   
     }
 
     const geojsonLayer = L.geoJson(mapTrack.trackjson,{ style: mapTrack.trackOptions}).addTo(mapPm)

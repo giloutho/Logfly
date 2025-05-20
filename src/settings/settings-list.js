@@ -81,9 +81,10 @@ function getMaps() {
     let overList = [
         { key: 'open', val: 'OpenTopo' },
         { key: 'ign', val: 'IGN' },
+        { key: 'sat', val: 'Satellite' },
         { key: 'osm', val: 'OpenStreetMap' },
         { key: 'mtk', val: 'MTK' },
-        { key: '4u', val: '4UMaps' },
+        { key: 'esri', val: 'EsriTopo' },
         { key: 'out', val: 'Outdoor' },        
     ]
 
