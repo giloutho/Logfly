@@ -58,13 +58,15 @@ function iniForm() {
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     // Traduction à faire
-    inputEngin.placeholder = i18n.gettext('Choose Glider or Other')
+    inputEngin.placeholder = i18n.gettext('Click on glider button or other button')
     popGlider = i18n.gettext('Select a glider from the logbook')
     popOther = i18n.gettext('Enter a different piece of equipment')
     popOperation = i18n.gettext('Enter an operation like')+':'+i18n.gettext('purchase')+', '
     popOperation += i18n.gettext('sale')+', '+i18n.gettext('overhaul')+', '
     popOperation += i18n.gettext('emergency folding')+'...'
     btnGlider.textContent = i18n.gettext('Glider')
+    document.getElementById('bt-other').innerHTML = i18n.gettext('Other')
+    document.getElementById('lg-price').innerHTML = i18n.gettext('Price')
     fillSelectGlider()
     const equipTest = dbcheck.checkEquipTable()
     if (equipTest) {

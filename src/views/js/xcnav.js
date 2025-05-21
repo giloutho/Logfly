@@ -94,7 +94,7 @@ function iniForm() {
     document.getElementById('bt-route').addEventListener('click', (event) => {callDisk()})
     document.getElementById('bt-track').innerHTML = i18n.gettext('Track')
     document.getElementById('bt-track').addEventListener('click',(event) => {callTrack()})
-    document.getElementById('bt-airspace').innerHTML = i18n.gettext('Airspace')
+    document.getElementById('bt-airspace').innerHTML = i18n.gettext('Airspaces')
     //document.getElementById('bt-airspace').addEventListener('click',(event) => {reqOpenAip()})
     document.getElementById('bt-airspace').addEventListener('click',(event) => {runAirmenu()})
     document.getElementById("lb-totdist").innerHTML = i18n.gettext('Total distance')+' : '                       

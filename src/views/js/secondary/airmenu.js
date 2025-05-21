@@ -32,7 +32,7 @@ function iniForm() {
     } catch (error) {
         log.error('[airmenu.js] Error while loading the language file')
     }  
-    document.getElementById('title').innerHTML = i18n.gettext('Airspace filter')
+    document.getElementById('title').innerHTML = i18n.gettext('Airspaces filter')
     document.getElementById('lb-floor').innerHTML = i18n.gettext('Floor below')
     btnOk.addEventListener('click',(event)=>{validFields()}) 
     btnCancel.innerHTML = i18n.gettext('Cancel')

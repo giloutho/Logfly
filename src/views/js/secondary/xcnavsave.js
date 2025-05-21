@@ -327,7 +327,7 @@ async function sendEmail(filePath) {
         const msg = i18n.gettext('Attached is the route worked out with Logfly')
         const resMail = await mailing.sendByGmail('', adress, msg, filePath)
         if (resMail && resMail.messageId) {
-            alert(i18n.gettext('Email sent successfully to '+resMail.envelope.to[0]))
+            alert(i18n.gettext('Email sent successfully to'+' '+resMail.envelope.to[0]))
         } else {
             alert(i18n.gettext('Failed to send email'))
         }
