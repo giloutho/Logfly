@@ -525,13 +525,13 @@ function loadRoute() {
 }
 
 function callDisk() {
-  //const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathWork'))
-  const selectedFile = {
-    fullPath : '/Users/gil/Documents/Logfly/Routes/Parmelan3.gpx',
-    directoryName : '',
-    fileName : '',
-    fileExt : ''
-  }
+  const selectedFile = ipcRenderer.sendSync('open-file',store.get('pathWork'))
+//   const selectedFile = {
+//     fullPath : '/Users/gil/Documents/Logfly/Routes/Parmelan3.gpx',
+//     directoryName : '',
+//     fileName : '',
+//     fileExt : ''
+//   }
   if(selectedFile.fullPath != null) {
     clearRoute()
     displayRteDisk(selectedFile.fullPath)
