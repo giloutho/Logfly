@@ -1117,8 +1117,8 @@ async function checkOpenAip() {
     }        
     const airspaces = await downloadAirspaces(airfilter)
           // debugging
-          const filejson = path.join('/Users/gil/Documents/Logfly/Espaces', 'openaip.json');
-          fs.writeFileSync(filejson, JSON.stringify(airspaces))
+       //   const filejson = path.join('/Users/gil/Documents/Logfly/Espaces', 'openaip.json');
+         // fs.writeFileSync(filejson, JSON.stringify(airspaces))
         // end debugging
     const nbDownl = airspaces.length
     if (Array.isArray(airspaces)) {
