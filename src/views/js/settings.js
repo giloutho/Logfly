@@ -11,6 +11,7 @@ const dbbasic = require('../../utils/db/db-basic.js')
 const settingsList = require('../../settings/settings-list.js')
 let menuFill = require('../../views/tpl/sidebar.js')
 const { Alert } = require('bootstrap')
+const { get } = require('jquery')
 const store = new Store()
 let dbList = null
 let currLang
@@ -289,6 +290,11 @@ function iniPilot() {
 
 function iniGeneral() {
   selectLang.innerHTML = null
+  const geTrad = 'Daniel Messelken'
+  const itTrad = 'Walter Segnana'
+  document.getElementById('getrad').innerHTML = '<i>'+i18n.gettext('German translation')+' <b>'+geTrad+'</b></i>'
+  document.getElementById('ittrad').innerHTML = '<i>'+i18n.gettext('Italian translation')+' <b>'+itTrad+'</b></i>'
+  document.getElementById('tradmsg').innerHTML = i18n.gettext('If you want to translate Logfly contact support')
   setLang = settingsList.getLanguages(i18n)
   for (let index in setLang ) {
     var _lang = setLang[index]
