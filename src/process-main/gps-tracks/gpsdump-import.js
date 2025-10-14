@@ -15,6 +15,8 @@ let searchResult = {
  }
 
 ipcMain.on('gpsdump-import', (event, arrayIgc) => {
+  searchResult.igcBad.length = 0
+  searchResult.igcForImport.length = 0
   runSearchIgc(arrayIgc)  
   event.sender.send('gpsdump-result', searchResult)
 })
