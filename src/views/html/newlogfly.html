@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <title>Logfly</title>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="../../assets/css/home.css">
+    <!-- if necessary some specifics css will be added like leaflet.css -->
+    <link rel="stylesheet" href="../../assets/css/newlogfly.css">
+</head>
+
+<body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>  
+    <div class="wrapper">
+        <!-- Sidebar  -->
+        <div id="target-sidebar"></div>
+        <div id="content">
+            <!-- Main page content -->
+            <div>
+                <div class="hero-container">
+                    <img src="../../assets/img/newlogfly_visu1.jpg" alt="Logfly 7" class="img-fluid w-100">
+                    
+                    <div class="overlay-top">
+                        <h1 id="msg-title" class="display-4">Logfly 7 est disponible</h1>
+                        <div class="msg-nav">
+                            <span id="msg-nav">Directement dans votre navigateur :</span> 
+                            <a href="https://logfly.app/">https://logfly.app/</a>
+                        </div>
+                    </div>
+                   
+                    <div class="overlay-bottom">
+                         <!--
+                        <div class="msg-nav">
+                            <span id="msg-nav">Directement dans votre navigateur :</span> 
+                            <a href="https://logfly.app/">https://logfly.app/</a>
+                        </div>
+                         -->
+                        <div class="info-footer">
+                            <p class="mb-0" id="msg-footer">
+                                <span class="badge badge-danger" id="info-badge">Information nécessaire</span>
+                                <span id="info-logbook">Votre carnet <strong>logfly.db</strong> se trouve dans le dossier <strong>Mes Documents/Logfly</strong></span>
+                            </p>
+                        </div>                        
+                    </div>
+                   
+                </div>
+            <!-- End of main page content -->
+        </div>
+    </div>    
+    <script src="../../views/js/newlogfly.js" type="text/javascript"></script>
+</body>

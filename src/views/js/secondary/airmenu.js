@@ -16,7 +16,9 @@ iniForm()
 
 ipcRenderer.on('airspace-radius', (event, mainWindow) => {    
     // if mainWindow is true, origin window is the main window -> 1 otherwise -> 2
-    mainWindow ? originWindow = 1 : originWindow = 2
+    console.log('airmenu.js received mainWindow : ', mainWindow)
+    originWindow = mainWindow
+ //   mainWindow ? originWindow = 1 : originWindow = 2
 })
 
 function iniForm() {

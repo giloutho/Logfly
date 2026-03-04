@@ -8,7 +8,7 @@ ipcMain.on('upload-igc', (event, igcText) => {
     let tempFileName  = path.join(app.getPath('temp'), 'flyxc.igc')  
     console.log(tempFileName)
     fs.writeFileSync(tempFileName, igcText)    
-	if (fs.existsSync(tempFileName)) {
+	  if (fs.existsSync(tempFileName)) {
         let tempFicName = '123456789.igc'
         let CrLf = "\r\n";
         let header1 = "-----------------------------4664151417711"+CrLf;
@@ -19,6 +19,7 @@ ipcMain.on('upload-igc', (event, igcText) => {
         var options = {
           header: header1
         };
+        console.log('ready for submit')
         form.submit({
           host: 'logfly.org',
           //host: 'logfly.fr',

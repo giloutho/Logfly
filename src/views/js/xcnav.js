@@ -188,7 +188,7 @@ function defaultMap() {
     ]
     L.easyBar(arrButtons).addTo(mapxc)
 
-    const kk7layer = L.tileLayer('https://thermal.kk7.ch/tiles/skyways_all_all/{z}/{x}/{y}.png?src=' + window.location.hostname, {
+    const kk7layer = L.tileLayer('https://thermal.kk7.ch/tiles/skyways_all_all/{z}/{x}/{y}.png?src=logfly.org', {
         attribution: 'thermal.kk7.ch <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC-BY-NC-SA>/a>',
         maxNativeZoom: 13,
         tms: true,
@@ -892,7 +892,7 @@ function displayScoring(xcscore) {
 
 // ****************** openAIP section *********************
 function runAirmenu() {
-    const mainWindow = true
+    const mainWindow = 1
     ipcRenderer.send('air-menu',mainWindow)
 }
 

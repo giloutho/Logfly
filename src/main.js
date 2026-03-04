@@ -59,6 +59,7 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      sandbox: false,
     }   
   }
 
@@ -231,6 +232,10 @@ function openWindow(pageName) {
     case "logbook":
         mainWindow.loadFile(path.join(__dirname, './views/html/logbook.html'))
      //   mainWindow.webContents.openDevTools() 
+        break    
+    case "newlogfly":
+        mainWindow.loadFile(path.join(__dirname, './views/html/newlogfly.html'))
+     //   mainWindow.webContents.openDevTools() 
         break
     case "overview":
       // original code
@@ -259,7 +264,7 @@ function openWindow(pageName) {
         break
     case "wayp":
       mainWindow.loadFile(path.join(__dirname, './views/html/waypoints.html'))
-      mainWindow.webContents.openDevTools()
+     // mainWindow.webContents.openDevTools()
       break 
     case "airspaces":
       mainWindow.loadFile(path.join(__dirname, './views/html/airspaces.html'))

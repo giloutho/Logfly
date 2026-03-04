@@ -22,6 +22,8 @@ ipcMain.on('tracks-igc', (event,importPath) => {
 
 function scanFolders(event,importPath) {  
     log.info('[scanFolders] for '+importPath)
+    // Chronométrage
+    let start = performance.now();
     let usbLimit = store.get('limit-disk') 
     if(usbLimit == undefined || usbLimit == '' || usbLimit == null ) {usbLimit = '99'}
     const searchIgc = runSearchIgc(importPath,usbLimit)
@@ -58,6 +60,8 @@ function scanFolders(event,importPath) {
         return db - da
         })       
     }
+    let timeTaken = performance.now()-start;
+    console.log(`ScanFolders took ${timeTaken} milliseconds`);
     event.sender.send('tracks-result', searchIgc)  
 }
 

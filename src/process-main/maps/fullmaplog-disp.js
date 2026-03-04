@@ -67,6 +67,7 @@ function openFenetre(event,track) {
             contextIsolation: false, 
         }              
     })
+    const winId = win.id;
     win.maximize()
   //  win.webContents.openDevTools();
    process.platform === "win32" && win.removeMenu()
@@ -76,7 +77,7 @@ function openFenetre(event,track) {
     })
     win.loadURL(mapHtmlPath)
     win.webContents.on('did-finish-load', function() {    
-        win.send('geojson-for-map', [track,anaTrack,tkSite])    // This is a simple passage of variables intended for fullmap.js
+        win.send('geojson-for-map', [winId,track,anaTrack,tkSite])    // This is a simple passage of variables intended for fullmap.js
         win.show();
     });
 }

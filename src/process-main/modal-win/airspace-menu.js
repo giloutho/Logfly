@@ -3,11 +3,12 @@ const fs = require('fs')
 const path = require('path')
 const log = require('electron-log')
 
-ipcMain.on('air-menu', (event,radius) => {
-    openWindow(radius)    
+ipcMain.on('air-menu', (event,originWindow) => {
+    openWindow(originWindow)    
 })
 
-function openWindow(radius) {
+function openWindow(originWindow) {
+    console.log('openWindow airspace-menu.js with originWindow : ', originWindow)
     const airmenutHtmlPath = path.join('file://', __dirname, '../../views/html/secondary/airmenu.html')
     let win = new BrowserWindow({ 
         width: 700,   
@@ -28,6 +29,6 @@ function openWindow(radius) {
     })
     win.loadURL(airmenutHtmlPath)
     win.webContents.on('did-finish-load', function() {    
-        win.send('airspace-radius', radius)    
+        win.send('airspace-radius', originWindow)    
     });
 }

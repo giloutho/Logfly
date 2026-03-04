@@ -45,6 +45,7 @@ let airspGroup
 let aipGroup
 let geoScore
 let currOAFile
+let fullMapWinId
 
 const layerThermalIdx = 10
 const layerGliderIdx = 11
@@ -57,7 +58,9 @@ let locMeasure = new myMeasure()
 const scoreGroup = new L.LayerGroup()
 let scoreDisplayed = false
 
-ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
+ipcRenderer.on('geojson-for-map', (event, [winId,track,analyzedTrack,tkSite]) => {
+  fullMapWinId = winId
+  console.log('winId received in fullmaplog.js : ', fullMapWinId)
   mainTrack = track
   anaTrack = analyzedTrack
   tkoffSite = tkSite
@@ -80,6 +83,7 @@ ipcRenderer.on('geojson-for-map', (event, [track,analyzedTrack,tkSite]) => {
 })
 
 ipcRenderer.on('back_airmenu', (_, values) => { 
+    console.log('back_airmenu', values)
     reqOpenAip(values)
 })
 
@@ -114,6 +118,7 @@ function buildMap() {
   // times contained in the GeoJSon are only strings
   // conversion to date object is necessary for Highcharts.dateFormat to work on the x axis
   const arrayHour = mainTrack.GeoJSON.features[0]['properties']['coordTimes'].map(hour => new Date(hour))
+  console.log('arrayHour 50 ex '+arrayHour[50]+' type '+typeof(arrayHour[50])+' highcarts '+Highcharts.dateFormat('%H:%M:%S', arrayHour[50]))
   map = L.map('carte').setView([0, 0], 5)
 
   const defaultMap = store.get('map')
@@ -219,7 +224,8 @@ function buildMap() {
       map.addLayer(aipGroup)
     } else {
       //reqOpenAip()
-      const mainWindow = false
+      const mainWindow = fullMapWinId
+      console.log('on envoie demande openAip fenêtre id : ', mainWindow)
       ipcRenderer.send('air-menu',mainWindow)
     }
   })
@@ -230,7 +236,7 @@ function buildMap() {
     }
   })
 
-  const kk7layer = L.tileLayer('https://thermal.kk7.ch/tiles/skyways_all_all/{z}/{x}/{y}.png?src=' + window.location.hostname, {
+  const kk7layer = L.tileLayer('https://thermal.kk7.ch/tiles/skyways_all_all/{z}/{x}/{y}.png?src=logfly.org', {
     attribution: 'thermal.kk7.ch <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC-BY-NC-SA>/a>',
     maxNativeZoom: 13,
     tms: true,
@@ -1075,14 +1081,16 @@ function displaySegment(lat1,long1,lat2,long2) {
 
 // ****************** openAIP section *********************
 async function reqOpenAip(airfilter) {
+    console.log('request OpenAIP ', airfilter)
     if (navigator.offLine) {
       alert(i18n.gettext('No Internet connection'))  
     } else {
       $('#waiting-spin').removeClass('d-none')
+      console.log('on envoie demande downloadAirspaces')
       const airspaces = await downloadAirspaces(airfilter)
       // debugging
-         // const filejson = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
-          //fs.writeFileSync(filejson, JSON.stringify(airspaces))
+        //  const filejson = path.join('/Users/gil/Documents/Flyxc', 'openaip.json');
+        //   fs.writeFileSync(filejson, JSON.stringify(airspaces))
         // end debugging
       const nbDownl = airspaces.length
       if (Array.isArray(airspaces)) {
@@ -1139,6 +1147,7 @@ async function checkOpenAip() {
 }
 
 async function downloadAirspaces(airfilter) {
+  console.log('downloadAirspaces')
   const openAipKey = listkey.openaip
   let openAip_Url
   const airspaces = []
@@ -1159,6 +1168,7 @@ async function downloadAirspaces(airfilter) {
     const distance = airfilter.radius
     const icaoFilter = airfilter.classes     // [0,1,2,3,4]   // F = 5   G = 6
     openAip_Url = `https://api.core.openaip.net/api/airspaces?page=${page}&limit=1000&pos=${center}&dist=${distance}&icaoClass=${icaoFilter}&apiKey=${openAipKey}`
+    console.log(openAip_Url)
   }
   while (page <= totalPages) {       
       try {
@@ -1184,6 +1194,7 @@ async function downloadAirspaces(airfilter) {
 }
 
 function displayAip(totalGeoJson) {
+  console.log('displayAip ', totalGeoJson.length)
   if (typeof aipGroup !== "undefined") {
     map.removeLayer(aipGroup)
   }
@@ -1363,6 +1374,7 @@ function airSpPopup(feature, layer) {
 }
 
 function aipPopup(feature, layer) {
+  console.log('aipPopup called')
   if (feature.properties) {
       let popupMsg = '<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name
       popupMsg += '<BR/>Floor : '+feature.properties.Floor+'  '+feature.properties.FloorLabel
