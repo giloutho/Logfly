@@ -20,8 +20,8 @@
     <script>
         let $ = require('jquery');
         // jQuery datatables script
-        const dtbs = require('datatables.net-bs4')()   
-        const dtselect = require( 'datatables.net-select-bs4' )() 
+        const dtbs = require('datatables.net-bs4')(window, $)  
+        const dtselect = require( 'datatables.net-select-bs4' )( window, $ )        
         const conmenu = require('jquery-contextmenu')           
     </script>
     <script>require('popper.js');</script>
@@ -60,8 +60,8 @@
                           </div>
                         </div>         
                         <div class="row">
-                           <div class="col-sm-4 my-1">     
-                            <input type="time" id="tx-manu-dur" max="12:00" required>                         
+                           <div class="col-md-1 pr-1">     
+                            <input type="text" id="tx-manu-dur" pattern="^\\d{1,2}:\\d{2}$" placeholder="hh:mm" required style="width: 80px;">
                           </div>
                         </div>          
                         <div class="row top-buffer">

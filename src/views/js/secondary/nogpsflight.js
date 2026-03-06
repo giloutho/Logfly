@@ -129,9 +129,16 @@ function updateDb() {
         // in logbook date is displayed as DD-MM-YYYY
         flightData.date = moment(inputDate.value).format('DD-MM-YYYY')
         flightData.time = inputTime.value
-        let durMilli = moment.duration(inputDuration.value)
-        flightData.duree = Math.floor(durMilli.asSeconds())
-        flightData.strduree = moment(inputDuration.value,'HH:mm').format('HH[h]mm[mn]')
+        // Validation et conversion hh:mm
+        const durationValue = inputDuration.value.trim();
+        const durationRegex = /^\d{1,2}:\d{2}$/;
+        if (!durationRegex.test(durationValue)) {
+            alert(i18n.gettext('Duration format must be hh:mm'));
+            return;
+        }
+        const [hh, mm] = durationValue.split(':').map(Number);
+        flightData.duree = hh * 3600 + mm * 60;
+        flightData.strduree = (hh.toString().padStart(2, '0') + 'h' + mm.toString().padStart(2, '0') + 'mn');
         flightData.lat = flightSite.lat
         flightData.lon = flightSite.lon
         flightData.alti = flightSite.alti

@@ -33,8 +33,8 @@ function iniForm() {
         document.getElementById('target-sidebar').innerHTML = rendered
     })
     document.getElementById('msg-title').innerHTML = i18n.gettext('Logfly 7 is available')
-    document.getElementById('msg-nav').innerHTML = i18n.gettext(' directly in your browser')+' : '
-    document.getElementById('info-badge').innerHTML = i18n.gettext('Information necessary')
+    document.getElementById('msg-nav').innerHTML = i18n.gettext('No installation required, directly in the browser')
+    document.getElementById('info-badge').innerHTML = i18n.gettext('For Logfly 7, this information is required')+':'
     const pathDb = store.get('pathdb')
     const dbName = store.get('dbName')
     let msgLogbook = i18n.gettext('Your logbook')+' <strong>'

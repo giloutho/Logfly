@@ -147,6 +147,11 @@
    "OK": "Valider",
    "Hide": "Cacher",
    "The track is saved in IGC format with the .igc extension": "La trace est enregistrée au format IGC avec l’extension .igc",
+   "Logfly 7 is available": "Logfly 7 est disponible",
+   "No installation required, directly in the browser": "Pas d’installation, directement dans le navigateur",
+   "For Logfly 7, this information is required": "Information requise pour Logfly 7",
+   "Your logbook": "Votre carnet",
+   "is in the folder": "Est dans le dossier",
    "There are no flights in the logbook": "Il n’y a pas de vols dans le carnet",
    "Use the import option to fill the logbook": "Utiliser l’option import pour remplir le carnet",
    "You can play with this demo track around the Mont Blanc": "Vous pouvez explorer cette trace démo autour du Mont Blanc",
@@ -274,6 +279,7 @@
    "Click on an airspace to display the description": "Cliquer sur un espace pour afficher la description",
    "No violations in the selected airspace file": "Pas de violations dans le fichier d’espaces",
    "A flight at the same date and time was recorded": "Un vol de la même date et même heure a été enregistré",
+   "Duration format must be hh:mm": "Le format de la durée est h:mm",
    "Inserting in the flights file failed": "Problème d’insertion dans le fichier des vols",
    "Flight": "Vol",
    "saved": "enregistré",
@@ -459,5 +465,6 @@
    "XC Nav": "XC Nav",
    "Settings": "Configuration",
    "Support": "Support",
+   "Logfly 7": "Logfly 7",
    "Still menu": "Menu fixe"
 }
