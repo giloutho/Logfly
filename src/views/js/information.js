@@ -86,6 +86,7 @@ ipcRenderer.on('read-infos', (event, result) => {
             }   
         } else if ((releaseInfo.message !== undefined)) {
             infoTitle.innerHTML = i18n.gettext('Important message')
+            infoTextEn.innerHTML = releaseInfo.message
         }
     } else {
         infoTitle.innerHTML = i18n.gettext('Server or url problem')        
