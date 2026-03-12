@@ -853,7 +853,9 @@ function updateLogbook() {
       ipcRenderer.on('gpsdump-result', (event, result) => {
         if (result.igcForImport.length > 0) {
           result.igcForImport.forEach(element => {
-            nbInserted += dbadd.addFlight(element, i18n.gettext('To rename'))
+            if (element.forImport) {
+              nbInserted += dbadd.addFlight(element, i18n.gettext('To rename'))
+            }
           });
           hideWaiting()
           $('#table-content').removeClass('d-none')
